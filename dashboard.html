@@ -1728,8 +1728,8 @@
     </style>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" class="login-container">
+    <!-- Login Page - Removed login requirement -->
+    <div id="loginPage" class="login-container" style="display: none;">
         <div class="login-box">
             <h2 class="login-title">:v Faces Mascots' Dashboard</h2>
             <input type="password" id="passwordInput" class="login-input" placeholder="Enter password" />
@@ -4949,6 +4949,60 @@
 
         // Load saved theme on page load
         document.addEventListener('DOMContentLoaded', loadSavedTheme);
+        
+        // Auto-bypass login when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide login page and show loading screen immediately
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            // Simulate login process
+            setTimeout(async () => {
+                try {
+                    updateLoadingStep(1, 'active', 'Connecting...');
+                    updateProgress(33);
+                    updateLoadingDetails('Authenticating and connecting to Discord...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const response = await fetch('/api/dashboard-stats');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch server data');
+                    }
+                    
+                    const data = await response.json();
+                    window.serverList = data.guilds || [];
+                    
+                    updateLoadingStep(1, 'completed', 'Connected!');
+                    updateLoadingStep(2, 'active', 'Loading Data...');
+                    updateProgress(66);
+                    updateLoadingDetails('Loading Discord server information...');
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    if (window.serverList.length > 0) {
+                        currentServerId = window.serverList[0].id;
+                    }
+                    
+                    updateLoadingStep(2, 'completed', 'Data Loaded!');
+                    updateLoadingStep(3, 'active', 'Finalizing...');
+                    updateProgress(100);
+                    updateLoadingDetails('Preparing dashboard interface...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    updateLoadingStep(3, 'completed', 'Ready!');
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Show dashboard
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    
+                    // Load dashboard data
+                    await loadDashboardData();
+                } catch (error) {
+                    console.error('Auto-login failed:', error);
+                    updateLoadingDetails('Error: Could not connect to Discord bot');
+                }
+            }, 500);
+        });
 
         // Database tab 10-click protection
         let titleClickCount = 0;

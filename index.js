@@ -17,10 +17,9 @@ const {
 } = require("discord.js");
 
 // Database models - lazy loaded to improve startup time
-let database, BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole;
+let BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole;
 const loadDatabaseModels = () => {
-  if (!database) {
-    database = require("./utils/database");
+  if (!BotA) {
     BotA = require("./models/postgres/BotA");
     BotB = require("./models/postgres/BotB");
     Others = require("./models/postgres/Others");
@@ -30,7 +29,6 @@ const loadDatabaseModels = () => {
     ReactionRole = require("./models/postgres/ReactionRole");
   }
   return {
-    database,
     BotA,
     BotB,
     Others,
@@ -243,7 +241,9 @@ const initializeReactionRoles = async () => {
 // PostgreSQL database initialization and dashboard sync
 const initializeDashboardData = async () => {
   try {
-    await database.query("SELECT 1");
+    // Test database connection using BaseModel
+    const { BotA } = loadDatabaseModels();
+    await BotA.findOne(); // This will test the connection
     console.log("PostgreSQL connected");
 
     // Ensure bot data exists and is properly structured
@@ -1245,16 +1245,16 @@ const setupBot = async (client, botToken, botName) => {
           // Direct SQL update for conversation history to avoid JSON serialization issues
           let updateResult = null;
           try {
-            const db = require('./utils/database');
-            const query = `
-              INSERT INTO users (user_id, conversation_history) 
-              VALUES ($1, $2::jsonb) 
-              ON CONFLICT (user_id) 
-              DO UPDATE SET conversation_history = $2::jsonb, updated_at = NOW()
-            `;
-            updateResult = await db.query(query, [message.author.id, JSON.stringify(userData.conversationHistory)]);
+            await UserData.findOneAndUpdate(
+              { userId: message.author.id },
+              { 
+                conversationHistory: JSON.stringify(userData.conversationHistory),
+                updatedAt: new Date()
+              },
+              { upsert: true }
+            );
           } catch (error) {
-            console.error('Direct SQL conversation history update failed:', error);
+            console.error('Conversation history update failed:', error);
           }
           console.log(
             `Saved user message to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
@@ -1343,16 +1343,16 @@ const setupBot = async (client, botToken, botName) => {
               // Direct SQL update for conversation history to avoid JSON serialization issues
               let updateResult2 = null;
               try {
-                const db = require('./utils/database');
-                const query = `
-                  INSERT INTO users (user_id, conversation_history) 
-                  VALUES ($1, $2::jsonb) 
-                  ON CONFLICT (user_id) 
-                  DO UPDATE SET conversation_history = $2::jsonb, updated_at = NOW()
-                `;
-                updateResult2 = await db.query(query, [message.author.id, JSON.stringify(userData.conversationHistory)]);
+                await UserData.findOneAndUpdate(
+                  { userId: message.author.id },
+                  { 
+                    conversationHistory: JSON.stringify(userData.conversationHistory),
+                    updatedAt: new Date()
+                  },
+                  { upsert: true }
+                );
               } catch (error) {
-                console.error('Direct SQL AI conversation history update failed:', error);
+                console.error('AI conversation history update failed:', error);
               }
               console.log(
                 `Saved AI response to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
