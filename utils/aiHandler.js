@@ -169,25 +169,7 @@ async function generateAIResponse(
 
     const personalityContext = personalityParts.join(". ");
 
-    let contextInfo = "";
-    const contextCacheKey = `${message.guildId}-${message.channelId}`;
-    if (contextCache.has(contextCacheKey)) {
-      const cached = contextCache.get(contextCacheKey);
-      if (Date.now() - cached.timestamp < CACHE_TIMEOUT) {
-        contextInfo = cached.result;
-      }
-    }
 
-    if (!contextInfo) {
-      contextInfo = `Server: ${message.guild?.name || "DM"}, Channel: ${message.channel?.name || "DM"}`;
-      if (message.guild) {
-        contextInfo += `, Members: ${message.guild.memberCount || "Unknown"}`;
-      }
-      contextCache.set(contextCacheKey, {
-        result: contextInfo,
-        timestamp: Date.now(),
-      });
-    }
 
     const searchContext = await performWebSearch(content);
     const emojiMap = await getEmojiMap(client, message.guildId);
@@ -195,11 +177,10 @@ async function generateAIResponse(
       .map(([name, val]) => `${name}: ${val}`)
       .join("\n");
 
-    const prompt = `You are ${otherData.name}. ${personalityContext}
+    const prompt = `You are ${otherData.name}.
+    
 
-You are the one of the mascot of ${message.guild?.name}
-
-Context: ${contextInfo}
+ You are the one of the mascot of ${message.guild?.name}, ${personalityContext}
 
 Custom emojis you can use when relevant (MAX 3 total):
 ${emojiList || "(none found)"}

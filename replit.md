@@ -190,6 +190,7 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Tested empty personality fields - system handles gracefully without errors
 - July 06, 2025: Renamed "Others" field to "To Do" in dashboard and AI responses
 - July 06, 2025: Adjusted "To Do" field height to 120px for better usability
+- July 06, 2025: Removed server/channel context line from AI prompts for cleaner responses
 
 ## User Preferences
 
