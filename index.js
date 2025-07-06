@@ -324,12 +324,20 @@ const isNSFW = (content) =>
   badWords.some((word) => content.toLowerCase().includes(word));
 
 const calculateLevel = (xp) => {
+  if (xp === 0) return 1;
+  
   let currentXP = 0;
   let level = 1;
   
-  while (currentXP <= xp) {
+  while (true) {
     const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.28;
-    const xpNeeded = Math.pow(level - 1, 2) * 100 * tierMultiplier;
+    let xpNeeded;
+    
+    if (level === 1) {
+      xpNeeded = 100; // Level 2 requires 100 XP
+    } else {
+      xpNeeded = Math.pow(level - 1, 2) * 100 * tierMultiplier;
+    }
     
     if (currentXP + xpNeeded > xp) break;
     currentXP += xpNeeded;
@@ -340,11 +348,18 @@ const calculateLevel = (xp) => {
 };
 
 const xpForLevel = (level) => {
+  if (level <= 1) return 0;
+  
   let totalXP = 0;
   
   for (let i = 1; i < level; i++) {
     const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.28;
-    totalXP += Math.pow(i - 1, 2) * 100 * tierMultiplier;
+    
+    if (i === 1) {
+      totalXP += 100; // Level 2 requires 100 XP
+    } else {
+      totalXP += Math.pow(i - 1, 2) * 100 * tierMultiplier;
+    }
   }
   
   return Math.floor(totalXP);
