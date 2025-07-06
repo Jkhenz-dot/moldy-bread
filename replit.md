@@ -202,8 +202,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Added comprehensive keyword detection for web searches (weather, news, current events, etc.)
 - July 06, 2025: Integrated web search results directly into AI response context for informed conversations
 - July 06, 2025: Increased conversation history limit from 20 to 30 messages per bot
-- July 06, 2025: Implemented progressive XP difficulty system - returns to 100 XP base with +28% difficulty every 5 levels
-- July 06, 2025: XP tiers: Levels 1-5 (1.0x), 6-10 (1.28x), 11-15 (1.56x), 16-20 (1.84x) multipliers
+- July 06, 2025: Implemented progressive XP difficulty system - returns to 100 XP base with +15% difficulty every 5 levels
+- July 06, 2025: XP tiers: Levels 1-5 (1.0x), 6-10 (1.15x), 11-15 (1.30x), 16-20 (1.45x) multipliers
+- July 06, 2025: Fixed Level 2 XP requirement to exactly 100 XP, progressive scaling for higher levels
 
 ## User Preferences
 

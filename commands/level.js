@@ -40,7 +40,7 @@ module.exports = {
         let level = 1;
         
         while (true) {
-          const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.28;
+          const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.15;
           let xpNeeded;
           
           if (level === 1) {
@@ -63,7 +63,7 @@ module.exports = {
         let totalXP = 0;
         
         for (let i = 1; i < level; i++) {
-          const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.28;
+          const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.15;
           
           if (i === 1) {
             totalXP += 100; // Level 2 requires 100 XP
