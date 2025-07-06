@@ -1,92 +1,151 @@
-# JSON Logger
+# :v Faces Mascots' Discord Bot
 
 ## Overview
 
-JSON Logger is a Python command-line application that reads JSON files and logs messages using Python's built-in logging module. The application provides a simple interface for processing JSON message files and outputting structured logs with timestamps and configurable log levels.
+This is a sophisticated Discord bot system featuring dual bot instances with advanced AI integration, multimedia generation capabilities, extensive gaming features, and comprehensive leveling/moderation systems. The application uses Node.js with Discord.js and integrates with PostgreSQL for data persistence, Google's Gemini AI for intelligent responses, and Hugging Face models for content generation.
 
 ## System Architecture
 
-The application follows a simple, single-tier architecture:
+### Backend Architecture
+- **Runtime**: Node.js with JavaScript
+- **Framework**: Discord.js v14 for Discord API integration
+- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
+- **AI Integration**: Google Gemini API for conversational AI responses
+- **Content Generation**: Hugging Face Inference API for image, music, and video generation
+- **Web Dashboard**: Express.js server with file upload capabilities
 
-- **Language**: Python 3
-- **Architecture Pattern**: Class-based object-oriented design
-- **Interface**: Command-line interface (CLI)
-- **Dependencies**: Standard Python library only (no external dependencies)
+### Database Architecture
+- **ORM**: Drizzle ORM with PostgreSQL dialect
+- **Migration Strategy**: Transitioning from MongoDB to PostgreSQL
+- **Schema Design**: Structured tables for users, bot configurations, birthdays, AI questions, and more
+- **Data Models**: Separate model classes in `models/postgres/` for database abstraction
+
+### Frontend Architecture
+- **Dashboard**: HTML/CSS/JavaScript web interface (`dashboard.html`)
+- **Authentication**: Login-based access control
+- **File Management**: Multer-based file upload system with memory storage
+- **Real-time Updates**: Activity tracking and system monitoring
 
 ## Key Components
 
-### Core Components
+### Dual Bot System
+- **Bot A (Heilos)**: Primary bot instance with configurable personality
+- **Bot B (Wisteria)**: Secondary bot instance with independent configuration
+- **Shared Commands**: Common command set with bot-specific behavior differentiation
+- **Independent Configuration**: Separate database tables for each bot's settings
 
-1. **JSONLogger Class**
-   - Main application class handling JSON file operations and logging
-   - Encapsulates logging configuration and file reading logic
-   - Provides configurable log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+### AI Response System
+- **Context Building**: Comprehensive guild and user context for personalized responses
+- **Conversation Memory**: Per-user conversation history tracking
+- **Performance Optimization**: Response caching, concurrent request limiting, and timeout handling
+- **Web Search Integration**: Dynamic information retrieval for current events
 
-2. **Command-Line Interface**
-   - Uses argparse for command-line argument parsing
-   - Accepts input file path as primary argument
-   - Supports log level configuration
+### Content Generation Pipeline
+- **Image Generation**: FLUX.1-dev and Stable Diffusion models via Hugging Face
+- **Music Generation**: MusicGen models for audio content creation
+- **Video Generation**: Text-to-video models for dynamic content
+- **Style Options**: Multiple artistic styles and quality presets
 
-3. **Logging System**
-   - Built on Python's standard logging module
-   - Configurable log levels with timestamp formatting
-   - Console output with structured message format
+### Gaming Module
+- **Single Player Games**: 2048, Snake, Hangman, Wordle, Minesweeper, Memory games
+- **Multiplayer Games**: Connect4, Tic-Tac-Toe, Rock Paper Scissors
+- **Party Games**: Truth/Dare/NHIE/WYR/Paranoia with AI-generated questions
+- **Advanced Trivia**: Multiple categories and difficulty levels
 
-### File Structure
+### Leveling System
+- **XP Tracking**: Message-based experience point accumulation
+- **Visual Rank Cards**: Canvacord-generated level progression cards
+- **Role Integration**: Automatic role assignment based on levels
+- **Leaderboard**: Guild-wide ranking system
 
-```
-├── README.md           # Project documentation
-├── json_logger.py      # Main application script
-└── replit.md          # This architecture documentation
-```
+### Music System
+- **Voice Channel Integration**: Discord.js voice support
+- **YouTube Integration**: play-dl for audio streaming
+- **Queue Management**: Song queuing and playback controls
+- **URL Support**: Direct YouTube link addition to queue
 
 ## Data Flow
 
-1. **Input Processing**: Command-line arguments are parsed to extract file path and optional log level
-2. **File Reading**: JSON file is read and parsed using Python's json module
-3. **Message Processing**: JSON data is processed to extract message information
-4. **Logging Output**: Messages are logged using configured log level with timestamps
-5. **Error Handling**: File reading errors and JSON parsing errors are handled gracefully
+### Message Processing Pipeline
+1. **Message Reception**: Discord.js event handling
+2. **Permission Validation**: Channel and user permission checks
+3. **Context Building**: Guild, user, and conversation context compilation
+4. **AI Processing**: Gemini API request with optimized prompting
+5. **Response Delivery**: Formatted message with embeds and attachments
+
+### Command Execution Flow
+1. **Slash Command Registration**: Dynamic command loading and Discord API registration
+2. **Permission Verification**: Role-based access control
+3. **Parameter Validation**: Input sanitization and type checking
+4. **Database Operations**: CRUD operations through model abstractions
+5. **Response Generation**: Embed-based user feedback
+
+### Content Generation Workflow
+1. **Request Initiation**: User command with parameters
+2. **Model Selection**: Dynamic AI model routing based on content type
+3. **API Communication**: Hugging Face Inference API calls
+4. **Content Processing**: Binary data handling and validation
+5. **Discord Delivery**: Attachment upload with metadata
 
 ## External Dependencies
 
-The application is designed to use only Python standard library modules:
+### Core Dependencies
+- **discord.js**: Discord API integration and bot functionality
+- **@discordjs/voice**: Voice channel support for music features
+- **drizzle-orm**: Type-safe database operations
+- **pg**: PostgreSQL database driver
+- **express**: Web server for dashboard functionality
 
-- `json` - JSON file parsing
-- `logging` - Message logging functionality
-- `argparse` - Command-line argument parsing
-- `sys` - System-specific parameters and functions
-- `pathlib` - Object-oriented filesystem paths
-- `datetime` - Date and time handling
-- `typing` - Type hints for better code documentation
+### AI and Content Generation
+- **@google/generative-ai**: Google Gemini API client
+- **node-fetch**: HTTP requests for external APIs
+- **multer**: File upload handling for dashboard
+
+### Gaming and Visualization
+- **discord-gamecord**: Pre-built Discord game implementations
+- **canvacord**: Image generation for rank cards and visual content
+- **play-dl**: YouTube audio streaming capabilities
+
+### Utility Libraries
+- **dotenv**: Environment variable management
+- **mongoose**: MongoDB compatibility layer (legacy support)
+- **ytdl-core**: YouTube data extraction
 
 ## Deployment Strategy
 
-**Local Execution**: The application is designed for local command-line execution:
-- Single Python script deployment
-- No external dependencies to install
-- Cross-platform compatibility (Windows, macOS, Linux)
-- Executable script with shebang for Unix-like systems
+### Production Configuration
+- **Entry Point**: `start.js` for deployment platforms
+- **Environment Variables**: Database URLs, API keys, and configuration tokens
+- **Process Management**: Graceful shutdown handling and error recovery
+- **SSL Configuration**: Production-ready database connections
 
-**Distribution**: Can be distributed as a standalone Python script or packaged using standard Python packaging tools.
+### Development Setup
+- **Main Entry**: `index.js` for local development
+- **Hot Reloading**: Command reload functionality for development
+- **Debug Tools**: JSON logging utilities and database inspection tools
+- **Local Database**: Optional local PostgreSQL setup
+
+### Scalability Considerations
+- **Connection Pooling**: PostgreSQL connection management
+- **Caching Strategy**: In-memory caching for AI responses and context data
+- **Request Limiting**: Concurrent AI request management
+- **Error Handling**: Comprehensive error recovery and logging
 
 ## Changelog
-
-```
-Changelog:
-- July 06, 2025. Initial setup
-```
+- July 06, 2025: Initial setup
+- July 06, 2025: Fixed database field name mismatches for allowed channels functionality
+- July 06, 2025: Implemented proper parsing of allowed_channels from string to array format
+- July 06, 2025: Resolved dashboard data loading issues and PostgreSQL connectivity
+- July 06, 2025: Cleaned up Python JSON converter files and workflows (removed non-Discord bot components)
+- July 06, 2025: Fixed generateAIResponse function loading issue causing bot crashes
+- July 06, 2025: Successfully configured both bots with allowed channels set to "1"
+- July 06, 2025: Fixed deprecated "ephemeral" warnings across all commands by updating to MessageFlags.Ephemeral
+- July 06, 2025: Added Hugging Face API token for AI image generation functionality
+- July 06, 2025: Verified AI image generation system working with FLUX.1-dev and Stable Diffusion models
+- July 06, 2025: Fixed ai-wack command database operations for PostgreSQL compatibility
+- July 06, 2025: Enhanced ai-gen-image command with improved error handling and API integration
+- July 06, 2025: Verified both AI commands working properly with live API connections
 
 ## User Preferences
 
-```
 Preferred communication style: Simple, everyday language.
-```
-
-## Development Notes
-
-- The application uses type hints for better code documentation and IDE support
-- Error handling is implemented for file operations and JSON parsing
-- The logging configuration is centralized in the JSONLogger class
-- The script is designed to be both importable as a module and executable as a script
-- Future enhancements could include output file logging, configuration file support, and batch processing capabilities

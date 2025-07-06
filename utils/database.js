@@ -1,0 +1,217 @@
+const { Pool } = require('pg');
+
+class DatabaseManager {
+    constructor() {
+        this.pool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        });
+        
+        this.pool.on('error', (err) => {
+            console.error('PostgreSQL pool error:', err);
+        });
+    }
+
+    async query(text, params) {
+        const start = Date.now();
+        try {
+            const res = await this.pool.query(text, params);
+            return res;
+        } catch (error) {
+            const duration = Date.now() - start;
+            console.error(`Query failed after ${duration}ms:`, text, error);
+            throw error;
+        }
+    }
+
+    async getClient() {
+        return this.pool.connect();
+    }
+
+    async close() {
+        await this.pool.end();
+        console.info('Database connection closed');
+    }
+
+    // User management methods
+    async getUser(discordId) {
+        const query = 'SELECT * FROM users WHERE discord_id = $1';
+        const result = await this.query(query, [discordId]);
+        return result.rows[0] || null;
+    }
+
+    async createUser(userData) {
+        const query = `
+            INSERT INTO users (discord_id, username, discriminator, avatar, joined_at)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (discord_id) DO UPDATE SET
+                username = EXCLUDED.username,
+                discriminator = EXCLUDED.discriminator,
+                avatar = EXCLUDED.avatar,
+                updated_at = NOW()
+            RETURNING *
+        `;
+        const values = [
+            userData.discordId,
+            userData.username,
+            userData.discriminator,
+            userData.avatar,
+            userData.joinedAt || new Date()
+        ];
+        const result = await this.query(query, values);
+        return result.rows[0];
+    }
+
+    async updateUserXP(discordId, xpToAdd) {
+        const query = `
+            UPDATE users 
+            SET xp = xp + $1, 
+                last_message_at = NOW(),
+                updated_at = NOW()
+            WHERE discord_id = $2
+            RETURNING *
+        `;
+        const result = await this.query(query, [xpToAdd, discordId]);
+        return result.rows[0];
+    }
+
+    async updateUserLevel(discordId, newLevel) {
+        const query = `
+            UPDATE users 
+            SET level = $1, updated_at = NOW()
+            WHERE discord_id = $2
+            RETURNING *
+        `;
+        const result = await this.query(query, [newLevel, discordId]);
+        return result.rows[0];
+    }
+
+    // Guild management methods
+    async getGuild(discordId) {
+        const query = 'SELECT * FROM guilds WHERE discord_id = $1';
+        const result = await this.query(query, [discordId]);
+        return result.rows[0] || null;
+    }
+
+    async createGuild(guildData) {
+        const query = `
+            INSERT INTO guilds (discord_id, name, prefix)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (discord_id) DO UPDATE SET
+                name = EXCLUDED.name,
+                updated_at = NOW()
+            RETURNING *
+        `;
+        const values = [
+            guildData.discordId,
+            guildData.name,
+            guildData.prefix || '!'
+        ];
+        const result = await this.query(query, values);
+        return result.rows[0];
+    }
+
+    async updateGuildPrefix(discordId, newPrefix) {
+        const query = `
+            UPDATE guilds 
+            SET prefix = $1, updated_at = NOW()
+            WHERE discord_id = $2
+            RETURNING *
+        `;
+        const result = await this.query(query, [newPrefix, discordId]);
+        return result.rows[0];
+    }
+
+    // Command usage tracking
+    async logCommandUsage(userId, guildId, commandName) {
+        const query = `
+            INSERT INTO command_usage (user_id, guild_id, command_name)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `;
+        const result = await this.query(query, [userId, guildId, commandName]);
+        return result.rows[0];
+    }
+
+    async getCommandStats(guildId = null) {
+        let query = `
+            SELECT 
+                command_name,
+                COUNT(*) as usage_count,
+                MAX(used_at) as last_used
+            FROM command_usage
+        `;
+        let params = [];
+        
+        if (guildId) {
+            query += ' WHERE guild_id = $1';
+            params.push(guildId);
+        }
+        
+        query += ' GROUP BY command_name ORDER BY usage_count DESC';
+        
+        const result = await this.query(query, params);
+        return result.rows;
+    }
+
+    // Bot message logging
+    async logBotMessage(userId, guildId, messageContent, responseContent, messageType = 'command') {
+        const query = `
+            INSERT INTO bot_messages (user_id, guild_id, message_content, response_content, message_type)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+        const result = await this.query(query, [userId, guildId, messageContent, responseContent, messageType]);
+        return result.rows[0];
+    }
+
+    async getUserMessages(userId, limit = 50) {
+        const query = `
+            SELECT * FROM bot_messages
+            WHERE user_id = $1
+            ORDER BY created_at DESC
+            LIMIT $2
+        `;
+        const result = await this.query(query, [userId, limit]);
+        return result.rows;
+    }
+
+    // Leaderboard methods
+    async getTopUsers(guildId = null, limit = 10) {
+        let query = `
+            SELECT u.*, g.name as guild_name
+            FROM users u
+            LEFT JOIN guilds g ON g.id = u.guild_id
+        `;
+        let params = [];
+        
+        if (guildId) {
+            query += ' WHERE g.discord_id = $1';
+            params.push(guildId);
+        }
+        
+        query += ' ORDER BY u.xp DESC LIMIT $' + (params.length + 1);
+        params.push(limit);
+        
+        const result = await this.query(query, params);
+        return result.rows;
+    }
+
+    // Helper method to get user and guild IDs
+    async getUserAndGuildIds(discordUserId, discordGuildId) {
+        const userQuery = 'SELECT id FROM users WHERE discord_id = $1';
+        const guildQuery = 'SELECT id FROM guilds WHERE discord_id = $1';
+        
+        const [userResult, guildResult] = await Promise.all([
+            this.query(userQuery, [discordUserId]),
+            this.query(guildQuery, [discordGuildId])
+        ]);
+        
+        return {
+            userId: userResult.rows[0]?.id || null,
+            guildId: guildResult.rows[0]?.id || null
+        };
+    }
+}
+
+module.exports = new DatabaseManager();
