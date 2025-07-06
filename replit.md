@@ -195,6 +195,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Improved loading screen accuracy - waits until all data is loaded before showing dashboard
 - July 06, 2025: Optimized index.js with memory cleanup and better performance monitoring
 - July 06, 2025: Optimized server.js with compression middleware and improved static file serving
+- July 06, 2025: Changed dashboard title from ":v Faces Mascots' Dashboard" to "v Faces Mascots Dashboard"
+- July 06, 2025: Hidden database tab by default - now only shows after clicking dashboard title 5 times
+- July 06, 2025: Fixed data loading issue by correcting API endpoint and adding debugging logs
 
 ## User Preferences
 

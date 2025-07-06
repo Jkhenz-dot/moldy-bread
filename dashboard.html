@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>:v Faces Mascots' Dashboard</title>
+    <title>v Faces Mascots Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -1731,7 +1731,7 @@
     <!-- Login Page - Removed login requirement -->
     <div id="loginPage" class="login-container" style="display: none;">
         <div class="login-box">
-            <h2 class="login-title">:v Faces Mascots' Dashboard</h2>
+            <h2 class="login-title">v Faces Mascots Dashboard</h2>
             <input type="password" id="passwordInput" class="login-input" placeholder="Enter password" />
             <button onclick="login()" class="login-btn">Login</button>
             <div id="loginError" class="error-message" style="display: none;"></div>
@@ -1741,7 +1741,7 @@
     <!-- Enhanced Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
-            <div class="loading-logo">:v Faces Mascots</div>
+            <div class="loading-logo">v Faces Mascots</div>
             <div class="loading-title">Initializing Dashboard</div>
             <div class="loading-subtitle">Setting up your Discord bot control panel...</div>
             
@@ -1777,7 +1777,7 @@
     <div id="dashboard" class="dashboard">
         <div class="header">
             <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
-            <h1>:v Faces Mascots' Dashboard</h1>
+            <h1>v Faces Mascots Dashboard</h1>
             <div class="header-controls">
                 <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
             </div>
@@ -1816,7 +1816,7 @@
                     <span class="nav-icon">👋</span>
                     Welcomer
                 </div>
-                <div class="nav-item" id="databaseTab" onclick="showTab('database')" style="display: block;">
+                <div class="nav-item" id="databaseTab" onclick="showTab('database')" style="display: none;">
                     <span class="nav-icon">🗄️</span>
                     Database
                 </div>
@@ -1828,7 +1828,7 @@
                 <div id="home" class="tab-content active">
                     <!-- Bot Status Overview -->
                     <div class="card" style="margin-bottom: 20px;">
-                        <h3 class="card-title">🤖 :v Faces Mascots Status</h3>
+                        <h3 class="card-title">🤖 v Faces Mascots Status</h3>
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <div class="stat-value" id="bot1StatusDisplay">--</div>
@@ -2995,10 +2995,10 @@
                 loadGuildData().catch(err => console.log('Guild data loading failed, continuing with saved data'));
                 
                 // Load bot data
-                const response = await fetch('/api/bot-config');
+                const response = await fetch('/api/bot-data');
                 const data = await response.json();
                 
-                if (data.success && data.data) {
+                if (data && data.success && data.data) {
                     // Bot 1 AI Details (with null checks)
                     const bot1Data = data.data.bot1 || {};
                     const bot1DisplayName = bot1Data.displayName || bot1Data.name || 'AI Assistant';
@@ -3136,6 +3136,8 @@
                 // Set up periodic updates (only once)
                 if (!window.statsInterval) {
                     window.statsInterval = setInterval(loadDashboardStats, 30000); // Reduced from 5s to 30s
+                }
+                
                 }
                 
             } catch (error) {
@@ -5075,12 +5077,12 @@
                         titleClickCount = 0;
                     }, 3000);
                     
-                    // Show database tab after 10 clicks
-                    if (titleClickCount >= 10) {
+                    // Show database tab after 5 clicks (reduced from 10)
+                    if (titleClickCount >= 5) {
                         const databaseTab = document.getElementById('databaseTab');
                         if (databaseTab) {
                             databaseTab.style.display = 'block';
-                            showMessage('popupNotification', 'Database tab unlocked!', true);
+                            showPopupNotification('Database tab unlocked!', true);
                         }
                         titleClickCount = 0;
                     }
