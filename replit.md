@@ -172,6 +172,14 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Implemented automatic cleanup of orphaned reaction role sets when Discord messages are not found
 - July 06, 2025: Added deleteBySetId method to ReactionRole model for efficient set removal
 - July 06, 2025: Enhanced reaction role initialization to detect and remove sets from deleted/inaccessible messages
+- July 06, 2025: Removed login requirement from dashboard - now opens directly without authentication
+- July 06, 2025: Added GUILD_ID environment variable for proper guild targeting
+- July 06, 2025: Fixed PostgreSQL connection issues by removing old database utility dependencies
+- July 06, 2025: Updated all database operations to use consistent BaseModel system
+- July 06, 2025: Fixed AI personality data loading - dashboard settings now properly connect to bot responses
+- July 06, 2025: Enhanced bot data API to return actual configuration instead of hardcoded defaults
+- July 06, 2025: Fixed database column name conflicts (updatedAt vs updated_at) in conversation history
+- July 06, 2025: Added debugging system to track what personality data is loaded for AI responses
 
 ## User Preferences
 

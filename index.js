@@ -1248,8 +1248,7 @@ const setupBot = async (client, botToken, botName) => {
             await UserData.findOneAndUpdate(
               { userId: message.author.id },
               { 
-                conversationHistory: JSON.stringify(userData.conversationHistory),
-                updatedAt: new Date()
+                conversationHistory: JSON.stringify(userData.conversationHistory)
               },
               { upsert: true }
             );
@@ -1346,8 +1345,7 @@ const setupBot = async (client, botToken, botName) => {
                 await UserData.findOneAndUpdate(
                   { userId: message.author.id },
                   { 
-                    conversationHistory: JSON.stringify(userData.conversationHistory),
-                    updatedAt: new Date()
+                    conversationHistory: JSON.stringify(userData.conversationHistory)
                   },
                   { upsert: true }
                 );

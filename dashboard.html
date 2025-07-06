@@ -4978,8 +4978,10 @@
                     updateLoadingDetails('Loading Discord server information...');
                     await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    if (window.serverList.length > 0) {
-                        currentServerId = window.serverList[0].id;
+                    // Use GUILD_ID from environment or fallback to first available guild
+                    const targetGuildId = data.targetGuildId || (window.serverList.length > 0 ? window.serverList[0].id : null);
+                    if (targetGuildId) {
+                        currentServerId = targetGuildId;
                     }
                     
                     updateLoadingStep(2, 'completed', 'Data Loaded!');

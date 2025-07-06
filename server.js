@@ -144,224 +144,91 @@ app.get('/api/bot-data', async (req, res) => {
         const botB = await BotB.findOne();
         const others = await Others.findOne();
         
-        if (!botA || !botB || !others) {
-            return res.json({
-                success: true,
-                data: {
-                    bot1: {
-                        name: 'AI Assistant',
-                        description: '',
-                        likes: '',
-                        dislikes: '',
-                        age: '',
-                        appearance: '',
-                        backstory: '',
-                        personality: 'helpful and friendly',
-                        status: 'online',
-                        activityType: 'playing',
-                        activityText: '',
-                        others: '',
-                        avatarPath: '',
-                        allowedChannels: [],
-                        blacklistedUsers: []
-                    },
-                    bot2: {
-                        name: 'AI Assistant 2',
-                        description: '',
-                        likes: '',
-                        dislikes: '',
-                        age: '',
-                        appearance: '',
-                        backstory: '',
-                        personality: 'creative and fun',
-                        status: 'online',
-                        activityType: 'playing',
-                        activityText: '',
-                        others: '',
-                        avatarPath: '',
-                        allowedChannels: [],
-                        blacklistedUsers: []
-                    },
-                    xpSettings: {
-                        enabled: true,
-                        minXp: 1,
-                        maxXp: 15,
-                        xpCooldown: 60000,
-                        levelUpAnnouncement: true,
-                        announcementChannel: ''
-                    },
-                    levelRoles: [],
-                    reactionRoles: [],
-                    welcomer: {
-                        enabled: false,
-                        channelId: '',
-                        message: 'Welcome {user} to the server!',
-                        useEmbed: false,
-                        embedTitle: 'Welcome!',
-                        embedDescription: 'Welcome {user} to our server!',
-                        embedColor: '#00ff00'
-                    },
-                    forumAutoReact: {
-                        enabled: false,
-                        allForums: false,
-                        bot1EmojiList: '',
-                        bot2EmojiList: '',
-                        messageReact: { enabled: false, messageId: '', botId: 'bot1' }
-                    },
-                    customRankCard: {
-                        backgroundColor: '#23272a',
-                        progressBarColor: '#7289da',
-                        textColor: '#ffffff',
-                        accentColor: '#99aab5',
-                        cardStyle: 'default'
-                    }
-                }
-            });
-        }
-        
-        // Parse JSON fields from database
-        const parseJsonField = (field, defaultValue = {}) => {
-            try {
-                if (!field || field === '' || field === null) {
-                    return defaultValue;
-                }
-                return typeof field === 'string' ? JSON.parse(field) : (field || defaultValue);
-            } catch (error) {
-                console.error('Error parsing JSON field:', error);
-                return defaultValue;
-            }
-        };
-
-        const bot1Config = {
-            name: botA?.name || 'AI Assistant',
+        // Create default data structure, filling with actual database values where available
+        const defaultBotA = {
+            name: botA?.name || 'Heilos',
             description: botA?.description || '',
             likes: botA?.likes || '',
             dislikes: botA?.dislikes || '',
             age: botA?.age || '',
             appearance: botA?.appearance || '',
             backstory: botA?.backstory || '',
-            personality: botA?.personality || 'helpful and friendly',
+            personality: botA?.personality || '',
             status: botA?.status || 'online',
             activityType: botA?.activity_type || 'playing',
             activityText: botA?.activity_text || '',
             others: botA?.others || '',
             avatarPath: botA?.avatar_path || '',
-            allowedChannels: botA?.allowed_channels || '',
-            blacklistedUsers: parseJsonField(botA?.blacklisted_users, [])
+            allowedChannels: Array.isArray(botA?.allowed_channels) ? botA.allowed_channels : (botA?.allowed_channels ? [botA.allowed_channels] : []),
+            blacklistedUsers: Array.isArray(botA?.blacklisted_users) ? botA.blacklisted_users : []
         };
 
-        const bot2Config = {
-            name: botB?.name || 'AI Assistant 2',
+        const defaultBotB = {
+            name: botB?.name || 'Wisteria',
             description: botB?.description || '',
             likes: botB?.likes || '',
             dislikes: botB?.dislikes || '',
             age: botB?.age || '',
             appearance: botB?.appearance || '',
             backstory: botB?.backstory || '',
-            personality: botB?.personality || 'creative and fun',
+            personality: botB?.personality || '',
             status: botB?.status || 'online',
             activityType: botB?.activity_type || 'playing',
             activityText: botB?.activity_text || '',
-            others: botB?.others || '',
             avatarPath: botB?.avatar_path || '',
-            allowedChannels: botB?.allowed_channels || '',
-            blacklistedUsers: parseJsonField(botB?.blacklisted_users, [])
+            allowedChannels: Array.isArray(botB?.allowed_channels) ? botB.allowed_channels : (botB?.allowed_channels ? [botB.allowed_channels] : []),
+            blacklistedUsers: Array.isArray(botB?.blacklisted_users) ? botB.blacklisted_users : []
         };
 
-        const xpSettings = {
-            enabled: others?.xp_enabled || true,
-            minXp: others?.min_xp || 1,
-            maxXp: others?.max_xp || 15,
-            xpCooldown: others?.xp_cooldown || 60000,
-            levelUpAnnouncement: others?.level_up_announcement || true,
-            announcementChannel: others?.announcement_channel || ''
-        };
-
-        const welcomerSettings = {
-            enabled: others?.welcomer_enabled || false,
-            channelId: others?.welcomer_channel || '',
-            message: others?.welcomer_message || 'Welcome {user} to the server!',
-            useEmbed: others?.welcomer_embed_enabled || false,
-            embedTitle: others?.welcomer_embed_title || 'Welcome!',
-            embedDescription: others?.welcomer_embed_description || 'Welcome {user} to our server!',
-            embedColor: others?.welcomer_embed_color || '#00ff00'
-        };
-
-        // Parse forum auto-react settings from JSON stored in forum_channels
-        let forumAutoReactData = {};
-        try {
-            forumAutoReactData = others?.forum_channels ? JSON.parse(others.forum_channels) : {};
-        } catch (e) {
-            forumAutoReactData = {};
-        }
-
-        const forumAutoReactSettings = {
-            enabled: others?.forum_auto_react_enabled || false,
-            allForums: others?.forum_auto_react_enabled || false,
-            selectedForum: forumAutoReactData?.selectedForum || '',
-            bot1EmojiList: forumAutoReactData?.bot1EmojiList || '',
-            bot2EmojiList: forumAutoReactData?.bot2EmojiList || '',
-            messageReact: { 
-                enabled: forumAutoReactData?.messageReactEnabled || false, 
-                messageId: forumAutoReactData?.messageId || '', 
-                botId: forumAutoReactData?.botId || 'bot1' 
-            }
-        };
-
-        const customRankCardSettings = {
-            backgroundColor: others?.custom_rank_card_background_color || '#23272a',
-            progressBarColor: others?.custom_rank_card_progress_bar_color || '#7289da',
-            textColor: others?.custom_rank_card_text_color || '#ffffff',
-            accentColor: others?.custom_rank_card_accent_color || '#99aab5',
-            cardStyle: others?.custom_rank_card_style || 'default'
-        };
-
-        res.json({
+        return res.json({
             success: true,
             data: {
-                bot1: bot1Config,
-                bot2: bot2Config,
-                others: others || {
-                    welcomer_enabled: false,
-                    welcomer_channel: null,
-                    welcomer_message: 'Welcome to the server, {user}!',
-                    welcomer_embed_enabled: false,
-                    welcomer_embed_title: 'Welcome!',
-                    welcomer_embed_description: 'Welcome to our server, {user}! We\'re glad you\'re here.',
-                    welcomer_embed_color: '#7c3aed',
-                    welcomer_embed_thumbnail: true,
-                    welcomer_embed_footer: 'Have a great time!',
-                    auto_role_enabled: false,
-                    auto_role_delay: 0,
-                    auto_role_ids: null,
-                    xp_enabled: true,
-                    min_xp: 1,
-                    max_xp: 15,
-                    xp_cooldown: 70000,
-                    level_up_announcement: true,
-                    announcement_channel: null,
-                    counting_enabled: false,
-                    counting_current: 0,
-                    counting_last_user: null
+                bot1: defaultBotA,
+                bot2: defaultBotB,
+                xpSettings: {
+                    enabled: others?.xp_enabled || false,
+                    minXp: others?.min_xp || 1,
+                    maxXp: others?.max_xp || 15,
+                    xpCooldown: others?.xp_cooldown || 60000,
+                    levelUpAnnouncement: others?.level_up_announcement || false,
+                    announcementChannel: others?.announcement_channel || ''
                 },
-                xpSettings: xpSettings,
-                levelRoles: levelRoles.map(lr => ({ level: lr.level, roleId: lr.role_id })),
-                reactionRoles: reactionRoles.map(rr => ({ 
-                    messageId: rr.message_id, 
-                    channelId: rr.channel_id,
-                    emojiId: rr.emoji_id, 
-                    roleId: rr.role_id 
-                })),
-                welcomer: welcomerSettings,
-                forumAutoReact: forumAutoReactSettings,
-                customRankCard: customRankCardSettings
+                levelRoles: levelRoles || [],
+                reactionRoles: reactionRoles || [],
+                welcomer: {
+                    enabled: others?.welcomer_enabled || false,
+                    channelId: others?.welcomer_channel || '',
+                    message: others?.welcomer_message || 'Welcome {user} to the server!',
+                    useEmbed: others?.welcomer_embed_enabled || false,
+                    embedTitle: others?.welcomer_embed_title || 'Welcome!',
+                    embedDescription: others?.welcomer_embed_description || 'Welcome {user} to our server!',
+                    embedColor: others?.welcomer_embed_color || '#00ff00'
+                },
+                forumAutoReact: {
+                    enabled: others?.forum_auto_react_enabled || false,
+                    allForums: others?.forum_auto_react_all_forums || false,
+                    bot1EmojiList: others?.forum_auto_react_bot1_emoji_list || '',
+                    bot2EmojiList: others?.forum_auto_react_bot2_emoji_list || '',
+                    messageReact: { 
+                        enabled: others?.message_react_enabled || false, 
+                        messageId: others?.message_react_message_id || '', 
+                        botId: others?.message_react_bot_id || 'bot1' 
+                    }
+                },
+                customRankCard: {
+                    backgroundColor: others?.rank_card_bg_color || '#23272a',
+                    progressBarColor: others?.rank_card_progress_color || '#7289da',
+                    textColor: others?.rank_card_text_color || '#ffffff',
+                    accentColor: others?.rank_card_accent_color || '#99aab5',
+                    cardStyle: others?.rank_card_style || 'default'
+                }
             }
         });
     } catch (error) {
-        console.error('Error fetching bot data:', error);
+        console.error('Error loading bot data:', error);
         res.json({
             success: false,
-            message: 'Failed to fetch bot data'
+            message: 'Failed to load bot data: ' + error.message
         });
     }
 });
@@ -395,6 +262,8 @@ app.get('/api/dashboard-stats', async (req, res) => {
             }
         }
         
+        const targetGuildId = process.env.GUILD_ID;
+        
         res.json({
             success: true,
             stats: {
@@ -408,7 +277,8 @@ app.get('/api/dashboard-stats', async (req, res) => {
                 bot1Name: client1?.user?.username || 'Assistant',
                 bot2Name: client2?.user?.username || 'Assistant',
                 recentActivity: recentActivity.slice(0, 10)
-            }
+            },
+            targetGuildId
         });
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
