@@ -184,13 +184,6 @@ User: "${content}"
 
 Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
 
-Search context:
-${searchContext}
-
-User: "${content}"
-
-Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
-
 
     const model = ai.getGenerativeModel({
       model: "gemini-2.0-flash",
