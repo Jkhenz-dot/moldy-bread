@@ -405,8 +405,8 @@ app.get('/api/dashboard-stats', async (req, res) => {
                 guilds: guilds,
                 bot1Status: client1 && client1.readyAt ? '🟢 Online' : '🔴 Offline',
                 bot2Status: client2 && client2.readyAt ? '🟢 Online' : '🔴 Offline',
-                bot1Name: client1?.user?.username || 'Bot 1',
-                bot2Name: client2?.user?.username || 'Bot 2',
+                bot1Name: client1?.user?.username || 'Assistant',
+                bot2Name: client2?.user?.username || 'Assistant',
                 recentActivity: recentActivity.slice(0, 10)
             }
         });
@@ -1482,9 +1482,9 @@ app.post('/api/update-bot2-general', uploadAvatar, async (req, res) => {
                 }
 
                 await global.discordClient2.user.setPresence(presenceData);
-                console.log(`${botB?.name || 'Bot B'} presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
+                console.log(`Bot presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
             } catch (error) {
-                console.error('Error updating Discord Bot 2 presence:', error);
+                console.error('Error updating bot presence:', error);
             }
         }
         

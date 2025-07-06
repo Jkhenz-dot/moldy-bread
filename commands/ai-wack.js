@@ -18,38 +18,19 @@ module.exports = {
         return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
       }
       
-      // Determine which bot is executing this command
-      const currentBotId = client.botId;
+      // Clear all conversation history for all bots
       const originalCount = userData.conversationHistory.length;
-      
-      // Filter out messages from this specific bot
-      userData.conversationHistory = userData.conversationHistory.filter(msg => msg.botId !== currentBotId);
-      const clearedCount = originalCount - userData.conversationHistory.length;
+      userData.conversationHistory = [];
+      const clearedCount = originalCount;
       
       await UserData.findOneAndUpdate(
         { userId: interaction.user.id },
         { conversationHistory: userData.conversationHistory }
       );
       
-      // Get bot name from database instead of hardcoded values
-      const { BotA, BotB } = require('../models/postgres');
-      let botName = 'AI Assistant';
-      
-      try {
-        if (currentBotId === 'bot1') {
-          const botConfig = await BotA.findOne();
-          botName = botConfig?.name || 'AI Assistant';
-        } else {
-          const botConfig = await BotB.findOne();
-          botName = botConfig?.name || 'AI Assistant 2';
-        }
-      } catch (error) {
-        console.error('Error fetching bot name:', error);
-      }
-      
       const embed = new EmbedBuilder()
         .setTitle('Success')
-        .setDescription(`Cleared your conversation memory with ${botName} (${clearedCount} messages)`)
+        .setDescription(`Cleared all your conversation memory (${clearedCount} messages)`)
         .setColor(0x00ff00);
       
       await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });

@@ -155,6 +155,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Resolved database field mapping issues (level_roles column name fix)
 - July 06, 2025: Replaced all hardcoded "Bot 1" references with dynamic bot names from database
 - July 06, 2025: Enhanced ai-wack command to display actual bot names instead of generic labels
+- July 06, 2025: Fixed AIQuestions module import error by updating model exports
+- July 06, 2025: Updated ai-wack command to clear all conversation memory for all bots per user
+- July 06, 2025: Cleaned up Bot 2 references and reduced hardcoded bot names in error messages
 
 ## User Preferences
 

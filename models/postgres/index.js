@@ -4,6 +4,8 @@ module.exports = {
   Birthday: require('./Birthday'),
   LevelRoles: require('./LevelRoles'),
   ReactionRole: require('./ReactionRole'),
-  // Add other models as we create them
-  AIQuestions: require('../AIQuestions'), // Keep using existing until migrated
+  BotA: require('./BotA'),
+  BotB: require('./BotB'),
+  Others: require('./Others'),
+  AIQuestions: require('./AIQuestions')
 };
