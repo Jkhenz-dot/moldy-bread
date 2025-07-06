@@ -29,7 +29,16 @@ const loadDatabaseModels = () => {
     Birthday = require("./models/postgres/Birthday");
     ReactionRole = require("./models/postgres/ReactionRole");
   }
-  return { database, BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole };
+  return {
+    database,
+    BotA,
+    BotB,
+    Others,
+    UserData,
+    LevelRoles,
+    Birthday,
+    ReactionRole,
+  };
 };
 
 // AI handler - lazy loaded
@@ -44,7 +53,7 @@ const loadAIHandler = () => {
 };
 
 // Environment configuration
-require("dotenv").config({ path: path.resolve(__dirname, '.env') });
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 
 // Start dashboard server asynchronously to avoid blocking bot startup
 setImmediate(() => {
@@ -60,13 +69,26 @@ const ALLOWED_GUILDS = process.env.ALLOWED_GUILD_IDS?.split(",") || [];
 
 // Optimized constants - cached at startup
 const PASTEL_COLORS = Object.freeze([
-  "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E1BAFF",
-  "#FFB3E6", "#B3E5D1", "#FFE5B3", "#E5B3FF", "#B3FFE5", "#FFE5E5",
-  "#E5FFE5", "#E5E5FF", "#FFEEE5"
+  "#FFB3BA",
+  "#FFDFBA",
+  "#FFFFBA",
+  "#BAFFC9",
+  "#BAE1FF",
+  "#E1BAFF",
+  "#FFB3E6",
+  "#B3E5D1",
+  "#FFE5B3",
+  "#E5B3FF",
+  "#B3FFE5",
+  "#FFE5E5",
+  "#E5FFE5",
+  "#E5E5FF",
+  "#FFEEE5",
 ]);
 
 // Optimized random color function
-const getRandomPastelColor = () => PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+const getRandomPastelColor = () =>
+  PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
 
 // Use Map for better performance with large datasets
 const processedMessages = new Map(); // Store with timestamp for cleanup
@@ -123,13 +145,15 @@ const initializeReactionRoles = async () => {
   try {
     const { ReactionRole } = loadDatabaseModels();
     const reactionRoles = await ReactionRole.getAllReactionRoles();
-    
+
     if (reactionRoles && reactionRoles.length > 0) {
-      console.log(`Found ${reactionRoles.length} reaction role configurations to initialize`);
-      
+      console.log(
+        `Found ${reactionRoles.length} reaction role configurations to initialize`,
+      );
+
       // Group by message ID to ensure all reactions are properly added
       const messageGroups = {};
-      reactionRoles.forEach(role => {
+      reactionRoles.forEach((role) => {
         if (!messageGroups[role.message_id]) {
           messageGroups[role.message_id] = [];
         }
@@ -160,26 +184,38 @@ const initializeReactionRoles = async () => {
             // Check and add missing reactions
             for (const role of roles) {
               const emoji = role.emoji_id;
-              const existingReaction = foundMessage.reactions.cache.find(r => {
-                const reactionEmoji = r.emoji.id ? `<:${r.emoji.name}:${r.emoji.id}>` : r.emoji.name;
-                return reactionEmoji === emoji;
-              });
+              const existingReaction = foundMessage.reactions.cache.find(
+                (r) => {
+                  const reactionEmoji = r.emoji.id
+                    ? `<:${r.emoji.name}:${r.emoji.id}>`
+                    : r.emoji.name;
+                  return reactionEmoji === emoji;
+                },
+              );
 
               if (!existingReaction) {
                 try {
                   await foundMessage.react(emoji);
-                  console.log(`Added missing reaction ${emoji} to message ${messageId}`);
+                  console.log(
+                    `Added missing reaction ${emoji} to message ${messageId}`,
+                  );
                 } catch (error) {
-                  console.error(`Failed to add reaction ${emoji} to message ${messageId}:`, error);
+                  console.error(
+                    `Failed to add reaction ${emoji} to message ${messageId}:`,
+                    error,
+                  );
                 }
               }
             }
           }
         } catch (error) {
-          console.error(`Error processing reaction roles for message ${messageId}:`, error);
+          console.error(
+            `Error processing reaction roles for message ${messageId}:`,
+            error,
+          );
         }
       }
-      
+
       console.log("Reaction roles initialization completed");
     } else {
       console.log("No reaction roles found to initialize");
@@ -225,9 +261,8 @@ const initializeDashboardData = async () => {
     };
 
     console.log("Dashboard data synchronized with database");
-    
+
     // Initialize reaction roles will be called after both bots are ready
-    
   } catch (error) {
     console.log("PostgreSQL unavailable:", error.message);
   }
@@ -449,26 +484,36 @@ const setupBot = async (client, botToken, botName) => {
     for (const guild of client.guilds.cache.values()) {
       const member = guild.members.me;
       if (member) {
-        const hasAdmin = member.permissions.has('Administrator');
+        const hasAdmin = member.permissions.has("Administrator");
         const missingPerms = [];
-        
+
         // Check essential permissions
         const requiredPerms = [
-          'SendMessages', 'ViewChannel', 'ReadMessageHistory', 
-          'ManageRoles', 'ManageMessages', 'AddReactions', 
-          'UseSlashCommands', 'EmbedLinks'
+          "SendMessages",
+          "ViewChannel",
+          "ReadMessageHistory",
+          "ManageRoles",
+          "ManageMessages",
+          "AddReactions",
+          "UseSlashCommands",
+          "EmbedLinks",
         ];
-        
-        requiredPerms.forEach(perm => {
+
+        requiredPerms.forEach((perm) => {
           if (!member.permissions.has(perm)) {
             missingPerms.push(perm);
           }
         });
-        
+
         if (hasAdmin) {
-          console.log(`${botName} has Administrator permission in ${guild.name}`);
+          console.log(
+            `${botName} has Administrator permission in ${guild.name}`,
+          );
         } else if (missingPerms.length > 0) {
-          console.warn(`${botName} missing permissions in ${guild.name}:`, missingPerms.join(', '));
+          console.warn(
+            `${botName} missing permissions in ${guild.name}:`,
+            missingPerms.join(", "),
+          );
         } else {
           console.log(`${botName} has sufficient permissions in ${guild.name}`);
         }
@@ -486,15 +531,17 @@ const setupBot = async (client, botToken, botName) => {
       console.log(`Slash commands registered for ${botName}`);
     } catch (e) {
       console.error(`Command registration failed for ${botName}:`, e);
-      if (e.message.includes('Missing Permissions')) {
-        console.error(`${botName} needs application.commands permission in Discord Developer Portal`);
+      if (e.message.includes("Missing Permissions")) {
+        console.error(
+          `${botName} needs application.commands permission in Discord Developer Portal`,
+        );
       }
     }
 
     try {
       // Load database models before use
       const { BotA, BotB } = loadDatabaseModels();
-      
+
       let botConfig;
       if (client.botId === "bot1") {
         botConfig = await BotA.findOne();
@@ -509,7 +556,7 @@ const setupBot = async (client, botToken, botName) => {
       }
       // Parse allowed_channels to array format
       if (botConfig && botConfig.allowed_channels) {
-        if (typeof botConfig.allowed_channels === 'string') {
+        if (typeof botConfig.allowed_channels === "string") {
           // If it's a single channel ID, convert to array
           if (botConfig.allowed_channels.length > 0) {
             botConfig.allowed_channels = [botConfig.allowed_channels];
@@ -518,7 +565,7 @@ const setupBot = async (client, botToken, botName) => {
           }
         }
       }
-      
+
       client.botConfig = botConfig;
 
       if (botConfig) {
@@ -535,9 +582,10 @@ const setupBot = async (client, botToken, botName) => {
         if (activityText) {
           const activity = {
             name: activityText,
-            type: ActivityType[
-              activityType.charAt(0).toUpperCase() + activityType.slice(1)
-            ] || ActivityType.Playing,
+            type:
+              ActivityType[
+                activityType.charAt(0).toUpperCase() + activityType.slice(1)
+              ] || ActivityType.Playing,
           };
 
           // Handle streaming activity type
@@ -774,7 +822,10 @@ const setupBot = async (client, botToken, botName) => {
               )
               .setColor(0xff0000);
 
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.reply({
+              embeds: [embed],
+              ephemeral: true,
+            });
           }
         }
       } else if (!globalCommands.includes(interaction.commandName)) {
@@ -789,7 +840,10 @@ const setupBot = async (client, botToken, botName) => {
               )
               .setColor(0xff0000);
 
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.reply({
+              embeds: [embed],
+              ephemeral: true,
+            });
           }
         }
       }
@@ -801,31 +855,49 @@ const setupBot = async (client, botToken, botName) => {
       await command.execute(interaction, client);
     } catch (error) {
       console.error(`Discord client error: ${error}`);
-      
+
       let errorMessage = "Command execution failed";
       let errorTitle = "Error";
-      
+
       // Handle specific permission errors
-      if (error.message.includes('Missing Permissions') || error.code === 50013) {
+      if (
+        error.message.includes("Missing Permissions") ||
+        error.code === 50013
+      ) {
         errorTitle = "Missing Permissions";
-        errorMessage = "I don't have the required permissions to execute this command. Please ensure I have Administrator permission or the specific permissions needed.";
-      } else if (error.message.includes('Missing Access') || error.code === 50001) {
+        errorMessage =
+          "I don't have the required permissions to execute this command. Please ensure I have Administrator permission or the specific permissions needed.";
+      } else if (
+        error.message.includes("Missing Access") ||
+        error.code === 50001
+      ) {
         errorTitle = "Missing Access";
-        errorMessage = "I don't have access to perform this action. Please check my role permissions and channel access.";
-      } else if (error.message.includes('Cannot send messages') || error.code === 50007) {
+        errorMessage =
+          "I don't have access to perform this action. Please check my role permissions and channel access.";
+      } else if (
+        error.message.includes("Cannot send messages") ||
+        error.code === 50007
+      ) {
         errorTitle = "Cannot Send Messages";
-        errorMessage = "I cannot send messages to this channel. Please check my permissions.";
-      } else if (error.message.includes('Unknown Channel') || error.code === 10003) {
+        errorMessage =
+          "I cannot send messages to this channel. Please check my permissions.";
+      } else if (
+        error.message.includes("Unknown Channel") ||
+        error.code === 10003
+      ) {
         errorTitle = "Channel Not Found";
-        errorMessage = "The specified channel was not found or I don't have access to it.";
+        errorMessage =
+          "The specified channel was not found or I don't have access to it.";
       }
-      
+
       if (!interaction.replied && !interaction.deferred) {
         const embed = new EmbedBuilder()
           .setTitle(errorTitle)
           .setDescription(errorMessage)
           .setColor(0xff0000)
-          .setFooter({ text: "Contact an administrator if this issue persists" });
+          .setFooter({
+            text: "Contact an administrator if this issue persists",
+          });
 
         try {
           await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -926,7 +998,10 @@ const setupBot = async (client, botToken, botName) => {
             othersData.counting_last_user = message.author.id;
             await Others.findOneAndUpdate(
               {},
-              { counting_current: number, counting_last_user: message.author.id },
+              {
+                counting_current: number,
+                counting_last_user: message.author.id,
+              },
             );
 
             try {
@@ -1161,7 +1236,7 @@ const setupBot = async (client, botToken, botName) => {
 
         // Load AI handler if not already loaded
         loadAIHandler();
-        
+
         const response = await generateAIResponse(
           message,
           client,
@@ -1284,17 +1359,19 @@ const setupBot = async (client, botToken, botName) => {
       if (client.botId === "bot1" && thread.ownerId) {
         try {
           const UserData = require("./models/postgres/UserData");
-          
+
           // Get current user data
           let userData = await UserData.findOne({ user_id: thread.ownerId });
           if (!userData) {
             userData = await UserData.create({
               user_id: thread.ownerId,
-              username: thread.guild.members.cache.get(thread.ownerId)?.user?.username || 'Unknown',
+              username:
+                thread.guild.members.cache.get(thread.ownerId)?.user
+                  ?.username || "Unknown",
               xp: 0,
               level: 1,
               last_message: new Date(),
-              conversation_history: []
+              conversation_history: [],
             });
           }
 
@@ -1306,15 +1383,17 @@ const setupBot = async (client, botToken, botName) => {
 
           await UserData.findOneAndUpdate(
             { user_id: thread.ownerId },
-            { 
-              xp: newXP, 
+            {
+              xp: newXP,
               level: newLevel,
-              last_message: new Date()
+              last_message: new Date(),
             },
-            { upsert: true }
+            { upsert: true },
           );
 
-          console.log(`Awarded ${threadXP} XP to ${thread.ownerId} for creating forum thread: ${thread.name}`);
+          console.log(
+            `Awarded ${threadXP} XP to ${thread.ownerId} for creating forum thread: ${thread.name}`,
+          );
 
           // Check for level up
           if (newLevel > previousLevel && othersData?.level_up_announcement) {
@@ -1322,9 +1401,11 @@ const setupBot = async (client, botToken, botName) => {
             let announcementChannel = null;
 
             if (announcementChannelId) {
-              announcementChannel = thread.guild.channels.cache.get(announcementChannelId);
+              announcementChannel = thread.guild.channels.cache.get(
+                announcementChannelId,
+              );
             }
-            
+
             // If no specific channel set or channel not found, use the thread's parent forum
             if (!announcementChannel) {
               announcementChannel = thread.parent;
@@ -1332,34 +1413,49 @@ const setupBot = async (client, botToken, botName) => {
 
             if (announcementChannel) {
               const member = thread.guild.members.cache.get(thread.ownerId);
-              const username = member?.user?.username || 'Unknown User';
-              
+              const username = member?.user?.username || "Unknown User";
+
               const pastelColors = [
-                '#FFB6C1', '#FFE4E1', '#E0BBE4', '#957DAD', 
-                '#D4A5A5', '#FFDAB9', '#E6E6FA', '#F0E68C'
+                "#FFB6C1",
+                "#FFE4E1",
+                "#E0BBE4",
+                "#957DAD",
+                "#D4A5A5",
+                "#FFDAB9",
+                "#E6E6FA",
+                "#F0E68C",
               ];
-              const randomColor = pastelColors[Math.floor(Math.random() * pastelColors.length)];
+              const randomColor =
+                pastelColors[Math.floor(Math.random() * pastelColors.length)];
 
               const levelUpEmbed = new EmbedBuilder()
-                .setTitle('🎉 Level Up!')
-                .setDescription(`Congratulations <@${thread.ownerId}>! You've reached **Level ${newLevel}**!\n\n**Bonus XP:** +${threadXP} for creating a forum thread!`)
+                .setTitle("🎉 Level Up!")
+                .setDescription(
+                  `Congratulations <@${thread.ownerId}>! You've reached **Level ${newLevel}**!\n\n**Bonus XP:** +${threadXP} for creating a forum thread!`,
+                )
                 .addFields(
-                  { name: '📊 Current XP', value: `${newXP}`, inline: true },
-                  { name: '🎯 Next Level', value: `${(newLevel * 100) - newXP} XP remaining`, inline: true }
+                  { name: "📊 Current XP", value: `${newXP}`, inline: true },
+                  {
+                    name: "🎯 Next Level",
+                    value: `${newLevel * 100 - newXP} XP remaining`,
+                    inline: true,
+                  },
                 )
                 .setColor(randomColor)
-                .setFooter({ text: `Keep posting to level up! | Thread: ${thread.name}` })
+                .setFooter({
+                  text: `Keep posting to level up! | Thread: ${thread.name}`,
+                })
                 .setTimestamp();
 
               try {
                 await announcementChannel.send({ embeds: [levelUpEmbed] });
               } catch (error) {
-                console.error('Failed to send level up announcement:', error);
+                console.error("Failed to send level up announcement:", error);
               }
             }
           }
         } catch (error) {
-          console.error('Error awarding XP for thread creation:', error);
+          console.error("Error awarding XP for thread creation:", error);
         }
       }
 
@@ -1423,7 +1519,7 @@ const setupBot = async (client, botToken, botName) => {
   });
 
   // Advanced Reaction Roles Event Handlers with Auto-Initialization
-  client.on('messageReactionAdd', async (reaction, user) => {
+  client.on("messageReactionAdd", async (reaction, user) => {
     try {
       // Ignore bot reactions
       if (user.bot) return;
@@ -1433,26 +1529,30 @@ const setupBot = async (client, botToken, botName) => {
         try {
           await reaction.fetch();
         } catch (error) {
-          console.error('Error fetching reaction:', error);
+          console.error("Error fetching reaction:", error);
           return;
         }
       }
 
       const messageId = reaction.message.id;
       // Handle both unicode emojis and custom Discord emojis
-      const emoji = reaction.emoji.id ? `<:${reaction.emoji.name}:${reaction.emoji.id}>` : reaction.emoji.name;
+      const emoji = reaction.emoji.id
+        ? `<:${reaction.emoji.name}:${reaction.emoji.id}>`
+        : reaction.emoji.name;
       const userId = user.id;
       const guildId = reaction.message.guildId;
 
-      console.log(`Reaction added: ${emoji} by ${user.tag} on message ${messageId}`);
+      console.log(
+        `Reaction added: ${emoji} by ${user.tag} on message ${messageId}`,
+      );
 
       // Find matching reaction role using lazy loaded models
       const { ReactionRole } = loadDatabaseModels();
-      
+
       // Try to find the reaction role - check multiple formats for emoji
       let reactionRole = await ReactionRole.findOne({
         message_id: messageId,
-        emoji_id: emoji
+        emoji_id: emoji,
       });
 
       // If not found with current format, try alternative formats
@@ -1461,12 +1561,14 @@ const setupBot = async (client, botToken, botName) => {
         const altEmoji = `${reaction.emoji.name}:${reaction.emoji.id}`;
         reactionRole = await ReactionRole.findOne({
           message_id: messageId,
-          emoji_id: altEmoji
+          emoji_id: altEmoji,
         });
       }
 
       if (!reactionRole) {
-        console.log(`No reaction role found for emoji ${emoji} on message ${messageId}`);
+        console.log(
+          `No reaction role found for emoji ${emoji} on message ${messageId}`,
+        );
         return;
       }
 
@@ -1478,10 +1580,10 @@ const setupBot = async (client, botToken, botName) => {
       if (!member) return;
 
       // Check if this is a single selection set
-      if (reactionRole.set_mode === 'single') {
+      if (reactionRole.set_mode === "single") {
         // Remove all other reactions from this user in the same set
         const setReactions = await ReactionRole.find({
-          set_id: reactionRole.set_id
+          set_id: reactionRole.set_id,
         });
 
         for (const setReaction of setReactions) {
@@ -1489,12 +1591,17 @@ const setupBot = async (client, botToken, botName) => {
             try {
               // Find the emoji on the message and remove user's reaction
               const message = reaction.message;
-              const existingReaction = message.reactions.cache.find(r => {
-                const reactionEmoji = r.emoji.id ? `<:${r.emoji.name}:${r.emoji.id}>` : r.emoji.name;
+              const existingReaction = message.reactions.cache.find((r) => {
+                const reactionEmoji = r.emoji.id
+                  ? `<:${r.emoji.name}:${r.emoji.id}>`
+                  : r.emoji.name;
                 return reactionEmoji === setReaction.emoji_id;
               });
-              
-              if (existingReaction && existingReaction.users.cache.has(userId)) {
+
+              if (
+                existingReaction &&
+                existingReaction.users.cache.has(userId)
+              ) {
                 await existingReaction.users.remove(userId);
               }
 
@@ -1504,13 +1611,20 @@ const setupBot = async (client, botToken, botName) => {
                 const botMember = guild.members.me;
                 if (botMember.roles.highest.position > role.position) {
                   await member.roles.remove(role);
-                  console.log(`Removed role ${role.name} from ${user.username} (single selection mode)`);
+                  console.log(
+                    `Removed role ${role.name} from ${user.username} (single selection mode)`,
+                  );
                 } else {
-                  console.error(`Cannot remove role ${role.name}: Bot's role not high enough in hierarchy`);
+                  console.error(
+                    `Cannot remove role ${role.name}: Bot's role not high enough in hierarchy`,
+                  );
                 }
               }
             } catch (error) {
-              console.error(`Error removing reaction/role in single mode:`, error);
+              console.error(
+                `Error removing reaction/role in single mode:`,
+                error,
+              );
             }
           }
         }
@@ -1526,21 +1640,23 @@ const setupBot = async (client, botToken, botName) => {
       // Check if user already has this role - send hidden embed message
       if (member.roles.cache.has(role.id)) {
         try {
-          const { EmbedBuilder } = require('discord.js');
+          const { EmbedBuilder } = require("discord.js");
           const alreadyHasRoleEmbed = new EmbedBuilder()
-            .setTitle('⚠️ Role Already Assigned')
+            .setTitle("⚠️ Role Already Assigned")
             .setDescription(`You already have the **${role.name}** role!`)
-            .setColor('#FF6B6B')
+            .setColor("#FF6B6B")
             .setTimestamp();
 
           // Send hidden message to user only
-          await user.send({ embeds: [alreadyHasRoleEmbed] }).catch(error => {
+          await user.send({ embeds: [alreadyHasRoleEmbed] }).catch((error) => {
             console.log(`Could not DM user ${user.username}:`, error.message);
           });
-          
-          console.log(`User ${user.username} already has role ${role.name}, sent notification`);
+
+          console.log(
+            `User ${user.username} already has role ${role.name}, sent notification`,
+          );
         } catch (error) {
-          console.error('Error sending already-has-role message:', error);
+          console.error("Error sending already-has-role message:", error);
         }
         return;
       }
@@ -1550,14 +1666,16 @@ const setupBot = async (client, botToken, botName) => {
       if (userRoles.has(reactionRole.role_id)) {
         // User already has this role, send hidden embed notification
         const embed = new EmbedBuilder()
-          .setColor('#ffcc00')
-          .setTitle('Already Have Role')
+          .setColor("#ffcc00")
+          .setTitle("Already Have Role")
           .setDescription(`You already have the **${targetRole.name}** role!`)
           .setTimestamp();
 
         try {
           await user.send({ embeds: [embed] });
-          console.log(`User ${user.username} already has role ${targetRole.name}, sent notification`);
+          console.log(
+            `User ${user.username} already has role ${targetRole.name}, sent notification`,
+          );
         } catch (error) {
           console.log(`Could not DM user ${user.username}: ${error.message}`);
         }
@@ -1567,22 +1685,29 @@ const setupBot = async (client, botToken, botName) => {
       // Remove other roles from the SAME set only (single selection per set)
       try {
         const currentSetRoles = await ReactionRole.find({
-          set_id: reactionRole.set_id
+          set_id: reactionRole.set_id,
         });
-        
-        const conflictingUserRoles = currentSetRoles.filter(setRole => 
-          setRole.role_id !== reactionRole.role_id && userRoles.has(setRole.role_id)
+
+        const conflictingUserRoles = currentSetRoles.filter(
+          (setRole) =>
+            setRole.role_id !== reactionRole.role_id &&
+            userRoles.has(setRole.role_id),
         );
-        
+
         for (const conflictingRole of conflictingUserRoles) {
           const roleToRemove = guild.roles.cache.get(conflictingRole.role_id);
-          if (roleToRemove && guild.members.me.roles.highest.position > roleToRemove.position) {
+          if (
+            roleToRemove &&
+            guild.members.me.roles.highest.position > roleToRemove.position
+          ) {
             await member.roles.remove(roleToRemove);
-            console.log(`Removed conflicting role ${roleToRemove.name} from ${user.username} (one role per set: ${reactionRole.set_name})`);
+            console.log(
+              `Removed conflicting role ${roleToRemove.name} from ${user.username} (one role per set: ${reactionRole.set_name})`,
+            );
           }
         }
       } catch (error) {
-        console.error('Error managing set role conflicts:', error);
+        console.error("Error managing set role conflicts:", error);
       }
 
       // Add the selected role with hierarchy checking
@@ -1590,40 +1715,48 @@ const setupBot = async (client, botToken, botName) => {
         // Check if bot can manage this role (role hierarchy)
         const botMember = guild.members.me;
         if (botMember.roles.highest.position <= role.position) {
-          console.error(`Cannot assign role ${role.name}: Bot's highest role (${botMember.roles.highest.name}) is not above target role`);
-          
+          console.error(
+            `Cannot assign role ${role.name}: Bot's highest role (${botMember.roles.highest.name}) is not above target role`,
+          );
+
           // Try to notify the user about the role hierarchy issue
           try {
             const channel = reaction.message.channel;
             if (channel && channel.isTextBased()) {
               await channel.send({
                 content: `<@${user.id}> I cannot assign the **${role.name}** role because it's positioned above my highest role in the server hierarchy. Please contact an administrator to move my role above **${role.name}**.`,
-                allowedMentions: { users: [user.id] }
+                allowedMentions: { users: [user.id] },
               });
             }
           } catch (notifyError) {
-            console.error('Failed to notify user about role hierarchy:', notifyError);
+            console.error(
+              "Failed to notify user about role hierarchy:",
+              notifyError,
+            );
           }
           return;
         }
-        
+
         await member.roles.add(role);
-        console.log(`Added role ${role.name} to ${user.username} via reaction ${emoji}`);
+        console.log(
+          `Added role ${role.name} to ${user.username} via reaction ${emoji}`,
+        );
       } catch (error) {
         console.error(`Error adding role ${role.name}:`, error);
-        
+
         // Provide more specific error information
         if (error.code === 50013) {
-          console.error(`Missing permissions to assign role ${role.name}. Check bot permissions and role hierarchy.`);
+          console.error(
+            `Missing permissions to assign role ${role.name}. Check bot permissions and role hierarchy.`,
+          );
         }
       }
-
     } catch (error) {
-      console.error('Error in messageReactionAdd handler:', error);
+      console.error("Error in messageReactionAdd handler:", error);
     }
   });
 
-  client.on('messageReactionRemove', async (reaction, user) => {
+  client.on("messageReactionRemove", async (reaction, user) => {
     try {
       // Ignore bot reactions
       if (user.bot) return;
@@ -1633,14 +1766,16 @@ const setupBot = async (client, botToken, botName) => {
         try {
           await reaction.fetch();
         } catch (error) {
-          console.error('Error fetching reaction:', error);
+          console.error("Error fetching reaction:", error);
           return;
         }
       }
 
       const messageId = reaction.message.id;
       // Handle both unicode emojis and custom Discord emojis
-      const emoji = reaction.emoji.id ? `<:${reaction.emoji.name}:${reaction.emoji.id}>` : reaction.emoji.name;
+      const emoji = reaction.emoji.id
+        ? `<:${reaction.emoji.name}:${reaction.emoji.id}>`
+        : reaction.emoji.name;
       const userId = user.id;
       const guildId = reaction.message.guildId;
 
@@ -1648,7 +1783,7 @@ const setupBot = async (client, botToken, botName) => {
       const { ReactionRole } = loadDatabaseModels();
       const reactionRole = await ReactionRole.findOne({
         message_id: messageId,
-        emoji_id: emoji
+        emoji_id: emoji,
       });
 
       if (!reactionRole) return;
@@ -1667,36 +1802,43 @@ const setupBot = async (client, botToken, botName) => {
           // Check if bot can manage this role (role hierarchy)
           const botMember = guild.members.me;
           if (botMember.roles.highest.position <= role.position) {
-            console.error(`Cannot remove role ${role.name}: Bot's highest role (${botMember.roles.highest.name}) is not above target role`);
+            console.error(
+              `Cannot remove role ${role.name}: Bot's highest role (${botMember.roles.highest.name}) is not above target role`,
+            );
             return;
           }
-          
+
           await member.roles.remove(role);
-          console.log(`Removed role ${role.name} from ${user.username} via reaction removal ${emoji}`);
+          console.log(
+            `Removed role ${role.name} from ${user.username} via reaction removal ${emoji}`,
+          );
         } catch (error) {
           console.error(`Error removing role ${role.name}:`, error);
-          
+
           if (error.code === 50013) {
-            console.error(`Missing permissions to remove role ${role.name}. Check bot permissions and role hierarchy.`);
+            console.error(
+              `Missing permissions to remove role ${role.name}. Check bot permissions and role hierarchy.`,
+            );
           }
         }
       }
-
     } catch (error) {
-      console.error('Error in messageReactionRemove handler:', error);
+      console.error("Error in messageReactionRemove handler:", error);
     }
   });
 
   // Listen for reaction role set creation event to reinitialize
-  client.on('reactionRoleSetCreated', async (data) => {
+  client.on("reactionRoleSetCreated", async (data) => {
     try {
-      console.log(`Reinitializing reaction roles after new set creation: ${data.setId}`);
+      console.log(
+        `Reinitializing reaction roles after new set creation: ${data.setId}`,
+      );
       // Wait a moment for database to update, then reinitialize
       setTimeout(() => {
         initializeReactionRoles();
       }, 2000);
     } catch (error) {
-      console.error('Error in reactionRoleSetCreated handler:', error);
+      console.error("Error in reactionRoleSetCreated handler:", error);
     }
   });
 
@@ -1716,7 +1858,7 @@ const setupBot = async (client, botToken, botName) => {
 const cleanupProcessedMessages = () => {
   const now = Date.now();
   const HOUR_MS = 60 * 60 * 1000;
-  
+
   for (const [messageId, timestamp] of processedMessages.entries()) {
     if (now - timestamp > HOUR_MS) {
       processedMessages.delete(messageId);
@@ -1727,24 +1869,28 @@ const cleanupProcessedMessages = () => {
 // Performance monitoring
 const logMemoryUsage = () => {
   const used = process.memoryUsage();
-  const mb = (bytes) => Math.round(bytes / 1024 / 1024 * 100) / 100;
-  
-  console.log(`Memory: RSS ${mb(used.rss)}MB, Heap ${mb(used.heapUsed)}/${mb(used.heapTotal)}MB, External ${mb(used.external)}MB`);
+  const mb = (bytes) => Math.round((bytes / 1024 / 1024) * 100) / 100;
+
+  console.log(
+    `Memory: RSS ${mb(used.rss)}MB, Heap ${mb(used.heapUsed)}/${mb(used.heapTotal)}MB, External ${mb(used.external)}MB`,
+  );
 };
 
 // Start both bots with optimization
 (async () => {
   try {
     console.log("Starting optimized Discord bot system...");
-    
+
     // Start bots in parallel for faster startup
     const [bot1Result, bot2Result] = await Promise.allSettled([
       setupBot(client1, process.env.DISCORD_TOKEN, "Bot1"),
-      setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2")
+      setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2"),
     ]);
 
-    if (bot1Result.status === 'rejected') console.error("Bot1 failed:", bot1Result.reason);
-    if (bot2Result.status === 'rejected') console.error("Bot2 failed:", bot2Result.reason);
+    if (bot1Result.status === "rejected")
+      console.error("Bot1 failed:", bot1Result.reason);
+    if (bot2Result.status === "rejected")
+      console.error("Bot2 failed:", bot2Result.reason);
 
     // Initialize reaction roles after both bots are ready and guild data is loaded
     setTimeout(async () => {
@@ -1758,27 +1904,29 @@ const logMemoryUsage = () => {
     }, 3000); // Wait 3 seconds for guild cache to populate
 
     // Set up optimized cleanup intervals
-    const cleanupInterval = setInterval(() => {
-      const { cleanupCache } = loadAIHandler();
-      cleanupCache();
-      cleanupProcessedMessages();
-      
-      // Run garbage collection if available
-      if (global.gc) {
-        global.gc();
-      }
-      
-      console.log("System cleanup completed");
-    }, 5 * 60 * 1000); // Every 5 minutes
+    const cleanupInterval = setInterval(
+      () => {
+        const { cleanupCache } = loadAIHandler();
+        cleanupCache();
+        cleanupProcessedMessages();
+
+        // Run garbage collection if available
+        if (global.gc) {
+          global.gc();
+        }
+
+        console.log("System cleanup completed");
+      },
+      5 * 60 * 1000,
+    ); // Every 5 minutes
 
     // Memory monitoring every 10 minutes
     const memoryInterval = setInterval(logMemoryUsage, 10 * 60 * 1000);
 
     // Store intervals for cleanup
     process.cleanupIntervals = [cleanupInterval, memoryInterval];
-    
+
     console.log("Bot system startup completed with optimizations");
-    
   } catch (error) {
     console.error("Failed to start bots:", error);
     process.exit(1);
@@ -1788,12 +1936,12 @@ const logMemoryUsage = () => {
 // Enhanced graceful shutdown
 const gracefulShutdown = (signal) => {
   console.log(`Received ${signal}, shutting down gracefully...`);
-  
+
   // Clear intervals
   if (process.cleanupIntervals) {
     process.cleanupIntervals.forEach(clearInterval);
   }
-  
+
   // Cleanup AI cache
   try {
     const { cleanupCache } = loadAIHandler();
@@ -1801,19 +1949,18 @@ const gracefulShutdown = (signal) => {
   } catch (error) {
     console.error("Error cleaning up AI cache:", error);
   }
-  
+
   // Destroy Discord clients
-  Promise.allSettled([
-    client1?.destroy(),
-    client2?.destroy()
-  ]).then(() => {
-    console.log("Bot system shutdown complete");
-    process.exit(0);
-  }).catch((error) => {
-    console.error("Error during shutdown:", error);
-    process.exit(1);
-  });
-  
+  Promise.allSettled([client1?.destroy(), client2?.destroy()])
+    .then(() => {
+      console.log("Bot system shutdown complete");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    });
+
   // Force exit after 10 seconds
   setTimeout(() => {
     console.log("Force exit after timeout");

@@ -20,26 +20,26 @@ module.exports = {
   async execute(interaction) {
     try {
       const channel = interaction.options.getChannel("channel");
-      const BotA = await BotA.findOne();
-      const BotB = await BotB.findOne();
+      const botAData = await BotA.findOne();
+      const botBData = await BotB.findOne();
 
       // Update allowed channels for both bots
-      if (BotA) {
-        const allowedChannels = BotA.allowed_channels || [];
+      if (botAData) {
+        const allowedChannels = (botAData.allowed_channels || '').split(',').filter(c => c.trim());
         if (!allowedChannels.includes(channel.id)) {
           allowedChannels.push(channel.id);
-          await BotA.findByIdAndUpdate(BotA._id, {
-            allowed_channels: allowedChannels,
+          await BotA.findOneAndUpdate({}, {
+            allowed_channels: allowedChannels.join(','),
           });
         }
       }
 
-      if (BotB) {
-        const allowedChannels = BotB.allowed_channels || [];
+      if (botBData) {
+        const allowedChannels = (botBData.allowed_channels || '').split(',').filter(c => c.trim());
         if (!allowedChannels.includes(channel.id)) {
           allowedChannels.push(channel.id);
-          await BotB.findByIdAndUpdate(BotB._id, {
-            allowed_channels: allowedChannels,
+          await BotB.findOneAndUpdate({}, {
+            allowed_channels: allowedChannels.join(','),
           });
         }
       }

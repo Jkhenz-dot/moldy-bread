@@ -576,7 +576,7 @@ app.post('/api/update-general', uploadAvatar, async (req, res) => {
         
         if (status) {
             if (othersData) {
-                await Others.findByIdAndUpdate(othersData._id, { status: status });
+                await Others.findOneAndUpdate({}, { status: status });
             } else {
                 await Others.create({ status: status });
             }
@@ -585,7 +585,7 @@ app.post('/api/update-general', uploadAvatar, async (req, res) => {
         
         if (activityType) {
             if (othersData) {
-                await Others.findByIdAndUpdate(othersData._id, { activityType: activityType });
+                await Others.findOneAndUpdate({}, { activityType: activityType });
             } else {
                 await Others.create({ activityType: activityType });
             }
@@ -593,7 +593,7 @@ app.post('/api/update-general', uploadAvatar, async (req, res) => {
         
         if (activityText) {
             if (othersData) {
-                await Others.findByIdAndUpdate(othersData._id, { activityText: activityText });
+                await Others.findOneAndUpdate({}, { activityText: activityText });
             } else {
                 await Others.create({ activityText: activityText });
             }
@@ -922,7 +922,7 @@ app.post('/api/update-rank-card', async (req, res) => {
         
         if (!othersData?.customRankCard) {
             if (othersData) {
-                await Others.findByIdAndUpdate(othersData._id, { customRankCard: {} });
+                await Others.findOneAndUpdate({}, { customRankCard: {} });
             } else {
                 await Others.create({ customRankCard: {} });
             }
@@ -968,7 +968,7 @@ app.post('/api/update-levels', async (req, res) => {
         
         if (!othersData?.xpSettings) {
             if (othersData) {
-                await Others.findByIdAndUpdate(othersData._id, { xpSettings: {} });
+                await Others.findOneAndUpdate({}, { xpSettings: {} });
             } else {
                 await Others.create({ xpSettings: {} });
             }

@@ -13,23 +13,17 @@
     "@discordjs/voice": "^0.18.0",
     "@google/genai": "^1.8.0",
     "@google/generative-ai": "^0.24.1",
-    "@types/node": "^24.0.10",
     "canvacord": "^6.0.2",
     "cors": "^2.8.5",
     "discord-gamecord": "^4.4.2",
     "discord.js": "^14.21.0",
     "dotenv": "^17.0.1",
-    "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.2",
     "express": "^5.1.0",
     "gamecord": "^1.2.2",
-    "mongoose": "^8.16.1",
     "multer": "^2.0.1",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
     "play-dl": "^1.9.7",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
     "ytdl-core": "^4.11.5"
   }
 }

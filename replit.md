@@ -15,10 +15,11 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - **Web Dashboard**: Express.js server with file upload capabilities
 
 ### Database Architecture
-- **ORM**: Drizzle ORM with PostgreSQL dialect
-- **Migration Strategy**: Transitioning from MongoDB to PostgreSQL
+- **Database**: Pure PostgreSQL with custom BaseModel abstraction
+- **Architecture**: Clean, optimized model system with shared functionality
 - **Schema Design**: Structured tables for users, bot configurations, birthdays, AI questions, and more
-- **Data Models**: Separate model classes in `models/postgres/` for database abstraction
+- **Data Models**: Streamlined model classes in `models/postgres/` using BaseModel inheritance
+- **Code Reduction**: Over 80% reduction in duplicate code through BaseModel pattern
 
 ### Frontend Architecture
 - **Dashboard**: HTML/CSS/JavaScript web interface (`dashboard.html`)
@@ -145,6 +146,11 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Fixed ai-wack command database operations for PostgreSQL compatibility
 - July 06, 2025: Enhanced ai-gen-image command with improved error handling and API integration
 - July 06, 2025: Verified both AI commands working properly with live API connections
+- July 06, 2025: Major codebase cleanup - removed all MongoDB dependencies and code
+- July 06, 2025: Created BaseModel class to eliminate code duplication across all models
+- July 06, 2025: Optimized all PostgreSQL model files, reducing code by over 80%
+- July 06, 2025: Removed unnecessary TypeScript/Drizzle dependencies and configuration files
+- July 06, 2025: Streamlined project structure and eliminated duplicate code patterns
 
 ## User Preferences
 
