@@ -58,22 +58,31 @@ class UserData extends BaseModel {
   static async findOneAndUpdate(query, updateData, options = {}) {
     const instance = new UserData();
     
-    // Handle conversation history serialization
-    if (updateData.conversationHistory) {
-      updateData.conversationHistory = JSON.stringify(updateData.conversationHistory);
-    }
+    // Don't stringify here - BaseModel handles JSONB fields properly
     
-    const user = await instance.findOneAndUpdate(query, updateData, options);
-    
-    if (user && user.conversation_history) {
-      try {
-        user.conversationHistory = JSON.parse(user.conversation_history);
-      } catch (e) {
-        user.conversationHistory = [];
+    try {
+      const user = await instance.findOneAndUpdate(query, updateData, options);
+      console.log(`Debug - UserData findOneAndUpdate result:`, user ? 'Success' : 'Failed');
+      
+      if (user && user.conversation_history) {
+        try {
+          if (Array.isArray(user.conversation_history)) {
+            user.conversationHistory = user.conversation_history;
+          } else if (typeof user.conversation_history === 'string') {
+            user.conversationHistory = JSON.parse(user.conversation_history);
+          } else {
+            user.conversationHistory = [];
+          }
+        } catch (e) {
+          user.conversationHistory = [];
+        }
       }
+      
+      return user;
+    } catch (error) {
+      console.error(`Debug - UserData findOneAndUpdate error:`, error);
+      return null;
     }
-    
-    return user;
   }
 
   static async updateOne(query, updateData) {

@@ -1226,13 +1226,24 @@ const setupBot = async (client, botToken, botName) => {
             )
             .join("\n");
 
-          await UserData.findOneAndUpdate(
-            { userId: userData.userId },
-            { conversationHistory: userData.conversationHistory },
-          );
+          // Direct SQL update for conversation history to avoid JSON serialization issues
+          let updateResult = null;
+          try {
+            const db = require('./utils/database');
+            const query = `
+              INSERT INTO users (user_id, conversation_history) 
+              VALUES ($1, $2::jsonb) 
+              ON CONFLICT (user_id) 
+              DO UPDATE SET conversation_history = $2::jsonb, updated_at = NOW()
+            `;
+            updateResult = await db.query(query, [message.author.id, JSON.stringify(userData.conversationHistory)]);
+          } catch (error) {
+            console.error('Direct SQL conversation history update failed:', error);
+          }
           console.log(
             `Saved user message to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
           );
+
         } catch (e) {
           console.error("Conversation history error:", e);
         }
@@ -1313,13 +1324,24 @@ const setupBot = async (client, botToken, botName) => {
               userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
                 .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-              await UserData.findOneAndUpdate(
-                { userId: userData.userId },
-                { conversationHistory: userData.conversationHistory },
-              );
+              // Direct SQL update for conversation history to avoid JSON serialization issues
+              let updateResult2 = null;
+              try {
+                const db = require('./utils/database');
+                const query = `
+                  INSERT INTO users (user_id, conversation_history) 
+                  VALUES ($1, $2::jsonb) 
+                  ON CONFLICT (user_id) 
+                  DO UPDATE SET conversation_history = $2::jsonb, updated_at = NOW()
+                `;
+                updateResult2 = await db.query(query, [message.author.id, JSON.stringify(userData.conversationHistory)]);
+              } catch (error) {
+                console.error('Direct SQL AI conversation history update failed:', error);
+              }
               console.log(
                 `Saved AI response to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
               );
+
             }
           } catch (e) {
             console.error("Assistant conversation history error:", e);

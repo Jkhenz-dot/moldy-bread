@@ -64,7 +64,18 @@ class BaseModel {
     try {
       const fields = Object.keys(data).map(key => this.mapField(key));
       const placeholders = fields.map((_, index) => `$${index + 1}`);
-      const values = Object.values(data);
+      
+      // Handle values properly for JSONB fields
+      const values = Object.keys(data).map(key => {
+        const value = data[key];
+        const dbField = this.mapField(key);
+        
+        // For conversation_history field, keep as array/object for JSONB
+        if (key === 'conversationHistory' || dbField === 'conversation_history') {
+          return value; // PostgreSQL will handle JSONB conversion
+        }
+        return value;
+      });
 
       const query = `
         INSERT INTO ${this.tableName} (${fields.join(', ')})
