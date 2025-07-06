@@ -147,14 +147,24 @@ class BaseModel {
         paramIndex++;
       });
 
-      const sqlQuery = `
-        UPDATE ${this.tableName} 
-        SET ${setClause.join(', ')}
-        WHERE ${whereClause.map((clause, index) => 
-          clause.replace(`$${index + 1}`, `$${paramIndex - Object.keys(query).length + index}`)
-        ).join(' AND ')}
-        RETURNING *
-      `;
+      let sqlQuery;
+      if (whereClause.length > 0) {
+        sqlQuery = `
+          UPDATE ${this.tableName} 
+          SET ${setClause.join(', ')}
+          WHERE ${whereClause.map((clause, index) => 
+            clause.replace(`$${index + 1}`, `$${paramIndex - Object.keys(query).length + index}`)
+          ).join(' AND ')}
+          RETURNING *
+        `;
+      } else {
+        // If no WHERE clause (empty query object), update all rows
+        sqlQuery = `
+          UPDATE ${this.tableName} 
+          SET ${setClause.join(', ')}
+          RETURNING *
+        `;
+      }
 
       const result = await database.query(sqlQuery, values);
       return result.rows[0];
