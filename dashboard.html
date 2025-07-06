@@ -1928,8 +1928,8 @@
                                 </div>
                                 <div class="form-separator"></div>
                                 <div class="form-group">
-                                    <label class="form-label">Others</label>
-                                    <textarea id="bot1Others" class="form-textarea" placeholder="Additional information about bot..."></textarea>
+                                    <label class="form-label">To Do</label>
+                                    <textarea id="bot1Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary" id="bot1PersonalityBtn">Save Bot 1 AI Details</button>
                             </form>
@@ -1970,8 +1970,8 @@
                                 </div>
                                 <div class="form-separator"></div>
                                 <div class="form-group">
-                                    <label class="form-label">Others</label>
-                                    <textarea id="bot2Others" class="form-textarea" placeholder="Additional information about bot..."></textarea>
+                                    <label class="form-label">To Do</label>
+                                    <textarea id="bot2Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary" id="bot2PersonalityBtn">Save Bot 2 AI Details</button>
                             </form>
@@ -3010,7 +3010,7 @@
                         { id: 'bot1Likes', value: bot1Data.likes || '', placeholder: `What does ${bot1DisplayName} like?` },
                         { id: 'bot1Dislikes', value: bot1Data.dislikes || '', placeholder: `What does ${bot1DisplayName} dislike?` },
                         { id: 'bot1Backstory', value: bot1Data.backstory || '', placeholder: `${bot1DisplayName}'s background story...` },
-                        { id: 'bot1Others', value: bot1Data.others || '', placeholder: `Additional information about ${bot1DisplayName}...` }
+                        { id: 'bot1Others', value: bot1Data.others || '', placeholder: `Additional tasks or information for ${bot1DisplayName}...` }
                     ];
                     
                     bot1Elements.forEach(elem => {
@@ -3032,7 +3032,7 @@
                         { id: 'bot2Likes', value: bot2Data.likes || '', placeholder: `What does ${bot2DisplayName} like?` },
                         { id: 'bot2Dislikes', value: bot2Data.dislikes || '', placeholder: `What does ${bot2DisplayName} dislike?` },
                         { id: 'bot2Backstory', value: bot2Data.backstory || '', placeholder: `${bot2DisplayName}'s background story...` },
-                        { id: 'bot2Others', value: bot2Data.others || '', placeholder: `Additional information about ${bot2DisplayName}...` }
+                        { id: 'bot2Others', value: bot2Data.others || '', placeholder: `Additional tasks or information for ${bot2DisplayName}...` }
                     ];
                     
                     bot2Elements.forEach(elem => {

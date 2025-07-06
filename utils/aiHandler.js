@@ -165,11 +165,9 @@ async function generateAIResponse(
     if (otherData.backstory)
       personalityParts.push(`Backstory: ${otherData.backstory}`);
     if (otherData.others)
-      personalityParts.push(`Additional info: ${otherData.others}`);
-    
+      personalityParts.push(`To Do: ${otherData.others}`);
+
     const personalityContext = personalityParts.join(". ");
-    
-    console.log(`Debug - Personality context for ${otherData.name}: "${personalityContext}"`);
 
     let contextInfo = "";
     const contextCacheKey = `${message.guildId}-${message.channelId}`;
