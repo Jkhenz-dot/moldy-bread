@@ -1273,7 +1273,7 @@ const setupBot = async (client, botToken, botName) => {
         const response = await generateAIResponse(
           message,
           client,
-          botConfig,
+          botConfig, // This contains the bot personality data (name, description, personality, etc.)
           content,
           conversationHistory,
         );
