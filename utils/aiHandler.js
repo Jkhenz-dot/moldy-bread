@@ -160,7 +160,16 @@ async function generateAIResponse(
     if (otherData.likes) personalityParts.push(`Likes: ${otherData.likes}`);
     if (otherData.dislikes)
       personalityParts.push(`Dislikes: ${otherData.dislikes}`);
+    if (otherData.appearance)
+      personalityParts.push(`Appearance: ${otherData.appearance}`);
+    if (otherData.backstory)
+      personalityParts.push(`Backstory: ${otherData.backstory}`);
+    if (otherData.others)
+      personalityParts.push(`Additional info: ${otherData.others}`);
+    
     const personalityContext = personalityParts.join(". ");
+    
+    console.log(`Debug - Personality context for ${otherData.name}: "${personalityContext}"`);
 
     let contextInfo = "";
     const contextCacheKey = `${message.guildId}-${message.channelId}`;
@@ -190,6 +199,8 @@ async function generateAIResponse(
 
     const prompt = `You are ${otherData.name}. ${personalityContext}
 
+You are the one of the mascot of ${message.guild?.name}
+
 Context: ${contextInfo}
 
 Custom emojis you can use when relevant (MAX 3 total):
@@ -205,6 +216,7 @@ User: "${content}"
 
 Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
 
+    console.log("Prompt:", prompt);
     const model = ai.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig: {

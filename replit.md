@@ -180,6 +180,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Enhanced bot data API to return actual configuration instead of hardcoded defaults
 - July 06, 2025: Fixed database column name conflicts (updatedAt vs updated_at) in conversation history
 - July 06, 2025: Added debugging system to track what personality data is loaded for AI responses
+- July 06, 2025: Fixed AI personality loading - now loads fresh bot configuration from database for each conversation
+- July 06, 2025: Enhanced personality context to include all fields (age, personality, likes, dislikes, appearance, backstory, others)
+- July 06, 2025: Replaced cached botConfig with dynamic database queries for real-time personality updates
 
 ## User Preferences
 

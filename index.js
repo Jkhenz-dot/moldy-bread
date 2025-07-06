@@ -1263,8 +1263,45 @@ const setupBot = async (client, botToken, botName) => {
           console.error("Conversation history error:", e);
         }
 
-        // Get the correct bot configuration based on which bot is responding (already parsed above)
-        // const botConfig is already defined and parsed from JSON above
+        // Load fresh bot configuration with personality data from database
+        const { BotA, BotB } = loadDatabaseModels();
+        let freshBotConfig = {};
+        
+        if (client.botId === "bot1") {
+          const botData = await BotA.findOne();
+          freshBotConfig = {
+            name: botData?.name || 'Heilos',
+            description: botData?.description || '',
+            personality: botData?.personality || '',
+            age: botData?.age || '',
+            likes: botData?.likes || '',
+            dislikes: botData?.dislikes || '',
+            appearance: botData?.appearance || '',
+            backstory: botData?.backstory || '',
+            others: botData?.others || ''
+          };
+        } else if (client.botId === "bot2") {
+          const botData = await BotB.findOne();
+          freshBotConfig = {
+            name: botData?.name || 'Wisteria',
+            description: botData?.description || '',
+            personality: botData?.personality || '',
+            age: botData?.age || '',
+            likes: botData?.likes || '',
+            dislikes: botData?.dislikes || '',
+            appearance: botData?.appearance || '',
+            backstory: botData?.backstory || '',
+            others: botData?.others || ''
+          };
+        }
+
+        console.log(`Debug - Fresh bot config loaded for ${client.botId}:`, {
+          name: freshBotConfig.name,
+          personality: freshBotConfig.personality,
+          age: freshBotConfig.age,
+          likes: freshBotConfig.likes,
+          dislikes: freshBotConfig.dislikes
+        });
 
         // Load AI handler if not already loaded
         loadAIHandler();
@@ -1272,7 +1309,7 @@ const setupBot = async (client, botToken, botName) => {
         const response = await generateAIResponse(
           message,
           client,
-          botConfig, // This contains the bot personality data (name, description, personality, etc.)
+          freshBotConfig, // Fresh personality data from database
           content,
           conversationHistory,
         );
