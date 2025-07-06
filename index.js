@@ -3,7 +3,6 @@ const fs = require("fs");
 const fsPromises = require("fs").promises; // Use promises for better async performance
 const path = require("path");
 
-// Discord.js imports - optimized for performance
 const {
   Client,
   GatewayIntentBits,
@@ -211,18 +210,25 @@ const initializeReactionRoles = async () => {
             }
           } else {
             // Message not found - delete all reaction role sets for this message
-            console.log(`Message ${messageId} not found, deleting associated reaction role sets...`);
-            
+            console.log(
+              `Message ${messageId} not found, deleting associated reaction role sets...`,
+            );
+
             try {
               // Get unique set IDs for this message
-              const setIds = [...new Set(roles.map(role => role.set_id))];
-              
+              const setIds = [...new Set(roles.map((role) => role.set_id))];
+
               for (const setId of setIds) {
                 const deletedCount = await ReactionRole.deleteBySetId(setId);
-                console.log(`Deleted reaction role set ${setId} (${deletedCount} entries) - orphaned from message ${messageId}`);
+                console.log(
+                  `Deleted reaction role set ${setId} (${deletedCount} entries) - orphaned from message ${messageId}`,
+                );
               }
             } catch (deleteError) {
-              console.error(`Failed to delete orphaned reaction role sets for message ${messageId}:`, deleteError);
+              console.error(
+                `Failed to delete orphaned reaction role sets for message ${messageId}:`,
+                deleteError,
+              );
             }
           }
         } catch (error) {
@@ -326,43 +332,43 @@ const isNSFW = (content) =>
 
 const calculateLevel = (xp) => {
   if (xp === 0) return 1;
-  
+
   let currentXP = 0;
   let level = 1;
-  
+
   while (true) {
     const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.15;
     let xpNeeded;
-    
+
     if (level === 1) {
       xpNeeded = 100; // Level 2 requires 100 XP
     } else {
       xpNeeded = Math.pow(level - 1, 2) * 100 * tierMultiplier;
     }
-    
+
     if (currentXP + xpNeeded > xp) break;
     currentXP += xpNeeded;
     level++;
   }
-  
+
   return level;
 };
 
 const xpForLevel = (level) => {
   if (level <= 1) return 0;
-  
+
   let totalXP = 0;
-  
+
   for (let i = 1; i < level; i++) {
     const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.15;
-    
+
     if (i === 1) {
       totalXP += 100; // Level 2 requires 100 XP
     } else {
       totalXP += Math.pow(i - 1, 2) * 100 * tierMultiplier;
     }
   }
-  
+
   return Math.floor(totalXP);
 };
 
@@ -773,13 +779,19 @@ const setupBot = async (client, botToken, botName) => {
             .setTitle("Deleted")
             .setDescription("Message deleted")
             .setColor(0x00ff00);
-          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+          await interaction.reply({
+            embeds: [embed],
+            flags: MessageFlags.Ephemeral,
+          });
         } else {
           const embed = new EmbedBuilder()
             .setTitle("❌ Access Denied")
             .setDescription("Only the original user can delete this message")
             .setColor(0xff0000);
-          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+          await interaction.reply({
+            embeds: [embed],
+            flags: MessageFlags.Ephemeral,
+          });
         }
       }
 
@@ -847,7 +859,10 @@ const setupBot = async (client, botToken, botName) => {
           )
           .setColor(0xff0000);
 
-        return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        return await interaction.reply({
+          embeds: [embed],
+          flags: MessageFlags.Ephemeral,
+        });
       }
 
       // Commands that work in all channels (no restrictions)
@@ -866,7 +881,10 @@ const setupBot = async (client, botToken, botName) => {
             )
             .setColor(0xff0000);
 
-          return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+          return await interaction.reply({
+            embeds: [embed],
+            flags: MessageFlags.Ephemeral,
+          });
         }
 
         // Also check if VC command is allowed in this channel
@@ -958,7 +976,10 @@ const setupBot = async (client, botToken, botName) => {
           });
 
         try {
-          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+          await interaction.reply({
+            embeds: [embed],
+            flags: MessageFlags.Ephemeral,
+          });
         } catch (e) {
           console.log("Failed to send error reply:", e.message);
         }
@@ -1262,16 +1283,22 @@ const setupBot = async (client, botToken, botName) => {
           });
 
           // Keep only last 30 messages per bot (check each bot separately)
-          const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
-          const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
-          
+          const bot1Messages = userData.conversationHistory.filter(
+            (msg) => msg.botId === "bot1",
+          );
+          const bot2Messages = userData.conversationHistory.filter(
+            (msg) => msg.botId === "bot2",
+          );
+
           // Keep only last 30 messages per bot
           const limitedBot1Messages = bot1Messages.slice(-30);
           const limitedBot2Messages = bot2Messages.slice(-30);
-          
+
           // Combine and sort by timestamp
-          userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
-            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          userData.conversationHistory = [
+            ...limitedBot1Messages,
+            ...limitedBot2Messages,
+          ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
           // Filter conversation history to show context for this specific bot
           const botSpecificHistory = userData.conversationHistory
@@ -1290,18 +1317,19 @@ const setupBot = async (client, botToken, botName) => {
           try {
             await UserData.findOneAndUpdate(
               { userId: message.author.id },
-              { 
-                conversationHistory: JSON.stringify(userData.conversationHistory)
+              {
+                conversationHistory: JSON.stringify(
+                  userData.conversationHistory,
+                ),
               },
-              { upsert: true }
+              { upsert: true },
             );
           } catch (error) {
-            console.error('Conversation history update failed:', error);
+            console.error("Conversation history update failed:", error);
           }
           console.log(
             `Saved user message to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
           );
-
         } catch (e) {
           console.error("Conversation history error:", e);
         }
@@ -1309,32 +1337,32 @@ const setupBot = async (client, botToken, botName) => {
         // Load fresh bot configuration with personality data from database
         const { BotA, BotB } = loadDatabaseModels();
         let freshBotConfig = {};
-        
+
         if (client.botId === "bot1") {
           const botData = await BotA.findOne();
           freshBotConfig = {
-            name: botData?.name || 'Heilos',
-            description: botData?.description || '',
-            personality: botData?.personality || '',
-            age: botData?.age || '',
-            likes: botData?.likes || '',
-            dislikes: botData?.dislikes || '',
-            appearance: botData?.appearance || '',
-            backstory: botData?.backstory || '',
-            others: botData?.others || ''
+            name: botData?.name || "Heilos",
+            description: botData?.description || "",
+            personality: botData?.personality || "",
+            age: botData?.age || "",
+            likes: botData?.likes || "",
+            dislikes: botData?.dislikes || "",
+            appearance: botData?.appearance || "",
+            backstory: botData?.backstory || "",
+            others: botData?.others || "",
           };
         } else if (client.botId === "bot2") {
           const botData = await BotB.findOne();
           freshBotConfig = {
-            name: botData?.name || 'Wisteria',
-            description: botData?.description || '',
-            personality: botData?.personality || '',
-            age: botData?.age || '',
-            likes: botData?.likes || '',
-            dislikes: botData?.dislikes || '',
-            appearance: botData?.appearance || '',
-            backstory: botData?.backstory || '',
-            others: botData?.others || ''
+            name: botData?.name || "Wisteria",
+            description: botData?.description || "",
+            personality: botData?.personality || "",
+            age: botData?.age || "",
+            likes: botData?.likes || "",
+            dislikes: botData?.dislikes || "",
+            appearance: botData?.appearance || "",
+            backstory: botData?.backstory || "",
+            others: botData?.others || "",
           };
         }
 
@@ -1343,7 +1371,7 @@ const setupBot = async (client, botToken, botName) => {
           personality: freshBotConfig.personality,
           age: freshBotConfig.age,
           likes: freshBotConfig.likes,
-          dislikes: freshBotConfig.dislikes
+          dislikes: freshBotConfig.dislikes,
         });
 
         // Load AI handler if not already loaded
@@ -1408,34 +1436,41 @@ const setupBot = async (client, botToken, botName) => {
               });
 
               // Keep only last 30 messages per bot (check each bot separately)
-              const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
-              const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
-              
+              const bot1Messages = userData.conversationHistory.filter(
+                (msg) => msg.botId === "bot1",
+              );
+              const bot2Messages = userData.conversationHistory.filter(
+                (msg) => msg.botId === "bot2",
+              );
+
               // Keep only last 30 messages per bot
               const limitedBot1Messages = bot1Messages.slice(-30);
               const limitedBot2Messages = bot2Messages.slice(-30);
-              
+
               // Combine and sort by timestamp
-              userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+              userData.conversationHistory = [
+                ...limitedBot1Messages,
+                ...limitedBot2Messages,
+              ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
               // Direct SQL update for conversation history to avoid JSON serialization issues
               let updateResult2 = null;
               try {
                 await UserData.findOneAndUpdate(
                   { userId: message.author.id },
-                  { 
-                    conversationHistory: JSON.stringify(userData.conversationHistory)
+                  {
+                    conversationHistory: JSON.stringify(
+                      userData.conversationHistory,
+                    ),
                   },
-                  { upsert: true }
+                  { upsert: true },
                 );
               } catch (error) {
-                console.error('AI conversation history update failed:', error);
+                console.error("AI conversation history update failed:", error);
               }
               console.log(
                 `Saved AI response to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
               );
-
             }
           } catch (e) {
             console.error("Assistant conversation history error:", e);
@@ -2008,18 +2043,21 @@ const logMemoryUsage = () => {
 (async () => {
   try {
     console.log("Starting optimized Discord bot system...");
-    
+
     // Performance monitoring - cleanup processed messages every 10 minutes
-    setInterval(() => {
-      const now = Date.now();
-      const CLEANUP_THRESHOLD = 10 * 60 * 1000; // 10 minutes
-      
-      for (const [key, timestamp] of processedMessages.entries()) {
-        if (now - timestamp > CLEANUP_THRESHOLD) {
-          processedMessages.delete(key);
+    setInterval(
+      () => {
+        const now = Date.now();
+        const CLEANUP_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+
+        for (const [key, timestamp] of processedMessages.entries()) {
+          if (now - timestamp > CLEANUP_THRESHOLD) {
+            processedMessages.delete(key);
+          }
         }
-      }
-    }, 10 * 60 * 1000);
+      },
+      10 * 60 * 1000,
+    );
 
     // Start bots in parallel for faster startup
     const [bot1Result, bot2Result] = await Promise.allSettled([

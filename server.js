@@ -224,8 +224,30 @@ app.get('/api/bot-data', async (req, res) => {
                 forumAutoReact: {
                     enabled: others?.forum_auto_react_enabled || false,
                     allForums: others?.forum_auto_react_all_forums || false,
-                    bot1EmojiList: others?.forum_auto_react_bot1_emoji_list || '',
-                    bot2EmojiList: others?.forum_auto_react_bot2_emoji_list || '',
+                    selectedForum: (() => {
+                        try {
+                            const forumData = others?.forum_channels ? JSON.parse(others.forum_channels) : {};
+                            return forumData.selectedForum || '';
+                        } catch (e) {
+                            return '';
+                        }
+                    })(),
+                    bot1EmojiList: (() => {
+                        try {
+                            const forumData = others?.forum_channels ? JSON.parse(others.forum_channels) : {};
+                            return forumData.bot1EmojiList || '';
+                        } catch (e) {
+                            return '';
+                        }
+                    })(),
+                    bot2EmojiList: (() => {
+                        try {
+                            const forumData = others?.forum_channels ? JSON.parse(others.forum_channels) : {};
+                            return forumData.bot2EmojiList || '';
+                        } catch (e) {
+                            return '';
+                        }
+                    })(),
                     messageReact: { 
                         enabled: others?.message_react_enabled || false, 
                         messageId: others?.message_react_message_id || '', 

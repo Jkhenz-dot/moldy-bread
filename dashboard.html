@@ -2942,13 +2942,24 @@
                         // Clear existing options
                         select.innerHTML = '<option value="">Select Channel</option>';
                         
-                        // Add channels
-                        guildData.channels.forEach(channel => {
-                            const option = document.createElement('option');
-                            option.value = channel.id;
-                            option.textContent = `${channel.icon} ${channel.name}`;
-                            select.appendChild(option);
-                        });
+                        // Add channels based on select type
+                        if (select.id === 'forumChannelSelect') {
+                            // Only add forum channels for forum select
+                            guildData.channels.filter(channel => channel.type === 'forum').forEach(channel => {
+                                const option = document.createElement('option');
+                                option.value = channel.id;
+                                option.textContent = `${channel.icon} ${channel.name}`;
+                                select.appendChild(option);
+                            });
+                        } else {
+                            // Add all channels for other selects
+                            guildData.channels.forEach(channel => {
+                                const option = document.createElement('option');
+                                option.value = channel.id;
+                                option.textContent = `${channel.icon} ${channel.name}`;
+                                select.appendChild(option);
+                            });
+                        }
                     }
                 });
 
@@ -3105,10 +3116,21 @@
                     loadWelcomerSettings(data.data);
                     loadNewWelcomerSettings(data.data.others || {});
                     loadAutoRoleSettings(data.data.others || {});
-                    loadForumAutoReactSettings(data.data);
-                    
-                    // Load bot-specific emoji lists (with null checks)
+                    // Load forum auto-react settings using the API data
                     if (data.data.forumAutoReact) {
+                        // Load checkbox
+                        const forumAutoReactEl = document.getElementById('forumAutoReact');
+                        if (forumAutoReactEl) {
+                            forumAutoReactEl.checked = data.data.forumAutoReact.enabled || false;
+                        }
+                        
+                        // Load selected forum
+                        const forumChannelSelectEl = document.getElementById('forumChannelSelect');
+                        if (forumChannelSelectEl && data.data.forumAutoReact.selectedForum) {
+                            forumChannelSelectEl.value = data.data.forumAutoReact.selectedForum;
+                        }
+                        
+                        // Load bot emoji lists
                         const bot1EmojiEl = document.getElementById('bot1EmojiList');
                         const bot2EmojiEl = document.getElementById('bot2EmojiList');
                         if (bot1EmojiEl) bot1EmojiEl.value = data.data.forumAutoReact.bot1EmojiList || '';
@@ -3881,6 +3903,49 @@
         }
 
         // Load forum auto-react settings
+        function loadForumAutoReactSettings(data) {
+            try {
+                const othersData = data.others || {};
+                
+                // Load auto react checkbox
+                const forumAutoReactEl = document.getElementById('forumAutoReact');
+                if (forumAutoReactEl) {
+                    forumAutoReactEl.checked = othersData.forum_auto_react_enabled || false;
+                }
+                
+                // Load forum channel selection and emoji lists
+                if (othersData.forum_channels) {
+                    let forumChannelsData = {};
+                    try {
+                        forumChannelsData = typeof othersData.forum_channels === 'string' 
+                            ? JSON.parse(othersData.forum_channels) 
+                            : othersData.forum_channels;
+                    } catch (e) {
+                        console.log('Error parsing forum_channels data:', e);
+                    }
+                    
+                    // Set selected forum channel
+                    const forumChannelSelectEl = document.getElementById('forumChannelSelect');
+                    if (forumChannelSelectEl && forumChannelsData.selectedForum) {
+                        forumChannelSelectEl.value = forumChannelsData.selectedForum;
+                    }
+                    
+                    // Set bot emoji lists
+                    const bot1EmojiEl = document.getElementById('bot1EmojiList');
+                    const bot2EmojiEl = document.getElementById('bot2EmojiList');
+                    if (bot1EmojiEl && forumChannelsData.bot1EmojiList) {
+                        bot1EmojiEl.value = forumChannelsData.bot1EmojiList;
+                    }
+                    if (bot2EmojiEl && forumChannelsData.bot2EmojiList) {
+                        bot2EmojiEl.value = forumChannelsData.bot2EmojiList;
+                    }
+                }
+                
+                console.log('Forum auto-react settings loaded successfully');
+            } catch (error) {
+                console.error('Error loading forum auto-react settings:', error);
+            }
+        }
 
 
         // Setup event listeners when DOM is loaded
