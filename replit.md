@@ -158,6 +158,10 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Fixed AIQuestions module import error by updating model exports
 - July 06, 2025: Updated ai-wack command to clear all conversation memory for all bots per user
 - July 06, 2025: Cleaned up Bot 2 references and reduced hardcoded bot names in error messages
+- July 06, 2025: Completely removed AIQuestions module and dependencies from all game commands
+- July 06, 2025: Fixed ai-wack command to clear conversation memory per specific bot (not all bots)
+- July 06, 2025: Enhanced conversation history system to maintain 20 messages max per bot separately
+- July 06, 2025: Improved conversation storage logic with proper bot-specific message filtering and timestamps
 
 ## User Preferences
 

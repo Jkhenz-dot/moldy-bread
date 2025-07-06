@@ -1202,11 +1202,17 @@ const setupBot = async (client, botToken, botName) => {
             botId: client.botId,
           });
 
-          // Keep only last 40 messages total (20 per bot)
-          if (userData.conversationHistory.length > 40) {
-            userData.conversationHistory =
-              userData.conversationHistory.slice(-40);
-          }
+          // Keep only last 20 messages per bot (check each bot separately)
+          const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
+          const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
+          
+          // Keep only last 20 messages per bot
+          const limitedBot1Messages = bot1Messages.slice(-20);
+          const limitedBot2Messages = bot2Messages.slice(-20);
+          
+          // Combine and sort by timestamp
+          userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
           // Filter conversation history to show context for this specific bot
           const botSpecificHistory = userData.conversationHistory
@@ -1295,11 +1301,17 @@ const setupBot = async (client, botToken, botName) => {
                 botId: client.botId,
               });
 
-              // Keep only last 40 messages total (20 per bot)
-              if (userData.conversationHistory.length > 40) {
-                userData.conversationHistory =
-                  userData.conversationHistory.slice(-40);
-              }
+              // Keep only last 20 messages per bot (check each bot separately)
+              const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
+              const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
+              
+              // Keep only last 20 messages per bot
+              const limitedBot1Messages = bot1Messages.slice(-20);
+              const limitedBot2Messages = bot2Messages.slice(-20);
+              
+              // Combine and sort by timestamp
+              userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
               await UserData.findOneAndUpdate(
                 { userId: userData.userId },

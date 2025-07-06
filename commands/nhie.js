@@ -5,51 +5,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-const AIQuestions = require("../models/postgres/AIQuestions");
-
-// Helper functions for AI question storage using MongoDB
-async function loadAIQuestions(type) {
-  try {
-    const doc = await AIQuestions.findOne({ type });
-    return doc ? doc.questions.map(q => q.text) : [];
-  } catch (error) {
-    console.error('Error loading AI questions:', error);
-    return [];
-  }
-}
-
-async function saveAIQuestion(type, question) {
-  try {
-    const existingQuestions = await loadAIQuestions(type);
-    if (!existingQuestions.includes(question)) {
-      let doc = await AIQuestions.findOne({ type });
-      if (!doc) {
-        doc = new AIQuestions({ type, questions: [] });
-      }
-      
-      doc.questions.push({ text: question });
-      
-      // Keep only last 20 questions
-      if (doc.questions.length > 20) {
-        doc.questions = doc.questions.slice(-20);
-      }
-      
-      await doc.save();
-    }
-  } catch (error) {
-    console.error('Error saving AI question:', error);
-  }
-}
-
-async function isQuestionUsed(type, question) {
-  try {
-    const questions = await loadAIQuestions(type);
-    return questions.includes(question);
-  } catch (error) {
-    console.error('Error checking question usage:', error);
-    return false;
-  }
-}
+// Removed AIQuestions dependency - using simple randomization from JSON files
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -119,11 +75,7 @@ module.exports = {
             const result = await model.generateContent(prompt);
             question = result.response.text().trim();
             attempts++;
-          } while ((await isQuestionUsed("nhie", question)) && attempts < 3);
-
-          if (!(await isQuestionUsed("nhie", question))) {
-            await saveAIQuestion("nhie", question);
-          }
+          } while (false); // Removed question tracking
           footerText = `Type: NHIE | AI Generated`;
         } catch (error) {
           console.log("AI generation failed, falling back to API");
