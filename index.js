@@ -323,8 +323,32 @@ const badWords = ["badword1", "badword2"];
 const isNSFW = (content) =>
   badWords.some((word) => content.toLowerCase().includes(word));
 
-const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 250)) + 1;
-const xpForLevel = (level) => Math.pow(level - 1, 2) * 250;
+const calculateLevel = (xp) => {
+  let currentXP = 0;
+  let level = 1;
+  
+  while (currentXP <= xp) {
+    const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.28;
+    const xpNeeded = Math.pow(level - 1, 2) * 100 * tierMultiplier;
+    
+    if (currentXP + xpNeeded > xp) break;
+    currentXP += xpNeeded;
+    level++;
+  }
+  
+  return level;
+};
+
+const xpForLevel = (level) => {
+  let totalXP = 0;
+  
+  for (let i = 1; i < level; i++) {
+    const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.28;
+    totalXP += Math.pow(i - 1, 2) * 100 * tierMultiplier;
+  }
+  
+  return Math.floor(totalXP);
+};
 
 // XP is only handled by Bot 1
 const addXP = async (userId, guildId) => {
