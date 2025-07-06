@@ -207,6 +207,21 @@ const initializeReactionRoles = async () => {
                 }
               }
             }
+          } else {
+            // Message not found - delete all reaction role sets for this message
+            console.log(`Message ${messageId} not found, deleting associated reaction role sets...`);
+            
+            try {
+              // Get unique set IDs for this message
+              const setIds = [...new Set(roles.map(role => role.set_id))];
+              
+              for (const setId of setIds) {
+                const deletedCount = await ReactionRole.deleteBySetId(setId);
+                console.log(`Deleted reaction role set ${setId} (${deletedCount} entries) - orphaned from message ${messageId}`);
+              }
+            } catch (deleteError) {
+              console.error(`Failed to delete orphaned reaction role sets for message ${messageId}:`, deleteError);
+            }
           }
         } catch (error) {
           console.error(

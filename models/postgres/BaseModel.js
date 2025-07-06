@@ -28,7 +28,11 @@ class BaseModel {
   async findOne(query) {
     try {
       const { whereClause, values } = this.buildWhereClause(query);
-      const sqlQuery = `SELECT * FROM ${this.tableName} WHERE ${whereClause.join(' AND ')} LIMIT 1`;
+      let sqlQuery = `SELECT * FROM ${this.tableName}`;
+      if (whereClause.length > 0) {
+        sqlQuery += ` WHERE ${whereClause.join(' AND ')}`;
+      }
+      sqlQuery += ' LIMIT 1';
       const result = await database.query(sqlQuery, values);
       return result.rows[0] || null;
     } catch (error) {

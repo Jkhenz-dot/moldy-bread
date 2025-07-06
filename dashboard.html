@@ -3676,8 +3676,12 @@
         function loadReactionRoleSets() {
             const existingSetsContainer = document.getElementById('existingSets');
             if (existingSetsContainer) {
-                existingSetsContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin: 0;">Loading sets...</p>';
-                refreshReactionSets();
+                try {
+                    existingSetsContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin: 0;">Loading sets...</p>';
+                    refreshReactionSets();
+                } catch (error) {
+                    console.log('Error setting innerHTML for existingSets:', error.message);
+                }
             }
         }
 
@@ -3696,13 +3700,21 @@
                     displayExistingSets(result.sets);
                 } else {
                     if (existingSetsContainer) {
-                        existingSetsContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6);">No reaction role sets found</p>';
+                        try {
+                            existingSetsContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6);">No reaction role sets found</p>';
+                        } catch (error) {
+                            console.log('Error setting innerHTML (no sets found):', error.message);
+                        }
                     }
                 }
             } catch (error) {
                 const existingSetsContainer = document.getElementById('existingSets');
                 if (existingSetsContainer) {
-                    existingSetsContainer.innerHTML = '<p style="color: #ef4444;">Error loading sets</p>';
+                    try {
+                        existingSetsContainer.innerHTML = '<p style="color: #ef4444;">Error loading sets</p>';
+                    } catch (innerError) {
+                        console.log('Error setting innerHTML (error message):', innerError.message);
+                    }
                 }
             }
         }
@@ -3716,7 +3728,11 @@
             
             if (!sets || sets.length === 0) {
                 if (container) {
-                    container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); font-style: italic;">No reaction role sets configured yet</p>';
+                    try {
+                        container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.6); font-style: italic;">No reaction role sets configured yet</p>';
+                    } catch (error) {
+                        console.log('Error setting innerHTML (no sets):', error.message);
+                    }
                 }
                 return;
             }
@@ -3764,7 +3780,11 @@
             });
 
             if (container) {
-                container.innerHTML = setsHTML;
+                try {
+                    container.innerHTML = setsHTML;
+                } catch (error) {
+                    console.log('Error setting innerHTML in displayExistingSets:', error.message);
+                }
             }
         }
 
