@@ -20,7 +20,7 @@ const REQUEST_TIMEOUT = 15000; // 15 seconds
 async function performWebSearch(content) {
   const searchKeywords = [
     "what is",
-    "who is",
+    "who is", 
     "when did",
     "where is",
     "how to",
@@ -29,6 +29,15 @@ async function performWebSearch(content) {
     "news",
     "today",
     "recent",
+    "weather",
+    "temperature",
+    "forecast",
+    "score",
+    "results",
+    "stock",
+    "price",
+    "happening",
+    "update"
   ];
 
   const needsSearch = searchKeywords.some((keyword) =>
@@ -49,27 +58,8 @@ async function performWebSearch(content) {
   try {
     const { spawn } = require("child_process");
     const python = spawn("python3", [
-      "-c",
-      `
-import sys
-sys.path.append('.')
-from ai_utils import web_search
-import asyncio
-import signal
-
-def timeout_handler(signum, frame):
-    print("Search timeout")
-    sys.exit(1)
-
-signal.signal(signal.SIGALRM, timeout_handler)
-signal.alarm(10)
-
-async def main():
-    result = await web_search("${content.replace(/"/g, '\\"')}")
-    print(result)
-
-asyncio.run(main())
-      `,
+      "web_search.py",
+      content
     ]);
 
     let searchOutput = "";
@@ -187,6 +177,12 @@ ${emojiList || "(none found)"}
 
 Previous conversation history (remember this context):
 ${conversationHistory || "No previous conversation"}
+
+${searchContext ? `Current web search information: ${searchContext}` : ""}
+
+User: "${content}"
+
+Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
 
 Search context:
 ${searchContext}

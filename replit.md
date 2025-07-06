@@ -39,7 +39,7 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - **Context Building**: Comprehensive guild and user context for personalized responses
 - **Conversation Memory**: Per-user conversation history tracking
 - **Performance Optimization**: Response caching, concurrent request limiting, and timeout handling
-- **Web Search Integration**: Dynamic information retrieval for current events
+- **Web Search Integration**: Real-time web search for current events, weather, news, and factual information using trafilatura
 
 ### Content Generation Pipeline
 - **Image Generation**: FLUX.1-dev and Stable Diffusion models via Hugging Face
@@ -198,6 +198,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Changed dashboard title from ":v Faces Mascots' Dashboard" to "v Faces Mascots Dashboard"
 - July 06, 2025: Hidden database tab by default - now only shows after clicking dashboard title 5 times
 - July 06, 2025: Fixed data loading issue by correcting API endpoint and adding debugging logs
+- July 06, 2025: Enhanced web search capabilities with trafilatura-based real-time information retrieval
+- July 06, 2025: Added comprehensive keyword detection for web searches (weather, news, current events, etc.)
+- July 06, 2025: Integrated web search results directly into AI response context for informed conversations
 
 ## User Preferences
 
