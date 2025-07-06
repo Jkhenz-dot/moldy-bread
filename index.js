@@ -14,6 +14,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
+  MessageFlags,
 } = require("discord.js");
 
 // Database models - lazy loaded to improve startup time
@@ -772,13 +773,13 @@ const setupBot = async (client, botToken, botName) => {
             .setTitle("Deleted")
             .setDescription("Message deleted")
             .setColor(0x00ff00);
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         } else {
           const embed = new EmbedBuilder()
             .setTitle("❌ Access Denied")
             .setDescription("Only the original user can delete this message")
             .setColor(0xff0000);
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
       }
 
@@ -846,7 +847,7 @@ const setupBot = async (client, botToken, botName) => {
           )
           .setColor(0xff0000);
 
-        return await interaction.reply({ embeds: [embed], ephemeral: true });
+        return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
       }
 
       // Commands that work in all channels (no restrictions)
@@ -865,7 +866,7 @@ const setupBot = async (client, botToken, botName) => {
             )
             .setColor(0xff0000);
 
-          return await interaction.reply({ embeds: [embed], ephemeral: true });
+          return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
 
         // Also check if VC command is allowed in this channel
@@ -881,7 +882,7 @@ const setupBot = async (client, botToken, botName) => {
 
             return await interaction.reply({
               embeds: [embed],
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           }
         }
@@ -899,7 +900,7 @@ const setupBot = async (client, botToken, botName) => {
 
             return await interaction.reply({
               embeds: [embed],
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           }
         }
@@ -957,7 +958,7 @@ const setupBot = async (client, botToken, botName) => {
           });
 
         try {
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         } catch (e) {
           console.log("Failed to send error reply:", e.message);
         }

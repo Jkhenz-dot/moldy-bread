@@ -2,10 +2,17 @@ const { Pool } = require('pg');
 
 class DatabaseManager {
     constructor() {
-        this.pool = new Pool({
+        const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+        };
+        
+        console.log('Database connection config:', {
+            hasConnectionString: !!process.env.DATABASE_URL,
+            ssl: connectionConfig.ssl
         });
+        
+        this.pool = new Pool(connectionConfig);
         
         this.pool.on('error', (err) => {
             console.error('PostgreSQL pool error:', err);
