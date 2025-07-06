@@ -111,7 +111,15 @@ class BaseModel {
       Object.keys(updateData).forEach(key => {
         const dbField = this.mapField(key);
         setClause.push(`${dbField} = $${paramIndex}`);
-        values.push(updateData[key]);
+        
+        // Handle JSON fields properly
+        if (key === 'conversationHistory' || dbField === 'conversation_history') {
+          values.push(JSON.stringify(updateData[key]));
+        } else if (typeof updateData[key] === 'object' && updateData[key] !== null && !Array.isArray(updateData[key])) {
+          values.push(JSON.stringify(updateData[key]));
+        } else {
+          values.push(updateData[key]);
+        }
         paramIndex++;
       });
 

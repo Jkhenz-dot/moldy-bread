@@ -31,7 +31,22 @@ module.exports = {
         { conversationHistory: userData.conversationHistory }
       );
       
-      const botName = currentBotId === 'bot1' ? 'Bot 1' : 'Bot 2';
+      // Get bot name from database instead of hardcoded values
+      const { BotA, BotB } = require('../models/postgres');
+      let botName = 'AI Assistant';
+      
+      try {
+        if (currentBotId === 'bot1') {
+          const botConfig = await BotA.findOne();
+          botName = botConfig?.name || 'AI Assistant';
+        } else {
+          const botConfig = await BotB.findOne();
+          botName = botConfig?.name || 'AI Assistant 2';
+        }
+      } catch (error) {
+        console.error('Error fetching bot name:', error);
+      }
+      
       const embed = new EmbedBuilder()
         .setTitle('Success')
         .setDescription(`Cleared your conversation memory with ${botName} (${clearedCount} messages)`)

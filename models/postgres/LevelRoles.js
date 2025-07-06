@@ -4,8 +4,7 @@ class LevelRoles extends BaseModel {
   constructor() {
     super('level_roles', {
       guildId: 'guild_id',
-      roleId: 'role_id',
-      levelRequired: 'level_required'
+      roleId: 'role_id'
     });
   }
 
@@ -16,7 +15,7 @@ class LevelRoles extends BaseModel {
 
   static async find(query = {}) {
     const instance = new LevelRoles();
-    return await instance.find(query, 'level_required ASC');
+    return await instance.find(query, 'level ASC');
   }
 
   static async create(data) {

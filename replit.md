@@ -151,6 +151,10 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Optimized all PostgreSQL model files, reducing code by over 80%
 - July 06, 2025: Removed unnecessary TypeScript/Drizzle dependencies and configuration files
 - July 06, 2025: Streamlined project structure and eliminated duplicate code patterns
+- July 06, 2025: Fixed conversation history database saving with proper JSON handling for PostgreSQL
+- July 06, 2025: Resolved database field mapping issues (level_roles column name fix)
+- July 06, 2025: Replaced all hardcoded "Bot 1" references with dynamic bot names from database
+- July 06, 2025: Enhanced ai-wack command to display actual bot names instead of generic labels
 
 ## User Preferences
 

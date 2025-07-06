@@ -1359,7 +1359,7 @@ app.post('/api/update-bot1-general', uploadAvatar, async (req, res) => {
                 }
 
                 await global.discordClient1.user.setPresence(presenceData);
-                console.log(`Bot 1 presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
+                console.log(`${botA?.name || 'Bot A'} presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
             } catch (error) {
                 console.error('Error updating Discord Bot 1 presence:', error);
             }
@@ -1482,7 +1482,7 @@ app.post('/api/update-bot2-general', uploadAvatar, async (req, res) => {
                 }
 
                 await global.discordClient2.user.setPresence(presenceData);
-                console.log(`Bot 2 presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
+                console.log(`${botB?.name || 'Bot B'} presence updated: ${finalStatus} -> ${presenceData.status}, activity: ${finalActivityText || 'none'}`);
             } catch (error) {
                 console.error('Error updating Discord Bot 2 presence:', error);
             }
