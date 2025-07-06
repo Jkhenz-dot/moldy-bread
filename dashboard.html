@@ -2995,7 +2995,7 @@
                 loadGuildData().catch(err => console.log('Guild data loading failed, continuing with saved data'));
                 
                 // Load bot data
-                const response = await fetch('/api/bot-data');
+                const response = await fetch('/api/bot-config');
                 const data = await response.json();
                 
                 if (data.success && data.data) {

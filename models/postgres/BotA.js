@@ -43,8 +43,47 @@ class BotA extends BaseModel {
   }
 
   static async findOneAndUpdate(query, updateData, options = {}) {
-    const instance = new BotA();
-    return await instance.findOneAndUpdate(query, updateData, options);
+    try {
+      // For BotA, always update the single configuration record
+      // First, try to find any existing record
+      const existing = await this.findOne();
+      
+      if (!existing) {
+        // If no record exists, create one with the update data
+        return await this.create(updateData);
+      }
+      
+      // Update the existing record using its ID
+      const instance = new BotA();
+      const setClause = [];
+      const values = [];
+      let paramIndex = 1;
+
+      Object.keys(updateData).forEach(key => {
+        const dbField = instance.mapField(key);
+        setClause.push(`${dbField} = $${paramIndex}`);
+        values.push(updateData[key]);
+        paramIndex++;
+      });
+
+      setClause.push(`updated_at = NOW()`);
+      
+      const sqlQuery = `
+        UPDATE bota 
+        SET ${setClause.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+      
+      values.push(existing.id);
+      
+      const database = require('../../utils/database');
+      const result = await database.query(sqlQuery, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating BotA:', error);
+      return null;
+    }
   }
 }
 

@@ -1214,6 +1214,56 @@ app.post('/api/react-to-message', async (req, res) => {
     }
 });
 
+// Bot Configuration Data Endpoint
+app.get('/api/bot-config', async (req, res) => {
+    try {
+        const botA = await BotA.findOne();
+        const botB = await BotB.findOne();
+        
+        res.json({
+            success: true,
+            data: {
+                bot1: {
+                    name: botA?.name || '',
+                    description: botA?.description || '',
+                    status: botA?.status || 'online',
+                    activityType: botA?.activity_type || 'playing',
+                    activityText: botA?.activity_text || '',
+                    allowedChannels: botA?.allowed_channels || '',
+                    personality: botA?.personality || '',
+                    appearance: botA?.appearance || '',
+                    backstory: botA?.backstory || '',
+                    likes: botA?.likes || '',
+                    dislikes: botA?.dislikes || '',
+                    others: botA?.others || '',
+                    age: botA?.age || ''
+                },
+                bot2: {
+                    name: botB?.name || '',
+                    description: botB?.description || '',
+                    status: botB?.status || 'online',
+                    activityType: botB?.activity_type || 'playing',
+                    activityText: botB?.activity_text || '',
+                    allowedChannels: botB?.allowed_channels || '',
+                    personality: botB?.personality || '',
+                    appearance: botB?.appearance || '',
+                    backstory: botB?.backstory || '',
+                    likes: botB?.likes || '',
+                    dislikes: botB?.dislikes || '',
+                    others: botB?.others || '',
+                    age: botB?.age || ''
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading bot configuration:', error);
+        res.json({
+            success: false,
+            message: 'Failed to load bot configuration'
+        });
+    }
+});
+
 app.use((error, req, res, next) => {
     if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {

@@ -931,6 +931,7 @@ const setupBot = async (client, botToken, botName) => {
 
     // Get bot configuration for channel restrictions
     const currentBotConfig = client.botConfig || {};
+    const { Others } = loadDatabaseModels();
     const othersData = await Others.findOne();
 
     if (isNSFW(message.content)) {
