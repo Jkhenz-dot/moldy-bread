@@ -201,6 +201,8 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Enhanced web search capabilities with trafilatura-based real-time information retrieval
 - July 06, 2025: Added comprehensive keyword detection for web searches (weather, news, current events, etc.)
 - July 06, 2025: Integrated web search results directly into AI response context for informed conversations
+- July 06, 2025: Increased conversation history limit from 20 to 30 messages per bot
+- July 06, 2025: Updated XP scaling system - level 2 now requires 250 XP instead of 100 (2.5x scaling factor)
 
 ## User Preferences
 

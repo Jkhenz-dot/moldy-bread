@@ -323,8 +323,8 @@ const badWords = ["badword1", "badword2"];
 const isNSFW = (content) =>
   badWords.some((word) => content.toLowerCase().includes(word));
 
-const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 100)) + 1;
-const xpForLevel = (level) => Math.pow(level - 1, 2) * 100;
+const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 250)) + 1;
+const xpForLevel = (level) => Math.pow(level - 1, 2) * 250;
 
 // XP is only handled by Bot 1
 const addXP = async (userId, guildId) => {
@@ -1221,13 +1221,13 @@ const setupBot = async (client, botToken, botName) => {
             botId: client.botId,
           });
 
-          // Keep only last 20 messages per bot (check each bot separately)
+          // Keep only last 30 messages per bot (check each bot separately)
           const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
           const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
           
-          // Keep only last 20 messages per bot
-          const limitedBot1Messages = bot1Messages.slice(-20);
-          const limitedBot2Messages = bot2Messages.slice(-20);
+          // Keep only last 30 messages per bot
+          const limitedBot1Messages = bot1Messages.slice(-30);
+          const limitedBot2Messages = bot2Messages.slice(-30);
           
           // Combine and sort by timestamp
           userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]
@@ -1367,13 +1367,13 @@ const setupBot = async (client, botToken, botName) => {
                 botId: client.botId,
               });
 
-              // Keep only last 20 messages per bot (check each bot separately)
+              // Keep only last 30 messages per bot (check each bot separately)
               const bot1Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot1');
               const bot2Messages = userData.conversationHistory.filter(msg => msg.botId === 'bot2');
               
-              // Keep only last 20 messages per bot
-              const limitedBot1Messages = bot1Messages.slice(-20);
-              const limitedBot2Messages = bot2Messages.slice(-20);
+              // Keep only last 30 messages per bot
+              const limitedBot1Messages = bot1Messages.slice(-30);
+              const limitedBot2Messages = bot2Messages.slice(-30);
               
               // Combine and sort by timestamp
               userData.conversationHistory = [...limitedBot1Messages, ...limitedBot2Messages]

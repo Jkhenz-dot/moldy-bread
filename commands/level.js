@@ -33,8 +33,8 @@ module.exports = {
       const { xp, level } = userData;
       
       // Calculate XP for current and next level
-      const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 100)) + 1;
-      const xpForLevel = (level) => Math.pow(level - 1, 2) * 100;
+      const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 250)) + 1;
+      const xpForLevel = (level) => Math.pow(level - 1, 2) * 250;
       
       const currentLevelXP = xpForLevel(level);
       const nextLevelXP = xpForLevel(level + 1);
