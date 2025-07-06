@@ -21,6 +21,13 @@ require('dotenv').config();
 const app = express();
 const PORT = 5000;
 
+// Enable compression middleware for better performance
+const compression = require('compression');
+app.use(compression());
+
+// Optimize Express settings
+app.set('x-powered-by', false);
+
 // Memory storage for file uploads (no disk storage)
 const storage = multer.memoryStorage();
 
@@ -97,9 +104,19 @@ function getSystemStats() {
     };
 }
 
-app.use(express.json());
-app.use(express.static('.'));
-app.use('/uploads', express.static('uploads'));
+// Optimize JSON parsing
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Static file serving with caching
+app.use(express.static('.', {
+    maxAge: '1h',
+    etag: true
+}));
+app.use('/uploads', express.static('uploads', {
+    maxAge: '24h',
+    etag: true
+}));
 
 addActivity('Dashboard server started');
 

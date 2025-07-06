@@ -195,7 +195,7 @@ User: "${content}"
 
 Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
 
-    console.log("Prompt:", prompt);
+
     const model = ai.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig: {
@@ -224,7 +224,6 @@ Respond naturally, using no more than 3 custom emojis by name. Use emoji placeho
     reply = reply.replace(/:([a-zA-Z0-9_]+):/g, (_, name) => {
       const emoji = emojiMap[name];
       if (!emoji) {
-        console.warn(`Model tried to use unknown emoji :${name}:`);
         return ""; // skip unknown
       }
       if (usedEmojis.has(emoji) || emojiCount >= MAX_EMOJI_USE) return "";

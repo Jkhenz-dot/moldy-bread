@@ -91,6 +91,9 @@ const getRandomPastelColor = () =>
 // Use Map for better performance with large datasets
 const processedMessages = new Map(); // Store with timestamp for cleanup
 
+// XP tracking optimization - use Set for faster lookups
+const recentXPUsers = new Set(); // Track users who recently gained XP
+
 // Optimized client configuration - shared between both bots
 const CLIENT_CONFIG = Object.freeze({
   intents: [
@@ -1965,6 +1968,18 @@ const logMemoryUsage = () => {
 (async () => {
   try {
     console.log("Starting optimized Discord bot system...");
+    
+    // Performance monitoring - cleanup processed messages every 10 minutes
+    setInterval(() => {
+      const now = Date.now();
+      const CLEANUP_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+      
+      for (const [key, timestamp] of processedMessages.entries()) {
+        if (now - timestamp > CLEANUP_THRESHOLD) {
+          processedMessages.delete(key);
+        }
+      }
+    }, 10 * 60 * 1000);
 
     // Start bots in parallel for faster startup
     const [bot1Result, bot2Result] = await Promise.allSettled([

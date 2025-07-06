@@ -14,6 +14,7 @@
     "@google/genai": "^1.8.0",
     "@google/generative-ai": "^0.24.1",
     "canvacord": "^6.0.2",
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "discord-gamecord": "^4.4.2",
     "discord.js": "^14.21.0",

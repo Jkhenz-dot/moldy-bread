@@ -4956,52 +4956,101 @@
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
             
-            // Simulate login process
+            // Start loading process
             setTimeout(async () => {
                 try {
+                    // Step 1: Connection
                     updateLoadingStep(1, 'active', 'Connecting...');
-                    updateProgress(33);
-                    updateLoadingDetails('Authenticating and connecting to Discord...');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    updateProgress(20);
+                    updateLoadingDetails('Establishing connection to Discord bots...');
                     
-                    const response = await fetch('/api/dashboard-stats');
-                    if (!response.ok) {
+                    const statsResponse = await fetch('/api/dashboard-stats');
+                    if (!statsResponse.ok) {
                         throw new Error('Failed to fetch server data');
                     }
                     
-                    const data = await response.json();
-                    window.serverList = data.guilds || [];
-                    
-                    updateLoadingStep(1, 'completed', 'Connected!');
-                    updateLoadingStep(2, 'active', 'Loading Data...');
-                    updateProgress(66);
-                    updateLoadingDetails('Loading Discord server information...');
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Use GUILD_ID from environment or fallback to first available guild
-                    const targetGuildId = data.targetGuildId || (window.serverList.length > 0 ? window.serverList[0].id : null);
-                    if (targetGuildId) {
-                        currentServerId = targetGuildId;
+                    const statsData = await statsResponse.json();
+                    if (statsData.success && statsData.stats.guilds.length > 0) {
+                        currentServerId = statsData.stats.guilds[0].id || '1206274128588578826';
+                        updateLoadingDetails(`Connected to ${statsData.stats.guilds.length} servers`);
+                    } else {
+                        currentServerId = '1206274128588578826';
+                        updateLoadingDetails('Connected with fallback configuration');
                     }
                     
-                    updateLoadingStep(2, 'completed', 'Data Loaded!');
-                    updateLoadingStep(3, 'active', 'Finalizing...');
-                    updateProgress(100);
-                    updateLoadingDetails('Preparing dashboard interface...');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    updateLoadingStep(1, 'completed', 'Connected');
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     
-                    updateLoadingStep(3, 'completed', 'Ready!');
+                    // Step 2: Loading Data
+                    updateLoadingStep(2, 'active', 'Loading...');
+                    updateProgress(50);
+                    updateLoadingDetails('Loading server data and bot configuration...');
+                    
+                    // Load guild data and dashboard data
+                    await Promise.all([
+                        loadGuildData(),
+                        loadDashboardData()
+                    ]);
+                    
+                    updateLoadingDetails('Waiting for all data to be ready...');
+                    
+                    // Wait for guild data to be fully populated
+                    let retryCount = 0;
+                    const maxRetries = 20;
+                    while (retryCount < maxRetries) {
+                        if (guildData && guildData.roles && guildData.roles.length > 0 && 
+                            guildData.channels && guildData.channels.length > 0) {
+                            break;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        retryCount++;
+                    }
+                    
+                    updateLoadingStep(2, 'completed', 'Loaded');
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Step 3: Preparing Interface
+                    updateLoadingStep(3, 'active', 'Preparing...');
+                    updateProgress(80);
+                    updateLoadingDetails('Populating dropdowns and form fields...');
+                    
+                    // Pre-populate all form fields before showing dashboard
+                    await populateAllFormFields();
+                    
+                    updateProgress(95);
+                    updateLoadingDetails('Finalizing dashboard interface...');
+                    
+                    // Initialize reaction roles system safely
+                    setTimeout(() => {
+                        try {
+                            if (typeof initAdvancedReactionRoles === 'function') {
+                                initAdvancedReactionRoles();
+                            }
+                        } catch (error) {
+                            // Silent fail for non-critical initialization
+                        }
+                    }, 100);
+                    
+                    updateProgress(100);
+                    updateLoadingStep(3, 'completed', 'Ready');
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    // Show dashboard
+                    // Show dashboard only after everything is loaded
                     document.getElementById('loadingScreen').style.display = 'none';
                     document.getElementById('dashboard').style.display = 'block';
+                    addDashboardTitleClickEvent();
                     
-                    // Load dashboard data
-                    await loadDashboardData();
                 } catch (error) {
-                    console.error('Auto-login failed:', error);
-                    updateLoadingDetails('Error: Could not connect to Discord bot');
+                    console.error('Dashboard initialization failed:', error);
+                    // Use fallback
+                    currentServerId = '1206274128588578826';
+                    updateLoadingDetails('Using fallback configuration...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    loadDashboardData();
+                    addDashboardTitleClickEvent();
                 }
             }, 500);
         });
