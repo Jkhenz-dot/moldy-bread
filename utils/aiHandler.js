@@ -153,6 +153,17 @@ async function generateAIResponse(
   activeRequests.add(requestId);
 
   try {
+    // Debug: Log what personality data we have
+    console.log("AI Handler Debug - Bot Data:", {
+      name: otherData.name,
+      age: otherData.age,
+      personality: otherData.personality,
+      likes: otherData.likes,
+      dislikes: otherData.dislikes,
+      backstory: otherData.backstory,
+      appearance: otherData.appearance
+    });
+
     const personalityParts = [];
     if (otherData.age) personalityParts.push(`Age: ${otherData.age}`);
     if (otherData.personality)
@@ -160,6 +171,10 @@ async function generateAIResponse(
     if (otherData.likes) personalityParts.push(`Likes: ${otherData.likes}`);
     if (otherData.dislikes)
       personalityParts.push(`Dislikes: ${otherData.dislikes}`);
+    if (otherData.backstory)
+      personalityParts.push(`Backstory: ${otherData.backstory}`);
+    if (otherData.appearance)
+      personalityParts.push(`Appearance: ${otherData.appearance}`);
     const personalityContext = personalityParts.join(". ");
 
     let contextInfo = "";
@@ -188,7 +203,9 @@ async function generateAIResponse(
       .map(([name, val]) => `${name}: ${val}`)
       .join("\n");
 
-    const prompt = `You are ${otherData.name}. ${personalityContext}
+    const prompt = `You are ${otherData.name || "a Discord bot"}, NOT an AI assistant. ${personalityContext ? personalityContext + "." : ""}
+
+IMPORTANT: Always respond as ${otherData.name || "the bot"} with your unique personality. Never say you are an "AI assistant" or similar generic terms.
 
 Context: ${contextInfo}
 
@@ -203,7 +220,7 @@ ${searchContext}
 
 User: "${content}"
 
-Respond naturally, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
+Respond naturally as ${otherData.name || "yourself"}, using no more than 3 custom emojis by name. Use emoji placeholders in the format :emoji_name: only. Do not use underscores or raw names. Max 150 words.`;
 
     const model = ai.getGenerativeModel({
       model: "gemini-2.0-flash",
