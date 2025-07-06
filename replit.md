@@ -162,6 +162,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Fixed ai-wack command to clear conversation memory per specific bot (not all bots)
 - July 06, 2025: Enhanced conversation history system to maintain 20 messages max per bot separately
 - July 06, 2025: Improved conversation storage logic with proper bot-specific message filtering and timestamps
+- July 06, 2025: Fixed PostgreSQL JSONB conversation_history field storage (was double-stringifying data)
+- July 06, 2025: Cleaned up duplicate BotA database entries (removed 2 duplicate rows)
+- July 06, 2025: Conversation history now properly stores and retrieves chat messages for memory functionality
 
 ## User Preferences
 

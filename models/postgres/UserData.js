@@ -13,12 +13,15 @@ class UserData extends BaseModel {
     const instance = new UserData();
     const user = await instance.findOne(query);
     
-    if (user && user.conversation_history) {
+    if (user && user.conversation_history !== undefined) {
       try {
-        if (typeof user.conversation_history === 'string') {
+        // PostgreSQL JSONB field returns objects directly, no need to parse
+        if (Array.isArray(user.conversation_history)) {
+          user.conversationHistory = user.conversation_history;
+        } else if (typeof user.conversation_history === 'string') {
           user.conversationHistory = JSON.parse(user.conversation_history);
         } else {
-          user.conversationHistory = user.conversation_history || [];
+          user.conversationHistory = [];
         }
       } catch (e) {
         console.error('Error parsing conversation history:', e);

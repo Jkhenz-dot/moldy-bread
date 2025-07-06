@@ -114,7 +114,8 @@ class BaseModel {
         
         // Handle JSON fields properly
         if (key === 'conversationHistory' || dbField === 'conversation_history') {
-          values.push(JSON.stringify(updateData[key]));
+          // For JSONB fields, PostgreSQL expects the raw JSON object, not a string
+          values.push(updateData[key]);
         } else if (typeof updateData[key] === 'object' && updateData[key] !== null && !Array.isArray(updateData[key])) {
           values.push(JSON.stringify(updateData[key]));
         } else {
