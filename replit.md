@@ -251,6 +251,11 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 07, 2025: Enhanced query retry logic with automatic reconnection on database failures
 - July 07, 2025: Fixed keep-alive system to use native Node.js HTTP module instead of node-fetch
 - July 07, 2025: Added comprehensive error handling for Neon database sleep/wake cycles
+- July 07, 2025: Implemented mutex-like processing locks to prevent concurrent XP processing for same user
+- July 07, 2025: Extended level-up announcement prevention timeout from 60 to 120 seconds
+- July 07, 2025: Added comprehensive logging for level-up announcement tracking and debugging
+- July 07, 2025: Fixed duplicate level-up announcements with concurrent processing prevention system
+- July 07, 2025: Added +2 XP bonus for messages that mention either bot (Heilos or Wisteria)
 
 ## User Preferences
 

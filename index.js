@@ -92,6 +92,7 @@ const getRandomPastelColor = () =>
 const processedMessages = new Map(); // Store with timestamp for cleanup
 const recentXPUsers = new Set(); // Track users who recently gained XP
 const levelUpAnnouncements = new Set(); // Prevent duplicate level-up announcements
+const processingUsers = new Set(); // Prevent concurrent XP processing for same user
 const botConfigCache = new Map(); // Cache bot configurations
 const userDataCache = new Map(); // Cache user data for faster access
 const guildPermissionCache = new Map(); // Cache permission checks
@@ -110,7 +111,12 @@ setInterval(
     }
 
     // Level-up announcements are auto-cleaned by individual timeouts
-    // No manual cleanup needed as each entry removes itself after 60 seconds
+    // No manual cleanup needed as each entry removes itself after 120 seconds
+    
+    // Safety log to monitor processing locks (should normally be 0)
+    if (processingUsers.size > 0) {
+      console.warn(`${processingUsers.size} users still processing XP - possible stuck locks`);
+    }
 
     // Clean old user data cache
     for (const [key, data] of userDataCache.entries()) {
@@ -429,6 +435,16 @@ const addXP = async (userId, guildId, message = null) => {
     const userCooldownKey = `${userId}-${guildId}`;
     if (recentXPUsers.has(userCooldownKey)) return;
 
+    // Prevent concurrent processing for the same user
+    const processingKey = `${userId}-${guildId}`;
+    if (processingUsers.has(processingKey)) {
+      console.log(`Already processing XP for user ${userId}, skipping...`);
+      return;
+    }
+    
+    // Lock this user for processing
+    processingUsers.add(processingKey);
+
     // Cache others data to avoid repeated database calls
     const cacheKey = "othersData";
     let othersData;
@@ -559,6 +575,10 @@ const addXP = async (userId, guildId, message = null) => {
       const hasAttachments =
         message.attachments && message.attachments.size > 0;
       const content = message.content.trim();
+      
+      // Check if message mentions any bot (client1 or client2)
+      const mentionsBot = message.mentions.has(client1.user) || 
+                          (client2 && message.mentions.has(client2.user));
 
       // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
       const isEmojiOnly =
@@ -573,7 +593,13 @@ const addXP = async (userId, guildId, message = null) => {
               content,
             )));
 
-      if (hasAttachments) {
+      if (mentionsBot) {
+        // +2 XP bonus for mentioning bots
+        randomXp = randomXp + 2;
+        console.log(
+          `Applied +2 XP bonus for bot mention: ${randomXp} XP`,
+        );
+      } else if (hasAttachments) {
         // 1.5x XP for messages with attachments
         randomXp = Math.floor(randomXp * 1.5);
         console.log(
@@ -619,11 +645,13 @@ const addXP = async (userId, guildId, message = null) => {
     ) {
       // Mark this announcement to prevent duplicates BEFORE sending
       levelUpAnnouncements.add(announcementKey);
+      console.log(`Level-up announcement marked for user ${userId} level ${newLevel}`);
 
-      // Auto-remove after 60 seconds to allow re-announcements if needed
+      // Auto-remove after 120 seconds to allow re-announcements if needed
       setTimeout(() => {
         levelUpAnnouncements.delete(announcementKey);
-      }, 60000);
+        console.log(`Level-up announcement lock removed for user ${userId} level ${newLevel}`);
+      }, 120000);
       const guild = client1.guilds.cache.get(guildId);
       if (guild) {
         const member = guild.members.cache.get(userId);
@@ -746,6 +774,10 @@ const addXP = async (userId, guildId, message = null) => {
     }
   } catch (e) {
     console.error("XP error:", e);
+  } finally {
+    // Always unlock the user after processing
+    const processingKey = `${userId}-${guildId}`;
+    processingUsers.delete(processingKey);
   }
 };
 
