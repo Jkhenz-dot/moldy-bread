@@ -2368,15 +2368,34 @@ const logMemoryUsage = () => {
 // Keep-alive mechanism for Render.com
 const keepAlive = () => {
   // Self-ping every 14 minutes to prevent sleeping on free tier
-  setInterval(() => {
+  setInterval(async () => {
     try {
       const fetch = require('node-fetch');
       const url = process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000';
-      fetch(`${url}/health`)
-        .then(() => console.log('Keep-alive ping sent'))
-        .catch(() => console.log('Keep-alive ping failed (service may be sleeping)'));
+      const response = await fetch(`${url}/health`);
+      if (response.ok) {
+        console.log('Keep-alive ping successful');
+      } else {
+        console.log(`Keep-alive ping returned status: ${response.status}`);
+      }
     } catch (error) {
       console.log('Keep-alive error:', error.message);
+      // Fallback to native http module if node-fetch fails
+      try {
+        const http = require('http');
+        const url = new URL(process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000/health');
+        const req = http.get(url, (res) => {
+          console.log('Keep-alive fallback ping successful');
+        });
+        req.on('error', () => {
+          console.log('Keep-alive fallback also failed');
+        });
+        req.setTimeout(5000, () => {
+          req.destroy();
+        });
+      } catch (fallbackError) {
+        console.log('Keep-alive completely failed');
+      }
     }
   }, 14 * 60 * 1000); // Every 14 minutes
 };
