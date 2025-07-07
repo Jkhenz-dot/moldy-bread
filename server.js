@@ -23,10 +23,36 @@ const PORT = 5000;
 
 // Enable compression middleware for better performance
 const compression = require("compression");
-app.use(compression());
+app.use(compression({
+  level: 6, // Balanced compression level
+  threshold: 1024, // Only compress responses > 1KB
+  filter: (req, res) => {
+    // Don't compress if client doesn't support it
+    if (req.headers['x-no-compression']) return false;
+    // Use compression for all other cases
+    return compression.filter(req, res);
+  }
+}));
 
-// Optimize Express settings
+// Optimize Express settings for production
 app.set("x-powered-by", false);
+app.set("trust proxy", 1);
+app.set("view cache", true);
+
+// Add response caching headers
+app.use((req, res, next) => {
+  // Cache static assets for 1 hour
+  if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+  }
+  next();
+});
+
+// Request timeout middleware
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 second timeout
+  next();
+});
 
 // Memory storage for file uploads (no disk storage)
 const storage = multer.memoryStorage();

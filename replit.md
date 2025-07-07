@@ -138,6 +138,13 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 07, 2025: Added proper error handling for PostgreSQL unique constraint violations  
 - July 07, 2025: Implemented upsert pattern to prevent user creation conflicts
 - July 07, 2025: Enhanced XP system with null checks to prevent runtime errors
+- July 07, 2025: Enhanced XP system with attachment multiplier (1.5x) and emoji-only penalty (-1 XP)
+- July 07, 2025: Messages with attachments now earn 1.5x XP, emoji-only messages earn -1 XP (minimum 1)
+- July 07, 2025: Comprehensive application optimization - enhanced caching, database connection pooling, and memory management
+- July 07, 2025: Optimized Discord client configuration with improved sweepers and rate limiting
+- July 07, 2025: Enhanced AI handler with concurrent request management and extended cache timeouts
+- July 07, 2025: Improved Express server with compression, caching headers, and request timeouts
+- July 07, 2025: Added automatic cleanup intervals for all cache systems to prevent memory leaks
 - July 06, 2025: Fixed database field name mismatches for allowed channels functionality
 - July 06, 2025: Implemented proper parsing of allowed_channels from string to array format
 - July 06, 2025: Resolved dashboard data loading issues and PostgreSQL connectivity

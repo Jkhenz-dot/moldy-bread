@@ -8,14 +8,50 @@ const { buildContextInfo } = require("./contextBuilder");
 
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Performance optimizations
+// Enhanced performance optimizations
 const responseCache = new Map();
 const contextCache = new Map();
 const emojiCache = new Map();
 const activeRequests = new Set();
-const MAX_CONCURRENT_REQUESTS = 3;
-const CACHE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-const REQUEST_TIMEOUT = 15000; // 15 seconds
+const userContextCache = new Map();
+const guildDataCache = new Map();
+const MAX_CONCURRENT_REQUESTS = 5; // Increased from 3
+const CACHE_TIMEOUT = 10 * 60 * 1000; // Increased to 10 minutes
+const REQUEST_TIMEOUT = 20000; // Increased to 20 seconds
+const USER_CONTEXT_CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+
+// Auto-cleanup for AI handler caches
+setInterval(() => {
+  const now = Date.now();
+  
+  // Cleanup response cache
+  for (const [key, data] of responseCache.entries()) {
+    if (now - data.timestamp > CACHE_TIMEOUT) {
+      responseCache.delete(key);
+    }
+  }
+  
+  // Cleanup context cache
+  for (const [key, data] of contextCache.entries()) {
+    if (now - data.timestamp > CACHE_TIMEOUT) {
+      contextCache.delete(key);
+    }
+  }
+  
+  // Cleanup user context cache
+  for (const [key, data] of userContextCache.entries()) {
+    if (now - data.timestamp > USER_CONTEXT_CACHE_TIME) {
+      userContextCache.delete(key);
+    }
+  }
+  
+  // Cleanup guild data cache
+  for (const [key, data] of guildDataCache.entries()) {
+    if (now - data.timestamp > CACHE_TIMEOUT) {
+      guildDataCache.delete(key);
+    }
+  }
+}, 2 * 60 * 1000); // Run every 2 minutes
 
 async function performWebSearch(content) {
   const searchKeywords = [

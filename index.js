@@ -88,11 +88,39 @@ const PASTEL_COLORS = Object.freeze([
 const getRandomPastelColor = () =>
   PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
 
-// Use Map for better performance with large datasets
+// Performance optimizations with automatic cleanup
 const processedMessages = new Map(); // Store with timestamp for cleanup
-
-// XP tracking optimization - use Set for faster lookups
 const recentXPUsers = new Set(); // Track users who recently gained XP
+const botConfigCache = new Map(); // Cache bot configurations
+const userDataCache = new Map(); // Cache user data for faster access
+const guildPermissionCache = new Map(); // Cache permission checks
+
+// Auto-cleanup intervals for memory management
+setInterval(() => {
+  const now = Date.now();
+  const FIVE_MINUTES = 5 * 60 * 1000;
+  
+  // Clean old processed messages
+  for (const [key, timestamp] of processedMessages.entries()) {
+    if (now - timestamp > FIVE_MINUTES) {
+      processedMessages.delete(key);
+    }
+  }
+  
+  // Clean old user data cache
+  for (const [key, data] of userDataCache.entries()) {
+    if (now - data.lastAccessed > FIVE_MINUTES) {
+      userDataCache.delete(key);
+    }
+  }
+  
+  // Clean permission cache
+  for (const [key, data] of guildPermissionCache.entries()) {
+    if (now - data.timestamp > FIVE_MINUTES) {
+      guildPermissionCache.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Run every 5 minutes
 
 // Optimized client configuration - shared between both bots
 const CLIENT_CONFIG = Object.freeze({
@@ -107,12 +135,26 @@ const CLIENT_CONFIG = Object.freeze({
   ws: {
     properties: { $browser: "Discord iOS" },
     compress: true, // Enable compression for better performance
+    large_threshold: 100, // Reduce guild member fetch threshold
   },
   sweepers: {
     messages: {
-      interval: 300000, // Clean up messages every 5 minutes
-      lifetime: 1800000, // Keep messages for 30 minutes
+      interval: 180000, // Clean up messages every 3 minutes (more frequent)
+      lifetime: 900000, // Keep messages for 15 minutes (reduced from 30)
     },
+    users: {
+      interval: 600000, // Clean up users every 10 minutes
+      filter: () => user => user.bot && user.id !== client.user.id, // Keep non-bot users
+    },
+    guildMembers: {
+      interval: 600000, // Clean up guild members every 10 minutes
+      filter: () => member => member.user.bot && member.user.id !== client.user.id,
+    },
+  },
+  partials: [], // Disable partials for better performance
+  allowedMentions: {
+    parse: ['users', 'roles'],
+    repliedUser: false, // Don't ping when replying
   },
 });
 
@@ -373,29 +415,57 @@ const xpForLevel = (level) => {
 };
 
 // XP is only handled by Bot 1
-const addXP = async (userId, guildId) => {
+const addXP = async (userId, guildId, message = null) => {
   try {
-    const othersData = await Others.findOne();
-    if (!othersData) return;
+    // Check if user recently gained XP to avoid spam
+    const userCooldownKey = `${userId}-${guildId}`;
+    if (recentXPUsers.has(userCooldownKey)) return;
+    
+    // Cache others data to avoid repeated database calls
+    const cacheKey = 'othersData';
+    let othersData;
+    if (botConfigCache.has(cacheKey)) {
+      othersData = botConfigCache.get(cacheKey);
+    } else {
+      othersData = await Others.findOne();
+      if (!othersData) return;
+      botConfigCache.set(cacheKey, othersData);
+      setTimeout(() => botConfigCache.delete(cacheKey), 60000); // Cache for 1 minute
+    }
 
-    let user = await UserData.findOne({ userId });
-    if (!user) {
-      const guild = client1.guilds.cache.get(guildId);
-      const member = guild?.members.cache.get(userId);
-      const username = member?.user?.username || "Unknown";
+    // Check user cache first
+    const userCacheKey = `user-${userId}`;
+    let user;
+    if (userDataCache.has(userCacheKey)) {
+      const cached = userDataCache.get(userCacheKey);
+      cached.lastAccessed = Date.now();
+      user = cached.data;
+    } else {
+      user = await UserData.findOne({ userId });
+      if (!user) {
+        const guild = client1.guilds.cache.get(guildId);
+        const member = guild?.members.cache.get(userId);
+        const username = member?.user?.username || "Unknown";
+        
+        // Use upsert to handle duplicate key errors gracefully
+        user = await UserData.findOneAndUpdate(
+          { userId },
+          { 
+            userId, 
+            username,
+            xp: 0,
+            level: 1,
+            last_xp_gain: new Date()
+          },
+          { upsert: true }
+        );
+      }
       
-      // Use upsert to handle duplicate key errors gracefully
-      user = await UserData.findOneAndUpdate(
-        { userId },
-        { 
-          userId, 
-          username,
-          xp: 0,
-          level: 1,
-          last_xp_gain: new Date()
-        },
-        { upsert: true }
-      );
+      // Cache user data
+      userDataCache.set(userCacheKey, {
+        data: user,
+        lastAccessed: Date.now()
+      });
     }
 
     // Check if user is null (database error)
@@ -408,13 +478,44 @@ const addXP = async (userId, guildId) => {
       user.last_xp_gain && 
       Date.now() - new Date(user.last_xp_gain) <
       (othersData.xp_cooldown || 70000)
-    )
+    ) {
+      // Add to cooldown set to prevent repeated checks
+      recentXPUsers.add(userCooldownKey);
+      setTimeout(() => recentXPUsers.delete(userCooldownKey), othersData.xp_cooldown || 70000);
       return;
+    }
 
     const oldLevel = user.level;
     const minXp = othersData.min_xp || 1;
     const maxXp = othersData.max_xp || 15;
-    const randomXp = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
+    let randomXp = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
+
+    // Apply XP modifiers based on message content
+    if (message) {
+      const hasAttachments = message.attachments && message.attachments.size > 0;
+      const content = message.content.trim();
+      
+      // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
+      const isEmojiOnly = content.length > 0 && (
+        // Discord custom emojis
+        /^<a?:[a-zA-Z0-9_]+:[0-9]+>$/.test(content) ||
+        // Simple emoji detection - check if message is very short and contains common emojis
+        (content.length <= 8 && /[\u{1F600}-\u{1F64F}]/u.test(content)) ||
+        // Basic emoji check for common emojis without problematic ranges
+        (content.length <= 5 && /[😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠]/u.test(content))
+      );
+      
+      if (hasAttachments) {
+        // 1.5x XP for messages with attachments
+        randomXp = Math.floor(randomXp * 1.5);
+        console.log(`Applied 1.5x XP multiplier for attachment: ${randomXp} XP`);
+      } else if (isEmojiOnly) {
+        // -1 XP for emoji-only messages (minimum 1 XP)
+        randomXp = Math.max(1, randomXp - 1);
+        console.log(`Applied -1 XP penalty for emoji-only message: ${randomXp} XP`);
+      }
+    }
+
     const newXp = user.xp + randomXp;
     const newLevel = calculateLevel(newXp);
 
@@ -1028,7 +1129,7 @@ const setupBot = async (client, botToken, botName) => {
 
     // Only bot1 handles XP
     if (client.botId === "bot1") {
-      await addXP(message.author.id, message.guildId);
+      await addXP(message.author.id, message.guildId, message);
     }
 
     // Forum auto-react is now handled in threadCreate event, not in messageCreate
@@ -1230,11 +1331,21 @@ const setupBot = async (client, botToken, botName) => {
     // Only respond if this bot should respond
     if (!shouldThisBotRespond) return;
 
-    // Extract content early for validation
+    // Extract content early for validation with optimized regex
     const content = message.content.replace(/<@!?\d+>/g, "").trim();
 
     // Skip very short messages unless mentioned to reduce AI load
     if (content.length < 3 && !message.mentions.has(client.user)) return;
+    
+    // Skip messages from other bots to prevent loops
+    if (message.author.bot && message.author.id !== client.user.id) return;
+    
+    // Rate limiting per user - prevent spam
+    const userKey = `${message.author.id}-${message.guildId}`;
+    if (processedMessages.has(userKey)) {
+      const lastMessage = processedMessages.get(userKey);
+      if (Date.now() - lastMessage < 2000) return; // 2 second cooldown per user
+    }
 
     // Skip responding to embeds from bot replies
     if (message.reference && message.reference.messageId) {

@@ -4,7 +4,15 @@ class DatabaseManager {
     constructor() {
         const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+            max: 8, // Optimized connection pool size
+            min: 2, // Keep minimum connections alive
+            idleTimeoutMillis: 60000, // 1 minute idle timeout
+            connectionTimeoutMillis: 5000, // 5 seconds connection timeout
+            acquireTimeoutMillis: 10000, // 10 seconds to acquire connection
+            query_timeout: 15000, // 15 seconds query timeout
+            keepAlive: true,
+            keepAliveInitialDelayMillis: 10000,
         };
         
         console.log('Database connection config:', {
