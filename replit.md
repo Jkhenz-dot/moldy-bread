@@ -134,6 +134,10 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 
 ## Changelog
 - July 06, 2025: Initial setup
+- July 07, 2025: Fixed duplicate key constraint violation error in user creation system
+- July 07, 2025: Added proper error handling for PostgreSQL unique constraint violations  
+- July 07, 2025: Implemented upsert pattern to prevent user creation conflicts
+- July 07, 2025: Enhanced XP system with null checks to prevent runtime errors
 - July 06, 2025: Fixed database field name mismatches for allowed channels functionality
 - July 06, 2025: Implemented proper parsing of allowed_channels from string to array format
 - July 06, 2025: Resolved dashboard data loading issues and PostgreSQL connectivity
@@ -195,7 +199,7 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Improved loading screen accuracy - waits until all data is loaded before showing dashboard
 - July 06, 2025: Optimized index.js with memory cleanup and better performance monitoring
 - July 06, 2025: Optimized server.js with compression middleware and improved static file serving
-- July 06, 2025: Changed dashboard title from ":v Faces Mascots' Dashboard" to "v Faces Mascots Dashboard"
+- July 07, 2025: Updated dashboard title to ":v Faces Mascots Dashboard" with proper emoticon formatting
 - July 06, 2025: Hidden database tab by default - now only shows after clicking dashboard title 5 times
 - July 06, 2025: Fixed data loading issue by correcting API endpoint and adding debugging logs
 - July 06, 2025: Enhanced web search capabilities with trafilatura-based real-time information retrieval
@@ -208,6 +212,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Fixed database connection issues - added proper SSL configuration for production DATABASE_URL
 - July 06, 2025: Resolved deprecated ephemeral warnings by upgrading to MessageFlags.Ephemeral syntax
 - July 06, 2025: Both Discord bots (Heilos and Wisteria) now running successfully with all commands operational
+- July 06, 2025: Fixed autoreact system - implemented missing loadForumAutoReactSettings function for proper data loading
+- July 06, 2025: Enhanced dashboard form field population to handle forum channels and emoji lists correctly
+- July 06, 2025: Autoreact settings now properly populate from database and save successfully
 
 ## User Preferences
 

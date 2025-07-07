@@ -383,10 +383,29 @@ const addXP = async (userId, guildId) => {
       const guild = client1.guilds.cache.get(guildId);
       const member = guild?.members.cache.get(userId);
       const username = member?.user?.username || "Unknown";
-      user = await UserData.create({ userId, username });
+      
+      // Use upsert to handle duplicate key errors gracefully
+      user = await UserData.findOneAndUpdate(
+        { userId },
+        { 
+          userId, 
+          username,
+          xp: 0,
+          level: 1,
+          last_xp_gain: new Date()
+        },
+        { upsert: true }
+      );
+    }
+
+    // Check if user is null (database error)
+    if (!user) {
+      console.error(`Failed to create/find user ${userId}`);
+      return;
     }
 
     if (
+      user.last_xp_gain && 
       Date.now() - new Date(user.last_xp_gain) <
       (othersData.xp_cooldown || 70000)
     )

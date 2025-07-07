@@ -44,17 +44,28 @@ class UserData extends BaseModel {
       );
     }
 
-    const user = await instance.create(userData);
+    try {
+      const user = await instance.create(userData);
 
-    if (user && user.conversation_history) {
-      try {
-        user.conversationHistory = JSON.parse(user.conversation_history);
-      } catch (e) {
-        user.conversationHistory = [];
+      if (user && user.conversation_history) {
+        try {
+          user.conversationHistory = JSON.parse(user.conversation_history);
+        } catch (e) {
+          user.conversationHistory = [];
+        }
       }
-    }
 
-    return user;
+      return user;
+    } catch (error) {
+      // Handle duplicate key constraint violation
+      if (error.code === '23505' && error.constraint === 'users_user_id_key') {
+        console.log(`User ${userData.userId} already exists, fetching existing user`);
+        return await UserData.findOne({ userId: userData.userId });
+      }
+      
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
 
   static async findOneAndUpdate(query, updateData, options = {}) {
