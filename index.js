@@ -444,8 +444,20 @@ const addXP = async (userId, guildId, message = null) => {
       user = await UserData.findOne({ userId });
       if (!user) {
         const guild = client1.guilds.cache.get(guildId);
-        const member = guild?.members.cache.get(userId);
-        const username = member?.user?.username || "Unknown";
+        let member = guild?.members.cache.get(userId);
+        
+        // If member not in cache, try to fetch from Discord API
+        if (!member && guild) {
+          try {
+            member = await guild.members.fetch(userId);
+          } catch (error) {
+            console.log(`Could not fetch member ${userId}: ${error.message}`);
+          }
+        }
+        
+        const username = member?.user?.username || member?.displayName || `User_${userId.slice(-4)}`;
+        
+        console.log(`Creating new user: ${userId} with username: ${username}`);
         
         // Use upsert to handle duplicate key errors gracefully
         user = await UserData.findOneAndUpdate(
@@ -455,7 +467,7 @@ const addXP = async (userId, guildId, message = null) => {
             username,
             xp: 0,
             level: 1,
-            last_xp_gain: new Date()
+            lastXpGain: new Date()
           },
           { upsert: true }
         );
@@ -472,6 +484,37 @@ const addXP = async (userId, guildId, message = null) => {
     if (!user) {
       console.error(`Failed to create/find user ${userId}`);
       return;
+    }
+    
+    // Fix missing usernames for existing users
+    if (!user.username || user.username === '' || user.username === 'Unknown') {
+      const guild = client1.guilds.cache.get(guildId);
+      let member = guild?.members.cache.get(userId);
+      
+      if (!member && guild) {
+        try {
+          member = await guild.members.fetch(userId);
+        } catch (error) {
+          console.log(`Could not fetch member for username update ${userId}: ${error.message}`);
+        }
+      }
+      
+      if (member?.user?.username) {
+        const newUsername = member.user.username || member.displayName || `User_${userId.slice(-4)}`;
+        console.log(`Updating username for user ${userId}: ${user.username} -> ${newUsername}`);
+        
+        user = await UserData.findOneAndUpdate(
+          { userId },
+          { username: newUsername },
+          { upsert: false }
+        );
+        
+        // Update cache
+        userDataCache.set(userCacheKey, {
+          data: user,
+          lastAccessed: Date.now()
+        });
+      }
     }
 
     if (
