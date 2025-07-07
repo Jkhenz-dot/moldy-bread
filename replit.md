@@ -256,6 +256,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 07, 2025: Added comprehensive logging for level-up announcement tracking and debugging
 - July 07, 2025: Fixed duplicate level-up announcements with concurrent processing prevention system
 - July 07, 2025: Added +2 XP bonus for messages that mention either bot (Heilos or Wisteria)
+- July 07, 2025: Implemented permanent Level 1 announcement prevention - Level 1 can only be announced once per user
+- July 07, 2025: Fixed level-up logic to only trigger on actual level increases (newLevel > oldLevel)
+- July 07, 2025: Level 1 announcements are now permanently locked to prevent any re-announcements
 
 ## User Preferences
 

@@ -638,20 +638,25 @@ const addXP = async (userId, guildId, message = null) => {
       return { levelUp: false, alreadyAnnounced: true };
     }
 
-    // Announce when user reaches level 1 from level 0, or when they level up normally
-    if (
-      (newLevel >= 1 && oldLevel === 0 && othersData?.level_up_announcement) ||
-      (newLevel > oldLevel && oldLevel > 0 && othersData?.level_up_announcement)
-    ) {
+    // Only announce actual level increases - never re-announce same level
+    const actualLevelUp = newLevel > oldLevel;
+    
+    // Announce when user actually levels up (including 0->1 and any higher level ups)
+    if (actualLevelUp && othersData?.level_up_announcement) {
       // Mark this announcement to prevent duplicates BEFORE sending
       levelUpAnnouncements.add(announcementKey);
       console.log(`Level-up announcement marked for user ${userId} level ${newLevel}`);
 
-      // Auto-remove after 120 seconds to allow re-announcements if needed
-      setTimeout(() => {
-        levelUpAnnouncements.delete(announcementKey);
-        console.log(`Level-up announcement lock removed for user ${userId} level ${newLevel}`);
-      }, 120000);
+      // For level 1, never remove the lock to prevent re-announcements
+      // For higher levels, remove after 120 seconds to allow re-announcements if needed
+      if (newLevel === 1) {
+        console.log(`Level 1 announcement permanently locked for user ${userId}`);
+      } else {
+        setTimeout(() => {
+          levelUpAnnouncements.delete(announcementKey);
+          console.log(`Level-up announcement lock removed for user ${userId} level ${newLevel}`);
+        }, 120000);
+      }
       const guild = client1.guilds.cache.get(guildId);
       if (guild) {
         const member = guild.members.cache.get(userId);
@@ -711,13 +716,11 @@ const addXP = async (userId, guildId, message = null) => {
             }
 
             // Different messages for first-time level 1 vs regular level ups
-            const isWelcomeMessage = oldLevel === 0 && user.level === 1;
-            const embedTitle = isWelcomeMessage
-              ? "<:_celebrate:1206495792777531442> Level Up!"
-              : "<:_celebrate:1206495792777531442> Level Up!";
+            const isWelcomeMessage = oldLevel === 0 && newLevel === 1;
+            const embedTitle = "<:_celebrate:1206495792777531442> Level Up!";
             const embedDescription = isWelcomeMessage
               ? `${member} just started chatting and reached **Level 1**!\n\n*${congratulationMessage}*\n\n\n`
-              : `${member} has reached **Level ${user.level}**!\n\n*${congratulationMessage}*\n\n\n`;
+              : `${member} has reached **Level ${newLevel}**!\n\n*${congratulationMessage}*\n\n\n`;
 
             const levelEmbed = new EmbedBuilder()
               .setTitle(embedTitle)
