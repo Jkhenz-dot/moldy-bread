@@ -5,14 +5,16 @@ class DatabaseManager {
         const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-            max: 8, // Optimized connection pool size
-            min: 2, // Keep minimum connections alive
-            idleTimeoutMillis: 60000, // 1 minute idle timeout
-            connectionTimeoutMillis: 5000, // 5 seconds connection timeout
-            acquireTimeoutMillis: 10000, // 10 seconds to acquire connection
-            query_timeout: 15000, // 15 seconds query timeout
+            max: 5, // Reduced pool size to prevent connection overload
+            min: 1, // Minimum 1 connection
+            idleTimeoutMillis: 30000, // 30 seconds idle timeout
+            connectionTimeoutMillis: 10000, // 10 seconds connection timeout
+            acquireTimeoutMillis: 15000, // 15 seconds to acquire connection
+            statement_timeout: 30000, // 30 seconds statement timeout
+            query_timeout: 30000, // 30 seconds query timeout
             keepAlive: true,
-            keepAliveInitialDelayMillis: 10000,
+            keepAliveInitialDelayMillis: 5000,
+            application_name: 'discord-bot',
         };
         
         console.log('Database connection config:', {
@@ -29,13 +31,33 @@ class DatabaseManager {
 
     async query(text, params) {
         const start = Date.now();
+        let client;
         try {
-            const res = await this.pool.query(text, params);
+            client = await this.pool.connect();
+            const res = await client.query(text, params);
             return res;
         } catch (error) {
             const duration = Date.now() - start;
             console.error(`Query failed after ${duration}ms:`, text, error);
+            
+            // Retry once on connection timeout
+            if (error.code === '57P01' || error.message.includes('Connection terminated')) {
+                console.log('Retrying database query after connection error...');
+                try {
+                    if (client) client.release();
+                    client = await this.pool.connect();
+                    const res = await client.query(text, params);
+                    return res;
+                } catch (retryError) {
+                    console.error('Retry failed:', retryError);
+                    throw retryError;
+                }
+            }
             throw error;
+        } finally {
+            if (client) {
+                client.release();
+            }
         }
     }
 
