@@ -97,34 +97,37 @@ const userDataCache = new Map(); // Cache user data for faster access
 const guildPermissionCache = new Map(); // Cache permission checks
 
 // Auto-cleanup intervals for memory management
-setInterval(() => {
-  const now = Date.now();
-  const FIVE_MINUTES = 5 * 60 * 1000;
-  
-  // Clean old processed messages
-  for (const [key, timestamp] of processedMessages.entries()) {
-    if (now - timestamp > FIVE_MINUTES) {
-      processedMessages.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    const FIVE_MINUTES = 5 * 60 * 1000;
+
+    // Clean old processed messages
+    for (const [key, timestamp] of processedMessages.entries()) {
+      if (now - timestamp > FIVE_MINUTES) {
+        processedMessages.delete(key);
+      }
     }
-  }
-  
-  // Level-up announcements are auto-cleaned by individual timeouts
-  // No manual cleanup needed as each entry removes itself after 60 seconds
-  
-  // Clean old user data cache
-  for (const [key, data] of userDataCache.entries()) {
-    if (now - data.lastAccessed > FIVE_MINUTES) {
-      userDataCache.delete(key);
+
+    // Level-up announcements are auto-cleaned by individual timeouts
+    // No manual cleanup needed as each entry removes itself after 60 seconds
+
+    // Clean old user data cache
+    for (const [key, data] of userDataCache.entries()) {
+      if (now - data.lastAccessed > FIVE_MINUTES) {
+        userDataCache.delete(key);
+      }
     }
-  }
-  
-  // Clean permission cache
-  for (const [key, data] of guildPermissionCache.entries()) {
-    if (now - data.timestamp > FIVE_MINUTES) {
-      guildPermissionCache.delete(key);
+
+    // Clean permission cache
+    for (const [key, data] of guildPermissionCache.entries()) {
+      if (now - data.timestamp > FIVE_MINUTES) {
+        guildPermissionCache.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000); // Run every 5 minutes
+  },
+  5 * 60 * 1000,
+); // Run every 5 minutes
 
 // Optimized client configuration - shared between both bots
 const CLIENT_CONFIG = Object.freeze({
@@ -148,16 +151,17 @@ const CLIENT_CONFIG = Object.freeze({
     },
     users: {
       interval: 600000, // Clean up users every 10 minutes
-      filter: () => user => user.bot && user.id !== client.user.id, // Keep non-bot users
+      filter: () => (user) => user.bot && user.id !== client.user.id, // Keep non-bot users
     },
     guildMembers: {
       interval: 600000, // Clean up guild members every 10 minutes
-      filter: () => member => member.user.bot && member.user.id !== client.user.id,
+      filter: () => (member) =>
+        member.user.bot && member.user.id !== client.user.id,
     },
   },
   partials: [], // Disable partials for better performance
   allowedMentions: {
-    parse: ['users', 'roles'],
+    parse: ["users", "roles"],
     repliedUser: false, // Don't ping when replying
   },
 });
@@ -424,9 +428,9 @@ const addXP = async (userId, guildId, message = null) => {
     // Check if user recently gained XP to avoid spam
     const userCooldownKey = `${userId}-${guildId}`;
     if (recentXPUsers.has(userCooldownKey)) return;
-    
+
     // Cache others data to avoid repeated database calls
-    const cacheKey = 'othersData';
+    const cacheKey = "othersData";
     let othersData;
     if (botConfigCache.has(cacheKey)) {
       othersData = botConfigCache.get(cacheKey);
@@ -449,7 +453,7 @@ const addXP = async (userId, guildId, message = null) => {
       if (!user) {
         const guild = client1.guilds.cache.get(guildId);
         let member = guild?.members.cache.get(userId);
-        
+
         // If member not in cache, try to fetch from Discord API
         if (!member && guild) {
           try {
@@ -458,29 +462,32 @@ const addXP = async (userId, guildId, message = null) => {
             console.log(`Could not fetch member ${userId}: ${error.message}`);
           }
         }
-        
-        const username = member?.user?.username || member?.displayName || `User_${userId.slice(-4)}`;
-        
+
+        const username =
+          member?.user?.username ||
+          member?.displayName ||
+          `User_${userId.slice(-4)}`;
+
         console.log(`Creating new user: ${userId} with username: ${username}`);
-        
+
         // Use upsert to handle duplicate key errors gracefully
         user = await UserData.findOneAndUpdate(
           { userId },
-          { 
-            userId, 
+          {
+            userId,
             username,
             xp: 0,
             level: 0,
-            lastXpGain: new Date()
+            lastXpGain: new Date(),
           },
-          { upsert: true }
+          { upsert: true },
         );
       }
-      
+
       // Cache user data
       userDataCache.set(userCacheKey, {
         data: user,
-        lastAccessed: Date.now()
+        lastAccessed: Date.now(),
       });
     }
 
@@ -489,46 +496,56 @@ const addXP = async (userId, guildId, message = null) => {
       console.error(`Failed to create/find user ${userId}`);
       return;
     }
-    
+
     // Fix missing usernames for existing users
-    if (!user.username || user.username === '' || user.username === 'Unknown') {
+    if (!user.username || user.username === "" || user.username === "Unknown") {
       const guild = client1.guilds.cache.get(guildId);
       let member = guild?.members.cache.get(userId);
-      
+
       if (!member && guild) {
         try {
           member = await guild.members.fetch(userId);
         } catch (error) {
-          console.log(`Could not fetch member for username update ${userId}: ${error.message}`);
+          console.log(
+            `Could not fetch member for username update ${userId}: ${error.message}`,
+          );
         }
       }
-      
+
       if (member?.user?.username) {
-        const newUsername = member.user.username || member.displayName || `User_${userId.slice(-4)}`;
-        console.log(`Updating username for user ${userId}: ${user.username} -> ${newUsername}`);
-        
+        const newUsername =
+          member.user.username ||
+          member.displayName ||
+          `User_${userId.slice(-4)}`;
+        console.log(
+          `Updating username for user ${userId}: ${user.username} -> ${newUsername}`,
+        );
+
         user = await UserData.findOneAndUpdate(
           { userId },
           { username: newUsername },
-          { upsert: false }
+          { upsert: false },
         );
-        
+
         // Update cache
         userDataCache.set(userCacheKey, {
           data: user,
-          lastAccessed: Date.now()
+          lastAccessed: Date.now(),
         });
       }
     }
 
     if (
-      user.last_xp_gain && 
+      user.last_xp_gain &&
       Date.now() - new Date(user.last_xp_gain) <
-      (othersData.xp_cooldown || 70000)
+        (othersData.xp_cooldown || 70000)
     ) {
       // Add to cooldown set to prevent repeated checks
       recentXPUsers.add(userCooldownKey);
-      setTimeout(() => recentXPUsers.delete(userCooldownKey), othersData.xp_cooldown || 70000);
+      setTimeout(
+        () => recentXPUsers.delete(userCooldownKey),
+        othersData.xp_cooldown || 70000,
+      );
       return;
     }
 
@@ -539,27 +556,35 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Apply XP modifiers based on message content
     if (message) {
-      const hasAttachments = message.attachments && message.attachments.size > 0;
+      const hasAttachments =
+        message.attachments && message.attachments.size > 0;
       const content = message.content.trim();
-      
+
       // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
-      const isEmojiOnly = content.length > 0 && (
+      const isEmojiOnly =
+        content.length > 0 &&
         // Discord custom emojis
-        /^<a?:[a-zA-Z0-9_]+:[0-9]+>$/.test(content) ||
-        // Simple emoji detection - check if message is very short and contains common emojis
-        (content.length <= 8 && /[\u{1F600}-\u{1F64F}]/u.test(content)) ||
-        // Basic emoji check for common emojis without problematic ranges
-        (content.length <= 5 && /[😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠]/u.test(content))
-      );
-      
+        (/^<a?:[a-zA-Z0-9_]+:[0-9]+>$/.test(content) ||
+          // Simple emoji detection - check if message is very short and contains common emojis
+          (content.length <= 8 && /[\u{1F600}-\u{1F64F}]/u.test(content)) ||
+          // Basic emoji check for common emojis without problematic ranges
+          (content.length <= 5 &&
+            /[😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠]/u.test(
+              content,
+            )));
+
       if (hasAttachments) {
         // 1.5x XP for messages with attachments
         randomXp = Math.floor(randomXp * 1.5);
-        console.log(`Applied 1.5x XP multiplier for attachment: ${randomXp} XP`);
+        console.log(
+          `Applied 1.5x XP multiplier for attachment: ${randomXp} XP`,
+        );
       } else if (isEmojiOnly) {
         // -1 XP for emoji-only messages (minimum 1 XP)
         randomXp = Math.max(1, randomXp - 1);
-        console.log(`Applied -1 XP penalty for emoji-only message: ${randomXp} XP`);
+        console.log(
+          `Applied -1 XP penalty for emoji-only message: ${randomXp} XP`,
+        );
       }
     }
 
@@ -578,21 +603,23 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Simple duplicate prevention using user-level combination
     const announcementKey = `${userId}-${newLevel}`;
-    
+
     // Check if this user+level combination was already announced
     if (levelUpAnnouncements.has(announcementKey)) {
-      console.log(`Duplicate level-up announcement prevented for user ${userId} level ${newLevel}`);
+      console.log(
+        `Duplicate level-up announcement prevented for user ${userId} level ${newLevel}`,
+      );
       return { levelUp: false, alreadyAnnounced: true };
     }
 
     // Announce when user reaches level 1 from level 0, or when they level up normally
     if (
-      ((newLevel >= 1 && oldLevel === 0 && othersData?.level_up_announcement) ||
-      (newLevel > oldLevel && oldLevel > 0 && othersData?.level_up_announcement))
+      (newLevel >= 1 && oldLevel === 0 && othersData?.level_up_announcement) ||
+      (newLevel > oldLevel && oldLevel > 0 && othersData?.level_up_announcement)
     ) {
       // Mark this announcement to prevent duplicates BEFORE sending
       levelUpAnnouncements.add(announcementKey);
-      
+
       // Auto-remove after 60 seconds to allow re-announcements if needed
       setTimeout(() => {
         levelUpAnnouncements.delete(announcementKey);
@@ -1399,10 +1426,10 @@ const setupBot = async (client, botToken, botName) => {
 
     // Skip very short messages unless mentioned to reduce AI load
     if (content.length < 3 && !message.mentions.has(client.user)) return;
-    
+
     // Skip messages from other bots to prevent loops
     if (message.author.bot && message.author.id !== client.user.id) return;
-    
+
     // Rate limiting per user - prevent spam
     const userKey = `${message.author.id}-${message.guildId}`;
     if (processedMessages.has(userKey)) {
@@ -2205,15 +2232,17 @@ const setupBot = async (client, botToken, botName) => {
 
   client.on("error", (error) => {
     console.error(`${botName} Discord client error:`, error);
-    
+
     // Don't crash on common recoverable errors
-    if (error.code === 'ECONNRESET' || 
-        error.code === 'ENOTFOUND' || 
-        error.message.includes('Connection reset')) {
+    if (
+      error.code === "ECONNRESET" ||
+      error.code === "ENOTFOUND" ||
+      error.message.includes("Connection reset")
+    ) {
       console.log(`${botName} will attempt to reconnect automatically`);
       return;
     }
-    
+
     // Log critical errors but don't crash
     console.error(`${botName} critical error - monitoring for reconnection`);
   });
@@ -2235,7 +2264,9 @@ const setupBot = async (client, botToken, botName) => {
   });
 
   client.on("shardResume", (shardId, replayedEvents) => {
-    console.log(`${botName} shard ${shardId} resumed (${replayedEvents} events replayed)`);
+    console.log(
+      `${botName} shard ${shardId} resumed (${replayedEvents} events replayed)`,
+    );
   });
 
   // Login with retry logic
@@ -2247,14 +2278,19 @@ const setupBot = async (client, botToken, botName) => {
         console.log(`${botName} successfully logged in`);
         return;
       } catch (error) {
-        console.error(`${botName} login attempt ${attempt} failed:`, error.message);
-        
+        console.error(
+          `${botName} login attempt ${attempt} failed:`,
+          error.message,
+        );
+
         if (attempt === retries) {
-          throw new Error(`${botName} failed to login after ${retries} attempts: ${error.message}`);
+          throw new Error(
+            `${botName} failed to login after ${retries} attempts: ${error.message}`,
+          );
         }
-        
+
         console.log(`${botName} retrying login in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 1.5; // Exponential backoff
       }
     }
@@ -2365,44 +2401,57 @@ const logMemoryUsage = () => {
   }
 })();
 
-// Keep-alive mechanism for Render.com
+// Keep-alive mechanism for Render.com using native Node.js modules
 const keepAlive = () => {
   // Self-ping every 14 minutes to prevent sleeping on free tier
-  setInterval(async () => {
-    try {
-      const fetch = require('node-fetch');
-      const url = process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000';
-      const response = await fetch(`${url}/health`);
-      if (response.ok) {
-        console.log('Keep-alive ping successful');
-      } else {
-        console.log(`Keep-alive ping returned status: ${response.status}`);
-      }
-    } catch (error) {
-      console.log('Keep-alive error:', error.message);
-      // Fallback to native http module if node-fetch fails
+  setInterval(
+    () => {
       try {
-        const http = require('http');
-        const url = new URL(process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000/health');
-        const req = http.get(url, (res) => {
-          console.log('Keep-alive fallback ping successful');
+        // Use Render.com external URL or fallback to localhost
+        const baseUrl =
+          process.env.RENDER_EXTERNAL_URL ||
+          (process.env.RENDER_SERVICE_NAME
+            ? `https://${process.env.RENDER_SERVICE_NAME}.onrender.com`
+            : "http://localhost:5000");
+        const healthUrl = `${baseUrl}/health`;
+
+        console.log(`Sending keep-alive ping to: ${healthUrl}`);
+
+        // Use https module for HTTPS URLs, http for HTTP URLs
+        const isHttps = healthUrl.startsWith("https://");
+        const httpModule = isHttps ? require("https") : require("http");
+
+        const req = httpModule.get(healthUrl, (res) => {
+          if (res.statusCode === 200) {
+            console.log("Keep-alive ping successful");
+          } else {
+            console.log(`Keep-alive ping returned status: ${res.statusCode}`);
+          }
         });
-        req.on('error', () => {
-          console.log('Keep-alive fallback also failed');
+
+        req.on("error", (error) => {
+          console.log("Keep-alive ping failed:", error.message);
         });
-        req.setTimeout(5000, () => {
+
+        req.setTimeout(10000, () => {
           req.destroy();
+          console.log("Keep-alive ping timeout after 10 seconds");
         });
-      } catch (fallbackError) {
-        console.log('Keep-alive completely failed');
+      } catch (error) {
+        console.log("Keep-alive setup error:", error.message);
       }
-    }
-  }, 14 * 60 * 1000); // Every 14 minutes
+    },
+    14 * 60 * 1000,
+  ); // Every 14 minutes
 };
 
 // Start keep-alive for Render.com
-if (process.env.RENDER || process.env.NODE_ENV === 'production') {
-  console.log('Starting keep-alive mechanism for Render.com...');
+if (
+  process.env.RENDER ||
+  process.env.RENDER_SERVICE_NAME ||
+  process.env.NODE_ENV === "production"
+) {
+  console.log("Starting keep-alive mechanism for Render.com...");
   keepAlive();
 }
 
@@ -2411,37 +2460,46 @@ const gracefulShutdown = (signal) => {
   console.log(`Received ${signal}, attempting graceful handling...`);
 
   // For SIGTERM on Render or production, try to reconnect instead of shutting down
-  if (signal === 'SIGTERM' && (process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.RAILWAY_STATIC_URL || process.env.VERCEL)) {
-    console.log('SIGTERM received on Render - attempting to maintain connection...');
-    
+  if (
+    signal === "SIGTERM" &&
+    (process.env.RENDER ||
+      process.env.RENDER_SERVICE_NAME ||
+      process.env.NODE_ENV === "production" ||
+      process.env.RAILWAY_STATIC_URL ||
+      process.env.VERCEL)
+  ) {
+    console.log(
+      "SIGTERM received on Render - attempting to maintain connection...",
+    );
+
     // Try to reconnect Discord clients instead of shutting down
     setTimeout(async () => {
       try {
-        console.log('Attempting Discord client reconnection...');
-        
+        console.log("Attempting Discord client reconnection...");
+
         // Check if clients are still connected
         if (client1.isReady()) {
-          console.log('Bot1 still connected');
+          console.log("Bot1 still connected");
         } else {
-          console.log('Bot1 reconnecting...');
+          console.log("Bot1 reconnecting...");
           await client1.login(process.env.DISCORD_TOKEN);
         }
-        
+
         if (client2.isReady()) {
-          console.log('Bot2 still connected');
+          console.log("Bot2 still connected");
         } else {
-          console.log('Bot2 reconnecting...');
+          console.log("Bot2 reconnecting...");
           await client2.login(process.env.DISCORD_TOKEN_2);
         }
-        
-        console.log('Reconnection attempt completed');
+
+        console.log("Reconnection attempt completed");
         return; // Don't shutdown, keep running
       } catch (error) {
-        console.error('Reconnection failed:', error);
+        console.error("Reconnection failed:", error);
         // Fall through to normal shutdown
       }
     }, 1000);
-    
+
     // Don't proceed with shutdown immediately
     return;
   }

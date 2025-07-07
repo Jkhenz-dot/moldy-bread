@@ -31,12 +31,14 @@ class DatabaseManager {
             // Handle connection termination gracefully
             if (
                 err.code === "57P01" ||
-                err.message.includes("terminating connection")
+                err.message.includes("terminating connection") ||
+                err.message.includes("administrator command")
             ) {
                 console.log(
                     "Database connection terminated, will reconnect automatically",
                 );
-                // Pool will automatically create new connections as needed
+                // Force clear the pool to prevent using stale connections
+                this.forceReconnect();
             }
         });
 
@@ -47,6 +49,59 @@ class DatabaseManager {
         this.pool.on("remove", (client) => {
             console.log("Database connection removed from pool");
         });
+    }
+
+    async forceReconnect() {
+        try {
+            console.log("Force reconnecting to database...");
+            // End all existing connections
+            await this.pool.end();
+            
+            // Recreate the pool with same configuration
+            const connectionConfig = {
+                connectionString: process.env.DATABASE_URL,
+                ssl: process.env.DATABASE_URL
+                    ? { rejectUnauthorized: false }
+                    : false,
+                max: 5,
+                min: 1,
+                idleTimeoutMillis: 30000,
+                connectionTimeoutMillis: 10000,
+                acquireTimeoutMillis: 15000,
+                statement_timeout: 30000,
+                query_timeout: 30000,
+                keepAlive: true,
+                keepAliveInitialDelayMillis: 5000,
+                application_name: "discord-bot",
+            };
+            
+            this.pool = new Pool(connectionConfig);
+            
+            // Re-attach event listeners
+            this.pool.on("error", (err) => {
+                console.error("PostgreSQL pool error:", err);
+                if (
+                    err.code === "57P01" ||
+                    err.message.includes("terminating connection") ||
+                    err.message.includes("administrator command")
+                ) {
+                    console.log("Database connection terminated, will reconnect automatically");
+                    this.forceReconnect();
+                }
+            });
+
+            this.pool.on("connect", (client) => {
+                console.log("New database connection established");
+            });
+
+            this.pool.on("remove", (client) => {
+                console.log("Database connection removed from pool");
+            });
+            
+            console.log("Database force reconnection completed");
+        } catch (error) {
+            console.error("Failed to force reconnect database:", error);
+        }
     }
 
     async query(text, params) {
