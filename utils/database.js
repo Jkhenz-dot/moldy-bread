@@ -1,10 +1,12 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
 class DatabaseManager {
     constructor() {
         const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+            ssl: process.env.DATABASE_URL
+                ? { rejectUnauthorized: false }
+                : false,
             max: 5, // Reduced pool size to prevent connection overload
             min: 1, // Minimum 1 connection
             idleTimeoutMillis: 30000, // 30 seconds idle timeout
@@ -14,31 +16,36 @@ class DatabaseManager {
             query_timeout: 30000, // 30 seconds query timeout
             keepAlive: true,
             keepAliveInitialDelayMillis: 5000,
-            application_name: 'discord-bot',
+            application_name: "discord-bot",
         };
-        
-        console.log('Database connection config:', {
+
+        console.log("Database connection config:", {
             hasConnectionString: !!process.env.DATABASE_URL,
-            ssl: connectionConfig.ssl
+            ssl: connectionConfig.ssl,
         });
-        
+
         this.pool = new Pool(connectionConfig);
-        
-        this.pool.on('error', (err) => {
-            console.error('PostgreSQL pool error:', err);
+
+        this.pool.on("error", (err) => {
+            console.error("PostgreSQL pool error:", err);
             // Handle connection termination gracefully
-            if (err.code === '57P01' || err.message.includes('terminating connection')) {
-                console.log('Database connection terminated, will reconnect automatically');
+            if (
+                err.code === "57P01" ||
+                err.message.includes("terminating connection")
+            ) {
+                console.log(
+                    "Database connection terminated, will reconnect automatically",
+                );
                 // Pool will automatically create new connections as needed
             }
         });
-        
-        this.pool.on('connect', (client) => {
-            console.log('New database connection established');
+
+        this.pool.on("connect", (client) => {
+            console.log("New database connection established");
         });
-        
-        this.pool.on('remove', (client) => {
-            console.log('Database connection removed from pool');
+
+        this.pool.on("remove", (client) => {
+            console.log("Database connection removed from pool");
         });
     }
 
@@ -52,27 +59,38 @@ class DatabaseManager {
         } catch (error) {
             const duration = Date.now() - start;
             console.error(`Query failed after ${duration}ms:`, text, error);
-            
+
             // Retry on connection termination or timeout
-            if (error.code === '57P01' || error.message.includes('Connection terminated') || 
-                error.message.includes('timeout') || error.code === 'ECONNRESET') {
-                console.log('Retrying database query after connection error...');
+            if (
+                error.code === "57P01" ||
+                error.message.includes("Connection terminated") ||
+                error.message.includes("timeout") ||
+                error.code === "ECONNRESET"
+            ) {
+                console.log(
+                    "Retrying database query after connection error...",
+                );
                 try {
                     if (client) {
                         client.release(true); // Force release with error flag
                         client = null;
                     }
                     // Wait a moment before retry
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
                     client = await this.pool.connect();
                     const res = await client.query(text, params);
-                    console.log('Database query retry successful');
+                    console.log("Database query retry successful");
                     return res;
                 } catch (retryError) {
-                    console.error('Database retry failed:', retryError);
+                    console.error("Database retry failed:", retryError);
                     // For critical failures, return null instead of crashing
-                    if (retryError.code === '57P01' || retryError.message.includes('terminating connection')) {
-                        console.log('Database unavailable, returning null to prevent crash');
+                    if (
+                        retryError.code === "57P01" ||
+                        retryError.message.includes("terminating connection")
+                    ) {
+                        console.log(
+                            "Database unavailable, returning null to prevent crash",
+                        );
                         return { rows: [] };
                     }
                     throw retryError;
@@ -84,12 +102,17 @@ class DatabaseManager {
                 try {
                     client.release();
                 } catch (releaseError) {
-                    console.log('Error releasing database client:', releaseError.message);
+                    console.log(
+                        "Error releasing database client:",
+                        releaseError.message,
+                    );
                     // Force release even if there's an error
                     try {
                         client.release(true);
                     } catch (forceReleaseError) {
-                        console.log('Force release also failed, connection may be lost');
+                        console.log(
+                            "Force release also failed, connection may be lost",
+                        );
                     }
                 }
             }
@@ -102,12 +125,12 @@ class DatabaseManager {
 
     async close() {
         await this.pool.end();
-        console.info('Database connection closed');
+        console.info("Database connection closed");
     }
 
     // User management methods
     async getUser(discordId) {
-        const query = 'SELECT * FROM users WHERE discord_id = $1';
+        const query = "SELECT * FROM users WHERE discord_id = $1";
         const result = await this.query(query, [discordId]);
         return result.rows[0] || null;
     }
@@ -128,7 +151,7 @@ class DatabaseManager {
             userData.username,
             userData.discriminator,
             userData.avatar,
-            userData.joinedAt || new Date()
+            userData.joinedAt || new Date(),
         ];
         const result = await this.query(query, values);
         return result.rows[0];
@@ -160,7 +183,7 @@ class DatabaseManager {
 
     // Guild management methods
     async getGuild(discordId) {
-        const query = 'SELECT * FROM guilds WHERE discord_id = $1';
+        const query = "SELECT * FROM guilds WHERE discord_id = $1";
         const result = await this.query(query, [discordId]);
         return result.rows[0] || null;
     }
@@ -177,7 +200,7 @@ class DatabaseManager {
         const values = [
             guildData.discordId,
             guildData.name,
-            guildData.prefix || '!'
+            guildData.prefix || "!",
         ];
         const result = await this.query(query, values);
         return result.rows[0];
@@ -214,26 +237,38 @@ class DatabaseManager {
             FROM command_usage
         `;
         let params = [];
-        
+
         if (guildId) {
-            query += ' WHERE guild_id = $1';
+            query += " WHERE guild_id = $1";
             params.push(guildId);
         }
-        
-        query += ' GROUP BY command_name ORDER BY usage_count DESC';
-        
+
+        query += " GROUP BY command_name ORDER BY usage_count DESC";
+
         const result = await this.query(query, params);
         return result.rows;
     }
 
     // Bot message logging
-    async logBotMessage(userId, guildId, messageContent, responseContent, messageType = 'command') {
+    async logBotMessage(
+        userId,
+        guildId,
+        messageContent,
+        responseContent,
+        messageType = "command",
+    ) {
         const query = `
             INSERT INTO bot_messages (user_id, guild_id, message_content, response_content, message_type)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING *
         `;
-        const result = await this.query(query, [userId, guildId, messageContent, responseContent, messageType]);
+        const result = await this.query(query, [
+            userId,
+            guildId,
+            messageContent,
+            responseContent,
+            messageType,
+        ]);
         return result.rows[0];
     }
 
@@ -256,32 +291,32 @@ class DatabaseManager {
             LEFT JOIN guilds g ON g.id = u.guild_id
         `;
         let params = [];
-        
+
         if (guildId) {
-            query += ' WHERE g.discord_id = $1';
+            query += " WHERE g.discord_id = $1";
             params.push(guildId);
         }
-        
-        query += ' ORDER BY u.xp DESC LIMIT $' + (params.length + 1);
+
+        query += " ORDER BY u.xp DESC LIMIT $" + (params.length + 1);
         params.push(limit);
-        
+
         const result = await this.query(query, params);
         return result.rows;
     }
 
     // Helper method to get user and guild IDs
     async getUserAndGuildIds(discordUserId, discordGuildId) {
-        const userQuery = 'SELECT id FROM users WHERE discord_id = $1';
-        const guildQuery = 'SELECT id FROM guilds WHERE discord_id = $1';
-        
+        const userQuery = "SELECT id FROM users WHERE discord_id = $1";
+        const guildQuery = "SELECT id FROM guilds WHERE discord_id = $1";
+
         const [userResult, guildResult] = await Promise.all([
             this.query(userQuery, [discordUserId]),
-            this.query(guildQuery, [discordGuildId])
+            this.query(guildQuery, [discordGuildId]),
         ]);
-        
+
         return {
             userId: userResult.rows[0]?.id || null,
-            guildId: guildResult.rows[0]?.id || null
+            guildId: guildResult.rows[0]?.id || null,
         };
     }
 }

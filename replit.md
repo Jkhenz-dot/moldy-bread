@@ -225,6 +225,16 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Fixed autoreact system - implemented missing loadForumAutoReactSettings function for proper data loading
 - July 06, 2025: Enhanced dashboard form field population to handle forum channels and emoji lists correctly
 - July 06, 2025: Autoreact settings now properly populate from database and save successfully
+- July 07, 2025: Fixed level system to start users at level 0 instead of level 1
+- July 07, 2025: Users now properly level up to level 1 when they first gain enough XP  
+- July 07, 2025: Updated calculateLevel function and xpForLevel function to use 0-based level system
+- July 07, 2025: Fixed user creation logic to initialize new users at level 0
+- July 07, 2025: Updated XP system - users now get 2-8 XP per message (instead of 0-5)
+- July 07, 2025: Level 1 now requires only 1 XP - users reach level 1 on their first message
+- July 07, 2025: Users start at level 0 and immediately level up to 1 when they send their first message
+- July 07, 2025: Updated tier multiplier from 15% to 12% increase every 5 levels for more balanced progression
+- July 07, 2025: Fixed critical bug - new users were being created at level 1 instead of level 0
+- July 07, 2025: New users now properly start at level 0 and get level announcement when reaching level 1
 
 ## User Preferences
 

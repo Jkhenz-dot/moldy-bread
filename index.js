@@ -373,19 +373,19 @@ const isNSFW = (content) =>
   badWords.some((word) => content.toLowerCase().includes(word));
 
 const calculateLevel = (xp) => {
-  if (xp === 0) return 1;
+  if (xp === 0) return 0; // Start at level 0
 
   let currentXP = 0;
-  let level = 1;
+  let level = 0; // Start counting from level 0
 
   while (true) {
-    const tierMultiplier = 1 + Math.floor((level - 1) / 5) * 0.15;
+    const tierMultiplier = 1 + Math.floor(level / 5) * 0.12;
     let xpNeeded;
 
-    if (level === 1) {
-      xpNeeded = 100; // Level 2 requires 100 XP
+    if (level === 0) {
+      xpNeeded = 1; // Level 1 requires just 1 XP from level 0 (first message)
     } else {
-      xpNeeded = Math.pow(level - 1, 2) * 100 * tierMultiplier;
+      xpNeeded = Math.pow(level, 2) * 100 * tierMultiplier;
     }
 
     if (currentXP + xpNeeded > xp) break;
@@ -397,17 +397,17 @@ const calculateLevel = (xp) => {
 };
 
 const xpForLevel = (level) => {
-  if (level <= 1) return 0;
+  if (level <= 0) return 0;
 
   let totalXP = 0;
 
-  for (let i = 1; i < level; i++) {
-    const tierMultiplier = 1 + Math.floor((i - 1) / 5) * 0.15;
+  for (let i = 0; i < level; i++) {
+    const tierMultiplier = 1 + Math.floor(i / 5) * 0.12;
 
-    if (i === 1) {
-      totalXP += 100; // Level 2 requires 100 XP
+    if (i === 0) {
+      totalXP += 1; // Level 1 requires just 1 XP
     } else {
-      totalXP += Math.pow(i - 1, 2) * 100 * tierMultiplier;
+      totalXP += Math.pow(i, 2) * 100 * tierMultiplier;
     }
   }
 
@@ -466,7 +466,7 @@ const addXP = async (userId, guildId, message = null) => {
             userId, 
             username,
             xp: 0,
-            level: 1,
+            level: 0,
             lastXpGain: new Date()
           },
           { upsert: true }
@@ -1705,7 +1705,7 @@ const setupBot = async (client, botToken, botName) => {
                 thread.guild.members.cache.get(thread.ownerId)?.user
                   ?.username || "Unknown",
               xp: 0,
-              level: 1,
+              level: 0,
               last_message: new Date(),
               conversation_history: [],
             });
