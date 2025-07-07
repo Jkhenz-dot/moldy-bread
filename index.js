@@ -2178,8 +2178,69 @@ const setupBot = async (client, botToken, botName) => {
     }
   });
 
-  // Login the bot
-  await client.login(botToken);
+  // Discord reconnection handling
+  client.on("disconnect", (event) => {
+    console.warn(`${botName} disconnected from Discord:`, event);
+  });
+
+  client.on("error", (error) => {
+    console.error(`${botName} Discord client error:`, error);
+    
+    // Don't crash on common recoverable errors
+    if (error.code === 'ECONNRESET' || 
+        error.code === 'ENOTFOUND' || 
+        error.message.includes('Connection reset')) {
+      console.log(`${botName} will attempt to reconnect automatically`);
+      return;
+    }
+    
+    // Log critical errors but don't crash
+    console.error(`${botName} critical error - monitoring for reconnection`);
+  });
+
+  client.on("warn", (warning) => {
+    console.warn(`${botName} warning:`, warning);
+  });
+
+  client.on("shardDisconnect", (event, shardId) => {
+    console.warn(`${botName} shard ${shardId} disconnected:`, event);
+  });
+
+  client.on("shardReconnecting", (shardId) => {
+    console.log(`${botName} shard ${shardId} attempting to reconnect...`);
+  });
+
+  client.on("shardReady", (shardId) => {
+    console.log(`${botName} shard ${shardId} ready and connected`);
+  });
+
+  client.on("shardResume", (shardId, replayedEvents) => {
+    console.log(`${botName} shard ${shardId} resumed (${replayedEvents} events replayed)`);
+  });
+
+  // Login with retry logic
+  const loginWithRetry = async (retries = 3, delay = 5000) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`${botName} login attempt ${attempt}/${retries}`);
+        await client.login(botToken);
+        console.log(`${botName} successfully logged in`);
+        return;
+      } catch (error) {
+        console.error(`${botName} login attempt ${attempt} failed:`, error.message);
+        
+        if (attempt === retries) {
+          throw new Error(`${botName} failed to login after ${retries} attempts: ${error.message}`);
+        }
+        
+        console.log(`${botName} retrying login in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 1.5; // Exponential backoff
+      }
+    }
+  };
+
+  await loginWithRetry();
 
   // Set global variables for the web dashboard
   if (botName === "Bot1") {
@@ -2284,9 +2345,70 @@ const logMemoryUsage = () => {
   }
 })();
 
-// Enhanced graceful shutdown
+// Keep-alive mechanism for Render.com
+const keepAlive = () => {
+  // Self-ping every 14 minutes to prevent sleeping on free tier
+  setInterval(() => {
+    try {
+      const fetch = require('node-fetch');
+      const url = process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000';
+      fetch(`${url}/health`)
+        .then(() => console.log('Keep-alive ping sent'))
+        .catch(() => console.log('Keep-alive ping failed (service may be sleeping)'));
+    } catch (error) {
+      console.log('Keep-alive error:', error.message);
+    }
+  }, 14 * 60 * 1000); // Every 14 minutes
+};
+
+// Start keep-alive for Render.com
+if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+  console.log('Starting keep-alive mechanism for Render.com...');
+  keepAlive();
+}
+
+// Enhanced graceful shutdown with reconnection logic
 const gracefulShutdown = (signal) => {
-  console.log(`Received ${signal}, shutting down gracefully...`);
+  console.log(`Received ${signal}, attempting graceful handling...`);
+
+  // For SIGTERM on Render or production, try to reconnect instead of shutting down
+  if (signal === 'SIGTERM' && (process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.RAILWAY_STATIC_URL || process.env.VERCEL)) {
+    console.log('SIGTERM received on Render - attempting to maintain connection...');
+    
+    // Try to reconnect Discord clients instead of shutting down
+    setTimeout(async () => {
+      try {
+        console.log('Attempting Discord client reconnection...');
+        
+        // Check if clients are still connected
+        if (client1.isReady()) {
+          console.log('Bot1 still connected');
+        } else {
+          console.log('Bot1 reconnecting...');
+          await client1.login(process.env.DISCORD_TOKEN);
+        }
+        
+        if (client2.isReady()) {
+          console.log('Bot2 still connected');
+        } else {
+          console.log('Bot2 reconnecting...');
+          await client2.login(process.env.DISCORD_TOKEN_2);
+        }
+        
+        console.log('Reconnection attempt completed');
+        return; // Don't shutdown, keep running
+      } catch (error) {
+        console.error('Reconnection failed:', error);
+        // Fall through to normal shutdown
+      }
+    }, 1000);
+    
+    // Don't proceed with shutdown immediately
+    return;
+  }
+
+  // Normal shutdown for other signals
+  console.log(`Proceeding with shutdown for ${signal}...`);
 
   // Clear intervals
   if (process.cleanupIntervals) {

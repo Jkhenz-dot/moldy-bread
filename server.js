@@ -164,6 +164,19 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "dashboard.html"));
 });
 
+// Health check endpoint for keep-alive mechanism
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "healthy", 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    bots: {
+      bot1: global.discordClient1?.isReady() || false,
+      bot2: global.discordClient2?.isReady() || false
+    }
+  });
+});
+
 // Test endpoint for database operations
 app.get("/api/test-db", async (req, res) => {
     try {
