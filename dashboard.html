@@ -3377,7 +3377,11 @@
                 loadReactionRoleSets();
                 
                 // Set up event listeners
-                setupReactionRoleEventListeners();
+                if (typeof setupReactionRoleEventListeners === 'function') {
+                    setupReactionRoleEventListeners();
+                } else {
+                    console.log('setupReactionRoleEventListeners function not found');
+                }
             } catch (error) {
                 console.log('Advanced reaction roles initialization failed:', error.message);
             }
@@ -3386,7 +3390,7 @@
         function populateRoleDropdown() {
             const roleSelect = document.getElementById('newRoleSelect');
             if (!roleSelect) {
-                console.log('newRoleSelect element not found');
+                console.log('newRoleSelect element not found - may not be in reactions tab');
                 return;
             }
             

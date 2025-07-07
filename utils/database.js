@@ -26,6 +26,19 @@ class DatabaseManager {
         
         this.pool.on('error', (err) => {
             console.error('PostgreSQL pool error:', err);
+            // Handle connection termination gracefully
+            if (err.code === '57P01' || err.message.includes('terminating connection')) {
+                console.log('Database connection terminated, will reconnect automatically');
+                // Pool will automatically create new connections as needed
+            }
+        });
+        
+        this.pool.on('connect', (client) => {
+            console.log('New database connection established');
+        });
+        
+        this.pool.on('remove', (client) => {
+            console.log('Database connection removed from pool');
         });
     }
 
@@ -40,23 +53,45 @@ class DatabaseManager {
             const duration = Date.now() - start;
             console.error(`Query failed after ${duration}ms:`, text, error);
             
-            // Retry once on connection timeout
-            if (error.code === '57P01' || error.message.includes('Connection terminated')) {
+            // Retry on connection termination or timeout
+            if (error.code === '57P01' || error.message.includes('Connection terminated') || 
+                error.message.includes('timeout') || error.code === 'ECONNRESET') {
                 console.log('Retrying database query after connection error...');
                 try {
-                    if (client) client.release();
+                    if (client) {
+                        client.release(true); // Force release with error flag
+                        client = null;
+                    }
+                    // Wait a moment before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     client = await this.pool.connect();
                     const res = await client.query(text, params);
+                    console.log('Database query retry successful');
                     return res;
                 } catch (retryError) {
-                    console.error('Retry failed:', retryError);
+                    console.error('Database retry failed:', retryError);
+                    // For critical failures, return null instead of crashing
+                    if (retryError.code === '57P01' || retryError.message.includes('terminating connection')) {
+                        console.log('Database unavailable, returning null to prevent crash');
+                        return { rows: [] };
+                    }
                     throw retryError;
                 }
             }
             throw error;
         } finally {
             if (client) {
-                client.release();
+                try {
+                    client.release();
+                } catch (releaseError) {
+                    console.log('Error releasing database client:', releaseError.message);
+                    // Force release even if there's an error
+                    try {
+                        client.release(true);
+                    } catch (forceReleaseError) {
+                        console.log('Force release also failed, connection may be lost');
+                    }
+                }
             }
         }
     }
