@@ -243,6 +243,9 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 07, 2025: Implemented self-ping system (every 14 minutes) to prevent free tier service sleeping
 - July 07, 2025: Added health endpoint (/health) for monitoring bot status and uptime
 - July 07, 2025: Created start.js production entry point with enhanced error recovery and memory monitoring
+- July 07, 2025: Fixed duplicate level-up announcements by implementing announcement tracking system
+- July 07, 2025: Added 30-second prevention window to stop multiple announcements for same user/level
+- July 07, 2025: Enhanced XP system to only process through Bot 1 to prevent race conditions
 
 ## User Preferences
 

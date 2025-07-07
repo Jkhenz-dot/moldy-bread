@@ -91,6 +91,7 @@ const getRandomPastelColor = () =>
 // Performance optimizations with automatic cleanup
 const processedMessages = new Map(); // Store with timestamp for cleanup
 const recentXPUsers = new Set(); // Track users who recently gained XP
+const levelUpAnnouncements = new Set(); // Prevent duplicate level-up announcements
 const botConfigCache = new Map(); // Cache bot configurations
 const userDataCache = new Map(); // Cache user data for faster access
 const guildPermissionCache = new Map(); // Cache permission checks
@@ -106,6 +107,9 @@ setInterval(() => {
       processedMessages.delete(key);
     }
   }
+  
+  // Level-up announcements are auto-cleaned by individual timeouts
+  // No manual cleanup needed as each entry removes itself after 60 seconds
   
   // Clean old user data cache
   for (const [key, data] of userDataCache.entries()) {
@@ -572,11 +576,27 @@ const addXP = async (userId, guildId, message = null) => {
       { upsert: true },
     );
 
+    // Simple duplicate prevention using user-level combination
+    const announcementKey = `${userId}-${newLevel}`;
+    
+    // Check if this user+level combination was already announced
+    if (levelUpAnnouncements.has(announcementKey)) {
+      console.log(`Duplicate level-up announcement prevented for user ${userId} level ${newLevel}`);
+      return { levelUp: false, alreadyAnnounced: true };
+    }
+
     // Announce when user reaches level 1 from level 0, or when they level up normally
     if (
-      (newLevel >= 1 && oldLevel === 0 && othersData?.level_up_announcement) ||
-      (newLevel > oldLevel && oldLevel > 0 && othersData?.level_up_announcement)
+      ((newLevel >= 1 && oldLevel === 0 && othersData?.level_up_announcement) ||
+      (newLevel > oldLevel && oldLevel > 0 && othersData?.level_up_announcement))
     ) {
+      // Mark this announcement to prevent duplicates BEFORE sending
+      levelUpAnnouncements.add(announcementKey);
+      
+      // Auto-remove after 60 seconds to allow re-announcements if needed
+      setTimeout(() => {
+        levelUpAnnouncements.delete(announcementKey);
+      }, 60000);
       const guild = client1.guilds.cache.get(guildId);
       if (guild) {
         const member = guild.members.cache.get(userId);
