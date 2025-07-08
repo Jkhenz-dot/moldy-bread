@@ -82,7 +82,7 @@ class DatabaseManager {
             
             // Re-attach event listeners
             this.pool.on("error", (err) => {
-                console.error("PostgreSQL pool error:", err);
+               console.log("PostgreSQL pool error");
                 if (
                     err.code === "57P01" ||
                     err.message.includes("terminating connection") ||
