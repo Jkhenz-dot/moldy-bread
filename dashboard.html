@@ -3116,7 +3116,7 @@
                     loadWelcomerSettings(data.data);
                     loadNewWelcomerSettings(data.data.others || {});
                     console.log('Raw others data:', data.data.others);
-                    loadAutoRoleSettings(data.data.others || {});
+                    loadAutoRoleSettings(data.data.autoRoleSettings || {});
                     // Load forum auto-react settings using the API data
                     if (data.data.forumAutoReact) {
                         // Load checkbox
@@ -4388,36 +4388,7 @@
             }
         });
 
-        // Add auto role form handler
-        document.getElementById('autoRoleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const roleIds = [];
-            document.querySelectorAll('.auto-role-item select').forEach(select => {
-                if (select.value) {
-                    roleIds.push(select.value);
-                }
-            });
-            
-            const formData = {
-                auto_role_enabled: document.getElementById('autoRoleEnabled').checked,
-                auto_role_delay: parseInt(document.getElementById('autoRoleDelay').value) || 0,
-                auto_role_ids: roleIds.join(',')
-            };
-            
-            try {
-                const response = await fetch('/api/update-auto-role-settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                const result = await response.json();
-                showPopupNotification(result.message, result.success);
-            } catch (error) {
-                showPopupNotification('Error updating auto role settings', false);
-            }
-        });
+        // Auto role form handler removed - using improved handler below
 
         // Update reactions form to include new settings
         const reactionsFormOld = document.getElementById('reactionsForm');
@@ -4804,18 +4775,16 @@
             }
         }
 
-        // Load auto role settings from Others table
-        function loadAutoRoleSettings(othersData) {
-            console.log('loadAutoRoleSettings called with:', othersData);
-            console.log('auto_role_enabled:', othersData.auto_role_enabled);
-            console.log('auto_role_ids:', othersData.auto_role_ids);
+        // Load auto role settings from API data
+        function loadAutoRoleSettings(autoRoleData) {
+            console.log('loadAutoRoleSettings called with:', autoRoleData);
             
             if (document.getElementById('autoRoleEnabled')) {
-                document.getElementById('autoRoleEnabled').checked = othersData.auto_role_enabled || false;
+                document.getElementById('autoRoleEnabled').checked = autoRoleData.enabled || false;
             }
             
             // Load auto roles
-            const autoRoleIds = othersData.auto_role_ids ? othersData.auto_role_ids.split(',').filter(id => id.trim()) : [];
+            const autoRoleIds = autoRoleData.roleIds || [];
             console.log('Loading auto roles from database:', autoRoleIds);
             loadAutoRoles(autoRoleIds);
         }

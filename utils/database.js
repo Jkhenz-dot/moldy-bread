@@ -35,9 +35,13 @@ class DatabaseManager {
             ) {
                 // Database connection terminated by administrator, reconnecting silently
                 this.forceReconnect();
-            } else {
-                // Only log non-termination errors to avoid spam
-                console.error("PostgreSQL pool error:", err);
+            } else if (
+                err.code !== "ECONNRESET" &&
+                !err.message.includes("Connection terminated unexpectedly") &&
+                !err.message.includes("server closed the connection unexpectedly")
+            ) {
+                // Only log non-recoverable errors to avoid spam
+                console.log("PostgreSQL pool error");
             }
         });
 

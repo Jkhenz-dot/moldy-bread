@@ -34,7 +34,7 @@ module.exports = {
     
     try {
       const embed = new EmbedBuilder()
-        .setTitle('🎬 Generating Video...')
+        .setTitle('Generating Video...')
         .setDescription(`Creating video with prompt: "${prompt}"\n\n⚠️ This may take several minutes...`)
         .setColor(0x0099ff);
       

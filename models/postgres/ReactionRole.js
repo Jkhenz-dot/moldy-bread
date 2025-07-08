@@ -47,6 +47,17 @@ class ReactionRole extends BaseModel {
     const instance = new ReactionRole();
     return await instance.find();
   }
+
+  static async messageIdExists(messageId) {
+    const instance = new ReactionRole();
+    try {
+      const result = await instance.findOne({ message_id: messageId });
+      return !!result;
+    } catch (error) {
+      console.error('Error checking if message ID exists:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = ReactionRole;

@@ -65,7 +65,7 @@ module.exports = {
     const [width, height] = size.split('x').map(Number);
     
     const embed = new EmbedBuilder()
-      .setTitle('🎨 AI Image Generation')
+      .setTitle('AI Image Generation')
       .setDescription(`**Prompt:** ${prompt}\n**Style:** ${style.split(',')[0]}\n**Size:** ${size}\n**Quality:** ${quality} steps\n\n⏳ Generating with FLUX.1-dev...`)
       .setColor(0x7c3aed);
     
@@ -112,7 +112,7 @@ module.exports = {
               const attachment = new AttachmentBuilder(buffer, { name: 'flux-generated.png' });
               
               const successEmbed = new EmbedBuilder()
-                .setTitle('✨ Image Generated Successfully')
+                .setTitle('Image Generated Successfully')
                 .setDescription(`**Prompt:** ${prompt}\n**Style:** ${style.split(',')[0]}\n**Model:** FLUX.1-dev\n**Size:** ${size}\n**Quality:** ${quality} steps`)
                 .setImage('attachment://flux-generated.png')
                 .setColor(0x00ff00)
@@ -164,7 +164,7 @@ module.exports = {
               const attachment = new AttachmentBuilder(buffer, { name: 'sdxl-generated.png' });
               
               const successEmbed = new EmbedBuilder()
-                .setTitle('✨ Image Generated Successfully')
+                .setTitle('Image Generated Successfully')
                 .setDescription(`**Prompt:** ${prompt}\n**Style:** ${style.split(',')[0]}\n**Model:** Stable Diffusion XL\n**Size:** ${size}\n**Quality:** ${quality} steps`)
                 .setImage('attachment://sdxl-generated.png')
                 .setColor(0x00ff00)

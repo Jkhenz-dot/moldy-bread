@@ -2,6 +2,7 @@ const {
   SlashCommandBuilder,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } = require("discord.js");
 
 module.exports = {
@@ -227,7 +228,7 @@ module.exports = {
         })
         .setColor(0x00ff00);
 
-      await interaction.reply({ embeds: [successEmbed], flags: [64] });
+      await interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
     } catch (error) {
       console.error("Purge command error:", error);
 

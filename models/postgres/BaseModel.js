@@ -107,25 +107,6 @@ class BaseModel {
     }
   }
 
-  async deleteMany(query = {}) {
-    try {
-      if (Object.keys(query).length === 0) {
-        // Delete all if no query provided
-        const sqlQuery = `DELETE FROM ${this.tableName} RETURNING *`;
-        const result = await database.query(sqlQuery);
-        return result.rows;
-      } else {
-        const { whereClause, values } = this.buildWhereClause(query);
-        const sqlQuery = `DELETE FROM ${this.tableName} WHERE ${whereClause.join(' AND ')} RETURNING *`;
-        const result = await database.query(sqlQuery, values);
-        return result.rows;
-      }
-    } catch (error) {
-      console.error(`Error deleting multiple ${this.tableName}:`, error);
-      return [];
-    }
-  }
-
   async findOneAndUpdate(query, updateData, options = {}) {
     try {
       const existing = await this.findOne(query);

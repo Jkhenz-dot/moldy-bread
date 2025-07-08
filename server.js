@@ -337,10 +337,9 @@ app.get("/api/bot-data", async (req, res) => {
                     accentColor: others?.rank_card_accent_color || "#99aab5",
                     cardStyle: others?.rank_card_style || "default",
                 },
-                // Add auto role settings to the others data
-                others: {
-                    auto_role_enabled: others?.auto_role_enabled || false,
-                    auto_role_ids: others?.auto_role_ids || "",
+                autoRoleSettings: {
+                    enabled: others?.auto_role_enabled || false,
+                    roleIds: others?.auto_role_ids ? others.auto_role_ids.split(',').filter(id => id.trim()) : [],
                 },
             },
         });
@@ -377,15 +376,7 @@ app.get("/api/dashboard-stats", async (req, res) => {
         }
 
         // Only log guild stats occasionally to reduce spam
-        if (Math.random() < 0.1) {
-            // Log only 10% of the time
-            console.log(`Dashboard stats: ${guildCount} guilds found`);
-            if (guilds.length > 0) {
-                console.log(
-                    `Available guilds: ${guilds.map((g) => `${g.name} (${g.id})`).join(", ")}`,
-                );
-            }
-        }
+        // Dashboard stats logging removed to prevent spam
 
         const targetGuildId = process.env.GUILD_ID;
 
@@ -422,7 +413,7 @@ app.get("/api/guild-data", async (req, res) => {
         const serverId = req.query.serverId;
         const guildData = { channels: [], roles: [], emojis: [] };
 
-        console.log(`Guild data request for serverId: ${serverId}`);
+
 
         if (!client) {
             console.error("Discord client not available");
@@ -451,9 +442,6 @@ app.get("/api/guild-data", async (req, res) => {
         const guild = client.guilds.cache.get(serverId);
         if (!guild) {
             console.error(`Guild not found for serverId: ${serverId}`);
-            console.log(
-                `Available guilds: ${client.guilds.cache.map((g) => `${g.name} (${g.id})`).join(", ")}`,
-            );
             return res.json({
                 success: false,
                 message: `Guild not found for serverId: ${serverId}`,
@@ -2635,16 +2623,50 @@ app.post("/api/update-welcomer-settings", async (req, res) => {
     }
 });
 
+// Update role rewards
+app.post("/api/update-role-rewards", async (req, res) => {
+    try {
+        const LevelRoles = require("./models/postgres/LevelRoles");
+        const { roleRewards } = req.body;
+
+        // Clear existing role rewards
+        await LevelRoles.deleteOne({});
+
+        // Add new role rewards
+        if (roleRewards && roleRewards.length > 0) {
+            for (const reward of roleRewards) {
+                await LevelRoles.create({
+                    level: reward.level,
+                    role_id: reward.roleId
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: "Role rewards updated successfully!",
+        });
+    } catch (error) {
+        console.error("Error updating role rewards:", error);
+        res.json({
+            success: false,
+            message: "Error updating role rewards: " + error.message,
+        });
+    }
+});
+
 // Update auto role settings
 app.post("/api/update-auto-role-settings", async (req, res) => {
     try {
         const Others = require("./models/postgres/Others");
+        const { auto_role_enabled, auto_role_ids } = req.body;
+        
         const updateData = {
-            auto_role_enabled: req.body.auto_role_enabled || false,
-            auto_role_ids: req.body.auto_role_ids || null,
+            auto_role_enabled: auto_role_enabled || false,
+            auto_role_ids: Array.isArray(auto_role_ids) ? auto_role_ids.join(',') : (auto_role_ids || null),
         };
 
-        await Others.findOneAndUpdate({}, updateData);
+        await Others.findOneAndUpdate({}, updateData, { upsert: true });
 
         res.json({
             success: true,

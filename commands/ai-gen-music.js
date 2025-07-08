@@ -34,7 +34,7 @@ module.exports = {
     
     try {
       const embed = new EmbedBuilder()
-        .setTitle('🎵 Generating Music...')
+        .setTitle('Generating Music...')
         .setDescription(`Creating music with prompt: "${prompt}"\n\n⏳ This may take up to 2 minutes...`)
         .setColor(0x0099ff);
       
@@ -72,6 +72,18 @@ asyncio.run(main())
         
         try {
           if (output.includes('SUCCESS') && fs.existsSync('generated_music.wav')) {
+            const stats = fs.statSync('generated_music.wav');
+            if (stats.size < 1000) {
+              const errorEmbed = new EmbedBuilder()
+                .setTitle('❌ Generation Failed')
+                .setDescription('Generated file is too small or corrupted. Please try again.')
+                .setColor(0xff0000);
+              
+              await interaction.editReply({ embeds: [errorEmbed] });
+              fs.unlinkSync('generated_music.wav');
+              return;
+            }
+            
             const attachment = new AttachmentBuilder('generated_music.wav', { name: 'ai-generated-music.wav' });
             
             const successEmbed = new EmbedBuilder()
@@ -85,7 +97,7 @@ asyncio.run(main())
           } else {
             const errorEmbed = new EmbedBuilder()
               .setTitle('❌ Generation Failed')
-              .setDescription('Failed to generate music. Please try again later.')
+              .setDescription(`Failed to generate music. Error: ${output || 'Unknown error'}\nPlease try a different prompt or try again later.`)
               .setColor(0xff0000);
             
             await interaction.editReply({ embeds: [errorEmbed] });

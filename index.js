@@ -429,7 +429,7 @@ const xpForLevel = (level) => {
 };
 
 // XP is only handled by Bot 1
-const addXP = async (userId, guildId, message = null, isSlashCommand = false) => {
+const addXP = async (userId, guildId, message = null) => {
   try {
     // Check if user recently gained XP to avoid spam
     const userCooldownKey = `${userId}-${guildId}`;
@@ -459,30 +459,6 @@ const addXP = async (userId, guildId, message = null, isSlashCommand = false) =>
       if (!othersData) return;
       botConfigCache.set(cacheKey, othersData);
       setTimeout(() => botConfigCache.delete(cacheKey), 60000); // Cache for 1 minute
-    }
-
-    // Check if message is in an allowed channel for XP gain
-    if (message) {
-      const BotA = require("./models/postgres/BotA");
-      const botConfig = await BotA.findOne();
-      let allowedChannels = botConfig?.allowed_channels || [];
-      
-      // Handle both string and array formats for allowed_channels
-      if (typeof allowedChannels === 'string') {
-        try {
-          allowedChannels = JSON.parse(allowedChannels);
-        } catch (e) {
-          // If it's just a single channel ID as string, convert to array
-          allowedChannels = allowedChannels ? [allowedChannels] : [];
-        }
-      }
-      
-      // Only award XP if message is in an allowed channel
-      if (allowedChannels.length > 0 && !allowedChannels.includes(message.channel.id)) {
-        // Message not in allowed channel, no XP awarded
-        processingUsers.delete(processingKey);
-        return;
-      }
     }
 
     // Always fetch fresh user data from database to prevent cache conflicts
@@ -571,12 +547,46 @@ const addXP = async (userId, guildId, message = null, isSlashCommand = false) =>
     }
 
     const oldLevel = user.level;
-    // Award XP based on action type
-    let randomXp;
-    if (isSlashCommand) {
-      randomXp = 3; // +3 XP for slash commands
-    } else {
-      randomXp = 1; // +1 XP for regular messages
+    const minXp = othersData.min_xp || 1;
+    const maxXp = othersData.max_xp || 15;
+    let randomXp = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
+
+    // Apply XP modifiers based on message content
+    if (message) {
+      const hasAttachments =
+        message.attachments && message.attachments.size > 0;
+      const content = message.content.trim();
+      
+      // Check if message mentions any bot (client1 or client2)
+      const mentionsBot = message.mentions.has(client1.user) || 
+                          (client2 && message.mentions.has(client2.user));
+
+      // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
+      const isEmojiOnly =
+        content.length > 0 &&
+        // Discord custom emojis
+        (/^<a?:[a-zA-Z0-9_]+:[0-9]+>$/.test(content) ||
+          // Simple emoji detection - check if message is very short and contains common emojis
+          (content.length <= 8 && /[\u{1F600}-\u{1F64F}]/u.test(content)) ||
+          // Basic emoji check for common emojis without problematic ranges
+          (content.length <= 5 &&
+            /[😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠]/u.test(
+              content,
+            )));
+
+      if (mentionsBot) {
+        // +2 XP bonus for mentioning bots
+        randomXp = randomXp + 2;
+        // XP bonus applied for bot mention
+      } else if (hasAttachments) {
+        // 1.5x XP for messages with attachments
+        randomXp = Math.floor(randomXp * 1.5);
+        // XP multiplier applied for attachment
+      } else if (isEmojiOnly) {
+        // -1 XP for emoji-only messages (minimum 1 XP)
+        randomXp = Math.max(1, randomXp - 1);
+        // XP penalty applied for emoji-only message
+      }
     }
 
     const newXp = user.xp + randomXp;
@@ -1088,6 +1098,20 @@ const setupBot = async (client, botToken, botName) => {
           });
         }
 
+        // Get bot configuration for channel restrictions
+        const { BotA, BotB } = loadDatabaseModels();
+        let botConfig = {};
+        try {
+          if (client.botId === "bot1") {
+            botConfig = await BotA.findOne() || {};
+          } else if (client.botId === "bot2") {
+            botConfig = await BotB.findOne() || {};
+          }
+        } catch (error) {
+          console.error("Error loading bot config for channel restrictions:", error);
+          botConfig = {};
+        }
+        
         // Also check if VC command is allowed in this channel
         const allowedChannels = botConfig?.allowed_channels || [];
         if (allowedChannels.length > 0) {
@@ -1106,6 +1130,20 @@ const setupBot = async (client, botToken, botName) => {
           }
         }
       } else if (!globalCommands.includes(interaction.commandName)) {
+        // Get bot configuration for channel restrictions
+        const { BotA, BotB } = loadDatabaseModels();
+        let botConfig = {};
+        try {
+          if (client.botId === "bot1") {
+            botConfig = await BotA.findOne() || {};
+          } else if (client.botId === "bot2") {
+            botConfig = await BotB.findOne() || {};
+          }
+        } catch (error) {
+          console.error("Error loading bot config for channel restrictions:", error);
+          botConfig = {};
+        }
+        
         // All other commands check allowed channels
         const allowedChannels = botConfig?.allowed_channels || [];
         if (allowedChannels.length > 0) {
@@ -1130,16 +1168,6 @@ const setupBot = async (client, botToken, botName) => {
 
     try {
       await command.execute(interaction, client);
-      
-      // Award XP for slash command usage in allowed channels (Bot 1 only)
-      if (client.botId === "bot1" && interaction.isCommand()) {
-        const allowedChannels = botConfig?.allowed_channels || [];
-        if (allowedChannels.length === 0 || allowedChannels.includes(interaction.channelId)) {
-          addXP(interaction.user.id, interaction.guildId, null, true); // Pass true for isSlashCommand
-          console.log(`Awarded +3 XP to ${interaction.user.username} for slash command: /${interaction.commandName}`);
-        }
-      }
-      
     } catch (error) {
       console.error(`Discord client error: ${error}`);
 
@@ -1177,6 +1205,12 @@ const setupBot = async (client, botToken, botName) => {
           "The specified channel was not found or I don't have access to it.";
       }
 
+      // Handle interaction timeout specifically  
+      if (error.code === 10062 || error.message.includes("Unknown interaction")) {
+        console.log("Interaction expired - command took too long to respond");
+        return; // Can't reply to expired interactions
+      }
+
       if (!interaction.replied && !interaction.deferred) {
         const embed = new EmbedBuilder()
           .setTitle(errorTitle)
@@ -1191,8 +1225,28 @@ const setupBot = async (client, botToken, botName) => {
             embeds: [embed],
             flags: MessageFlags.Ephemeral,
           });
-        } catch (e) {
-          console.log("Failed to send error reply:", e.message);
+        } catch (replyError) {
+          if (replyError.code === 10062) {
+            console.log("Failed to reply - interaction already expired");
+          } else {
+            console.log("Failed to send error reply:", replyError.message);
+          }
+        }
+      } else if (interaction.deferred && !interaction.replied) {
+        // Try to edit the deferred reply
+        try {
+          const embed = new EmbedBuilder()
+            .setTitle(errorTitle)
+            .setDescription(errorMessage)
+            .setColor(0xff0000);
+          
+          await interaction.editReply({ embeds: [embed] });
+        } catch (editError) {
+          if (editError.code === 10062) {
+            console.log("Failed to edit reply - interaction already expired");
+          } else {
+            console.log("Failed to edit deferred reply:", editError.message);
+          }
         }
       }
     }
@@ -2339,19 +2393,10 @@ const logMemoryUsage = () => {
     );
 
     // Start bots in parallel for faster startup
-    const botPromises = [
-      setupBot(client1, process.env.DISCORD_TOKEN, "Bot1")
-    ];
-    
-    // Only start second bot if token is available
-    if (process.env.DISCORD_TOKEN_2) {
-      botPromises.push(setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2"));
-    } else {
-      console.log("DISCORD_TOKEN_2 not found, running single bot mode");
-    }
-    
-    const results = await Promise.allSettled(botPromises);
-    const [bot1Result, bot2Result] = results;
+    const [bot1Result, bot2Result] = await Promise.allSettled([
+      setupBot(client1, process.env.DISCORD_TOKEN, "Bot1"),
+      setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2"),
+    ]);
 
     if (bot1Result.status === "rejected")
       console.error("Bot1 failed:", bot1Result.reason);

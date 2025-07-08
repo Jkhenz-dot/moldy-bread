@@ -21,7 +21,7 @@ module.exports = {
       // Load fonts for Canvacord
       await Font.loadDefault();
       // Get user data from database
-      const userData = await UserData.findOne({ userId: userId });
+      const userData = await UserData.findOne({ user_id: userId });
       
       if (!userData) {
         return interaction.reply({
@@ -78,6 +78,10 @@ module.exports = {
       const currentLevelXP = xpForLevel(level);
       const nextLevelXP = xpForLevel(level + 1);
       
+      // Calculate XP progress in current level
+      const currentLevelProgress = xp - currentLevelXP;
+      const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
+      
       // Calculate user's rank among all users
       const allUsers = await UserData.find();
       // Sort users by XP in descending order
@@ -104,8 +108,8 @@ module.exports = {
         .setUsername(target.username)
         .setDisplayName(target.globalName || target.username)
         .setAvatar(target.displayAvatarURL({ extension: "png", size: 256 }))
-        .setCurrentXP(xp - currentLevelXP)
-        .setRequiredXP(nextLevelXP - currentLevelXP)
+        .setCurrentXP(currentLevelProgress)
+        .setRequiredXP(xpNeededForNextLevel)
         .setLevel(level)
         .setRank(rankPosition.toString())
         .setTextStyles({
