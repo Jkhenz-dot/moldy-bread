@@ -337,6 +337,11 @@ app.get("/api/bot-data", async (req, res) => {
                     accentColor: others?.rank_card_accent_color || "#99aab5",
                     cardStyle: others?.rank_card_style || "default",
                 },
+                // Add auto role settings to the others data
+                others: {
+                    auto_role_enabled: others?.auto_role_enabled || false,
+                    auto_role_ids: others?.auto_role_ids || "",
+                },
             },
         });
     } catch (error) {
@@ -455,7 +460,7 @@ app.get("/api/guild-data", async (req, res) => {
             });
         }
 
-        console.log(`Loading guild data for: ${guild.name} (${guild.id})`);
+        // Loading guild data silently
 
         // Load channels
         if (guild.channels && guild.channels.cache) {
@@ -516,9 +521,7 @@ app.get("/api/guild-data", async (req, res) => {
             });
         }
 
-        console.log(
-            `Guild data loaded: ${guildData.channels.length} channels, ${guildData.roles.length} roles, ${guildData.emojis.length} emojis`,
-        );
+        // Guild data loaded silently
 
         res.json({
             success: true,

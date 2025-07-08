@@ -59,7 +59,7 @@ const logMemoryUsage = () => {
     return acc;
   }, {});
   
-  console.log('Memory usage (MB):', mbUsed);
+  // Memory usage logging removed per user request
   
   // Alert if memory usage is high (approaching 512MB limit on free tier)
   if (mbUsed.heapUsed > 400) {

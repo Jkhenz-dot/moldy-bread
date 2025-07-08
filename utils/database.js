@@ -27,33 +27,32 @@ class DatabaseManager {
         this.pool = new Pool(connectionConfig);
 
         this.pool.on("error", (err) => {
-            console.error("PostgreSQL pool error:", err);
-            // Handle connection termination gracefully
+            // Handle connection termination gracefully (57P01 - administrator command)
             if (
                 err.code === "57P01" ||
                 err.message.includes("terminating connection") ||
                 err.message.includes("administrator command")
             ) {
-                console.log(
-                    "Database connection terminated, will reconnect automatically",
-                );
-                // Force clear the pool to prevent using stale connections
+                // Database connection terminated by administrator, reconnecting silently
                 this.forceReconnect();
+            } else {
+                // Only log non-termination errors to avoid spam
+                console.error("PostgreSQL pool error:", err);
             }
         });
 
         this.pool.on("connect", (client) => {
-            console.log("New database connection established");
+            // Database connection established silently
         });
 
         this.pool.on("remove", (client) => {
-            console.log("Database connection removed from pool");
+            // Database connection removed from pool silently
         });
     }
 
     async forceReconnect() {
         try {
-            console.log("Force reconnecting to database...");
+            // Force reconnecting to database silently
             // End all existing connections
             await this.pool.end();
             
@@ -85,20 +84,20 @@ class DatabaseManager {
                     err.message.includes("terminating connection") ||
                     err.message.includes("administrator command")
                 ) {
-                    console.log("Database connection terminated, will reconnect automatically");
+                    // Database connection terminated, reconnecting silently
                     this.forceReconnect();
                 }
             });
 
             this.pool.on("connect", (client) => {
-                console.log("New database connection established");
+                // Database connection established silently
             });
 
             this.pool.on("remove", (client) => {
-                console.log("Database connection removed from pool");
+                // Database connection removed from pool silently
             });
             
-            console.log("Database force reconnection completed");
+            // Database force reconnection completed silently
         } catch (error) {
             console.error("Failed to force reconnect database:", error);
         }
@@ -134,7 +133,7 @@ class DatabaseManager {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                     client = await this.pool.connect();
                     const res = await client.query(text, params);
-                    console.log("Database query retry successful");
+                    // Database query retry successful
                     return res;
                 } catch (retryError) {
                     console.error("Database retry failed:", retryError);
@@ -143,9 +142,7 @@ class DatabaseManager {
                         retryError.code === "57P01" ||
                         retryError.message.includes("terminating connection")
                     ) {
-                        console.log(
-                            "Database unavailable, returning null to prevent crash",
-                        );
+                        // Database unavailable, returning empty result to prevent crash
                         return { rows: [] };
                     }
                     throw retryError;

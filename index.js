@@ -429,21 +429,25 @@ const xpForLevel = (level) => {
 };
 
 // XP is only handled by Bot 1
-const addXP = async (userId, guildId, message = null) => {
+const addXP = async (userId, guildId, message = null, isSlashCommand = false) => {
   try {
     // Check if user recently gained XP to avoid spam
     const userCooldownKey = `${userId}-${guildId}`;
     if (recentXPUsers.has(userCooldownKey)) return;
 
-    // Prevent concurrent processing for the same user
+    // Prevent concurrent processing for the same user with stronger locking
     const processingKey = `${userId}-${guildId}`;
     if (processingUsers.has(processingKey)) {
-      console.log(`Already processing XP for user ${userId}, skipping...`);
-      return;
+      return; // Exit immediately if already processing
     }
     
     // Lock this user for processing
     processingUsers.add(processingKey);
+    
+    // Auto-release lock after 5 seconds to prevent permanent locks
+    setTimeout(() => {
+      processingUsers.delete(processingKey);
+    }, 5000);
 
     // Cache others data to avoid repeated database calls
     const cacheKey = "othersData";
@@ -457,16 +461,34 @@ const addXP = async (userId, guildId, message = null) => {
       setTimeout(() => botConfigCache.delete(cacheKey), 60000); // Cache for 1 minute
     }
 
-    // Check user cache first
+    // Check if message is in an allowed channel for XP gain
+    if (message) {
+      const BotA = require("./models/postgres/BotA");
+      const botConfig = await BotA.findOne();
+      let allowedChannels = botConfig?.allowed_channels || [];
+      
+      // Handle both string and array formats for allowed_channels
+      if (typeof allowedChannels === 'string') {
+        try {
+          allowedChannels = JSON.parse(allowedChannels);
+        } catch (e) {
+          // If it's just a single channel ID as string, convert to array
+          allowedChannels = allowedChannels ? [allowedChannels] : [];
+        }
+      }
+      
+      // Only award XP if message is in an allowed channel
+      if (allowedChannels.length > 0 && !allowedChannels.includes(message.channel.id)) {
+        // Message not in allowed channel, no XP awarded
+        processingUsers.delete(processingKey);
+        return;
+      }
+    }
+
+    // Always fetch fresh user data from database to prevent cache conflicts
     const userCacheKey = `user-${userId}`;
-    let user;
-    if (userDataCache.has(userCacheKey)) {
-      const cached = userDataCache.get(userCacheKey);
-      cached.lastAccessed = Date.now();
-      user = cached.data;
-    } else {
-      user = await UserData.findOne({ userId });
-      if (!user) {
+    let user = await UserData.findOne({ userId });
+    if (!user) {
         const guild = client1.guilds.cache.get(guildId);
         let member = guild?.members.cache.get(userId);
 
@@ -500,13 +522,6 @@ const addXP = async (userId, guildId, message = null) => {
         );
       }
 
-      // Cache user data
-      userDataCache.set(userCacheKey, {
-        data: user,
-        lastAccessed: Date.now(),
-      });
-    }
-
     // Check if user is null (database error)
     if (!user) {
       console.error(`Failed to create/find user ${userId}`);
@@ -522,9 +537,7 @@ const addXP = async (userId, guildId, message = null) => {
         try {
           member = await guild.members.fetch(userId);
         } catch (error) {
-          console.log(
-            `Could not fetch member for username update ${userId}: ${error.message}`,
-          );
+          // Could not fetch member for username update
         }
       }
 
@@ -533,21 +546,13 @@ const addXP = async (userId, guildId, message = null) => {
           member.user.username ||
           member.displayName ||
           `User_${userId.slice(-4)}`;
-        console.log(
-          `Updating username for user ${userId}: ${user.username} -> ${newUsername}`,
-        );
+        // Username updated silently
 
         user = await UserData.findOneAndUpdate(
           { userId },
           { username: newUsername },
           { upsert: false },
         );
-
-        // Update cache
-        userDataCache.set(userCacheKey, {
-          data: user,
-          lastAccessed: Date.now(),
-        });
       }
     }
 
@@ -566,52 +571,12 @@ const addXP = async (userId, guildId, message = null) => {
     }
 
     const oldLevel = user.level;
-    const minXp = othersData.min_xp || 1;
-    const maxXp = othersData.max_xp || 15;
-    let randomXp = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
-
-    // Apply XP modifiers based on message content
-    if (message) {
-      const hasAttachments =
-        message.attachments && message.attachments.size > 0;
-      const content = message.content.trim();
-      
-      // Check if message mentions any bot (client1 or client2)
-      const mentionsBot = message.mentions.has(client1.user) || 
-                          (client2 && message.mentions.has(client2.user));
-
-      // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
-      const isEmojiOnly =
-        content.length > 0 &&
-        // Discord custom emojis
-        (/^<a?:[a-zA-Z0-9_]+:[0-9]+>$/.test(content) ||
-          // Simple emoji detection - check if message is very short and contains common emojis
-          (content.length <= 8 && /[\u{1F600}-\u{1F64F}]/u.test(content)) ||
-          // Basic emoji check for common emojis without problematic ranges
-          (content.length <= 5 &&
-            /[😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠]/u.test(
-              content,
-            )));
-
-      if (mentionsBot) {
-        // +2 XP bonus for mentioning bots
-        randomXp = randomXp + 2;
-        console.log(
-          `Applied +2 XP bonus for bot mention: ${randomXp} XP`,
-        );
-      } else if (hasAttachments) {
-        // 1.5x XP for messages with attachments
-        randomXp = Math.floor(randomXp * 1.5);
-        console.log(
-          `Applied 1.5x XP multiplier for attachment: ${randomXp} XP`,
-        );
-      } else if (isEmojiOnly) {
-        // -1 XP for emoji-only messages (minimum 1 XP)
-        randomXp = Math.max(1, randomXp - 1);
-        console.log(
-          `Applied -1 XP penalty for emoji-only message: ${randomXp} XP`,
-        );
-      }
+    // Award XP based on action type
+    let randomXp;
+    if (isSlashCommand) {
+      randomXp = 3; // +3 XP for slash commands
+    } else {
+      randomXp = 1; // +1 XP for regular messages
     }
 
     const newXp = user.xp + randomXp;
@@ -632,9 +597,6 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Check if this user+level combination was already announced
     if (levelUpAnnouncements.has(announcementKey)) {
-      console.log(
-        `Duplicate level-up announcement prevented for user ${userId} level ${newLevel}`,
-      );
       return { levelUp: false, alreadyAnnounced: true };
     }
 
@@ -645,16 +607,16 @@ const addXP = async (userId, guildId, message = null) => {
     if (actualLevelUp && othersData?.level_up_announcement) {
       // Mark this announcement to prevent duplicates BEFORE sending
       levelUpAnnouncements.add(announcementKey);
-      console.log(`Level-up announcement marked for user ${userId} level ${newLevel}`);
+      // Level-up announcement marked
 
       // For level 1, never remove the lock to prevent re-announcements
       // For higher levels, remove after 120 seconds to allow re-announcements if needed
       if (newLevel === 1) {
-        console.log(`Level 1 announcement permanently locked for user ${userId}`);
+        // Level 1 announcement permanently locked
       } else {
         setTimeout(() => {
           levelUpAnnouncements.delete(announcementKey);
-          console.log(`Level-up announcement lock removed for user ${userId} level ${newLevel}`);
+          // Level-up announcement lock removed
         }, 120000);
       }
       const guild = client1.guilds.cache.get(guildId);
@@ -743,9 +705,7 @@ const addXP = async (userId, guildId, message = null) => {
                   messageSent = true;
                 }
               } catch (error) {
-                console.log(
-                  "Bot 1 failed to send level up message, trying Bot 2",
-                );
+                // Bot 1 failed, trying Bot 2
               }
             }
 
@@ -760,9 +720,7 @@ const addXP = async (userId, guildId, message = null) => {
                   messageSent = true;
                 }
               } catch (error) {
-                console.log(
-                  "Bot 2 failed to send level up message, using fallback",
-                );
+                // Bot 2 failed, using fallback
               }
             }
 
@@ -815,16 +773,14 @@ const setupBot = async (client, botToken, botName) => {
         });
 
         if (hasAdmin) {
-          console.log(
-            `${botName} has Administrator permission in ${guild.name}`,
-          );
+          // Bot has Administrator permission
         } else if (missingPerms.length > 0) {
           console.warn(
             `${botName} missing permissions in ${guild.name}:`,
             missingPerms.join(", "),
           );
         } else {
-          console.log(`${botName} has sufficient permissions in ${guild.name}`);
+          // Bot has sufficient permissions
         }
       }
     }
@@ -1174,6 +1130,16 @@ const setupBot = async (client, botToken, botName) => {
 
     try {
       await command.execute(interaction, client);
+      
+      // Award XP for slash command usage in allowed channels (Bot 1 only)
+      if (client.botId === "bot1" && interaction.isCommand()) {
+        const allowedChannels = botConfig?.allowed_channels || [];
+        if (allowedChannels.length === 0 || allowedChannels.includes(interaction.channelId)) {
+          addXP(interaction.user.id, interaction.guildId, null, true); // Pass true for isSlashCommand
+          console.log(`Awarded +3 XP to ${interaction.user.username} for slash command: /${interaction.commandName}`);
+        }
+      }
+      
     } catch (error) {
       console.error(`Discord client error: ${error}`);
 
@@ -1582,9 +1548,7 @@ const setupBot = async (client, botToken, botName) => {
           } catch (error) {
             console.error("Conversation history update failed:", error);
           }
-          console.log(
-            `Saved user message to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
-          );
+          // User message saved to conversation history
         } catch (e) {
           console.error("Conversation history error:", e);
         }
@@ -1621,13 +1585,7 @@ const setupBot = async (client, botToken, botName) => {
           };
         }
 
-        console.log(`Debug - Fresh bot config loaded for ${client.botId}:`, {
-          name: freshBotConfig.name,
-          personality: freshBotConfig.personality,
-          age: freshBotConfig.age,
-          likes: freshBotConfig.likes,
-          dislikes: freshBotConfig.dislikes,
-        });
+        // Fresh bot config loaded silently
 
         // Load AI handler if not already loaded
         loadAIHandler();
@@ -1723,9 +1681,7 @@ const setupBot = async (client, botToken, botName) => {
               } catch (error) {
                 console.error("AI conversation history update failed:", error);
               }
-              console.log(
-                `Saved AI response to conversation history for ${message.author.id}. Total messages: ${userData.conversationHistory.length}`,
-              );
+              // AI response saved to conversation history
             }
           } catch (e) {
             console.error("Assistant conversation history error:", e);
@@ -2359,9 +2315,7 @@ const logMemoryUsage = () => {
   const used = process.memoryUsage();
   const mb = (bytes) => Math.round((bytes / 1024 / 1024) * 100) / 100;
 
-  console.log(
-    `Memory: RSS ${mb(used.rss)}MB, Heap ${mb(used.heapUsed)}/${mb(used.heapTotal)}MB, External ${mb(used.external)}MB`,
-  );
+  // Memory usage logging removed per user request
 };
 
 // Start both bots with optimization
@@ -2385,10 +2339,19 @@ const logMemoryUsage = () => {
     );
 
     // Start bots in parallel for faster startup
-    const [bot1Result, bot2Result] = await Promise.allSettled([
-      setupBot(client1, process.env.DISCORD_TOKEN, "Bot1"),
-      setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2"),
-    ]);
+    const botPromises = [
+      setupBot(client1, process.env.DISCORD_TOKEN, "Bot1")
+    ];
+    
+    // Only start second bot if token is available
+    if (process.env.DISCORD_TOKEN_2) {
+      botPromises.push(setupBot(client2, process.env.DISCORD_TOKEN_2, "Bot2"));
+    } else {
+      console.log("DISCORD_TOKEN_2 not found, running single bot mode");
+    }
+    
+    const results = await Promise.allSettled(botPromises);
+    const [bot1Result, bot2Result] = results;
 
     if (bot1Result.status === "rejected")
       console.error("Bot1 failed:", bot1Result.reason);
@@ -2418,7 +2381,7 @@ const logMemoryUsage = () => {
           global.gc();
         }
 
-        console.log("System cleanup completed");
+        // System cleanup completed silently
       },
       5 * 60 * 1000,
     ); // Every 5 minutes

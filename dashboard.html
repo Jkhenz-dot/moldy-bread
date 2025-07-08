@@ -3002,8 +3002,8 @@
         // Load dashboard data
         async function loadDashboardData() {
             try {
-                // Load guild data for dropdowns (non-blocking)
-                loadGuildData().catch(err => console.log('Guild data loading failed, continuing with saved data'));
+                // Load guild data first for dropdowns (blocking)
+                await loadGuildData();
                 
                 // Load bot data
                 const response = await fetch('/api/bot-data');
@@ -3110,11 +3110,12 @@
                     const levelAnnouncementsEl = document.getElementById('levelAnnouncements');
                     if (levelAnnouncementsEl) levelAnnouncementsEl.checked = xpSettings.levelUpAnnouncement !== false;
                     
-                    // Load role rewards, reaction roles, welcomer settings
+                    // Guild data is already loaded, now load role rewards, reaction roles, welcomer settings
                     loadRoleRewards(data.data.levelRoles || []);
                     loadReactionRoles(data.data.reactionRoles || []);
                     loadWelcomerSettings(data.data);
                     loadNewWelcomerSettings(data.data.others || {});
+                    console.log('Raw others data:', data.data.others);
                     loadAutoRoleSettings(data.data.others || {});
                     // Load forum auto-react settings using the API data
                     if (data.data.forumAutoReact) {
@@ -3174,6 +3175,8 @@
                 
                 if (data.success) {
                     guildData = data.data;
+                    // Repopulate auto role dropdowns with loaded guild data
+                    repopulateAutoRoleDropdowns();
                     // Don't initialize advanced reaction roles immediately to avoid errors
                     // It will be initialized when user navigates to reactions tab
                 }
@@ -3271,7 +3274,7 @@
             roleRewardCounter = 0;
             
             roleRewards.forEach(reward => {
-                addRoleReward(reward.level, reward.roleId);
+                addRoleReward(reward.level, reward.role_id || reward.roleId);
             });
             
             if (roleRewards.length === 0) {
@@ -3299,7 +3302,7 @@
                 <select class="form-select" style="flex: 1;">
                     ${rolesOptions}
                 </select>
-                <button type="button" onclick="removeRoleReward('role-${roleRewardCounter}')" class="btn btn-danger">Remove</button>
+                <button type="button" onclick="removeRoleReward('role-${roleRewardCounter}')" class="trendy-btn trendy-btn-danger" style="padding: 8px 15px; font-size: 12px; border-radius: 6px;">Remove</button>
             `;
             
             container.appendChild(roleItem);
@@ -4179,7 +4182,7 @@
                     
                     const formData = {
                         roleRewards,
-                        serverId: currentServerId
+                        serverId: currentServerId || '1206274128588578826'
                     };
                     
                     try {
@@ -4192,9 +4195,12 @@
                         const result = await response.json();
                         showPopupNotification(result.message, result.success);
                     } catch (error) {
-                        showPopupNotification('Error updating role rewards', false);
+                        console.error('Role rewards error:', error);
+                        console.error('Error details:', error.message);
+                        showPopupNotification('Error updating role rewards: ' + error.message, false);
+                    } finally {
+                        hideProcessing();
                     }
-                    hideProcessing();
                 });
             }
 
@@ -4660,7 +4666,7 @@
                     <option value="">Select a role...</option>
                     <!-- Roles will be populated by JavaScript -->
                 </select>
-                <button type="button" onclick="removeAutoRole('autoRole_${roleId_unique}')" class="btn-danger" style="padding: 8px 12px;">Remove</button>
+                <button type="button" onclick="removeAutoRole('autoRole_${roleId_unique}')" class="trendy-btn trendy-btn-danger" style="padding: 8px 15px; font-size: 12px; border-radius: 6px;">Remove</button>
             `;
             
             autoRolesList.appendChild(roleDiv);
@@ -4682,13 +4688,22 @@
                 guildData.roles.forEach(role => {
                     const option = document.createElement('option');
                     option.value = role.id;
-                    option.textContent = role.name;
+                    option.textContent = `@${role.name}`;
                     option.selected = role.id === selectedRoleId;
                     selectElement.appendChild(option);
                 });
             } else {
-                // If no guild data, ensure we still have a default option
-                selectElement.innerHTML = '<option value="">Select a role...</option>';
+                // If no guild data, store the selected role ID for later population
+                selectElement.innerHTML = '<option value="">Loading roles...</option>';
+                if (selectedRoleId) {
+                    selectElement.setAttribute('data-selected-role', selectedRoleId);
+                    // Add temporary option with the selected role ID
+                    const tempOption = document.createElement('option');
+                    tempOption.value = selectedRoleId;
+                    tempOption.textContent = `Role (${selectedRoleId})`;
+                    tempOption.selected = true;
+                    selectElement.appendChild(tempOption);
+                }
             }
         }
 
@@ -4696,11 +4711,15 @@
             const autoRolesList = document.getElementById('autoRolesList');
             autoRolesList.innerHTML = '';
             
+            console.log('LoadAutoRoles called with:', autoRoles);
+            
             if (autoRoles && autoRoles.length > 0) {
                 autoRoles.forEach(roleId => {
-                    addAutoRole(roleId);
+                    console.log('Adding auto role:', roleId.trim());
+                    addAutoRole(roleId.trim()); // Trim whitespace from role IDs
                 });
             } else {
+                console.log('No auto roles found, adding empty role');
                 addAutoRole(); // Add one empty role
             }
         }
@@ -4714,6 +4733,23 @@
                 }
             });
             return roles;
+        }
+
+        function repopulateAutoRoleDropdowns() {
+            const roleSelects = document.querySelectorAll('#autoRolesList [data-role-select]');
+            roleSelects.forEach(selectElement => {
+                const selectedRoleId = selectElement.getAttribute('data-selected-role') || selectElement.value;
+                if (guildData && guildData.roles) {
+                    selectElement.innerHTML = '<option value="">Select a role...</option>';
+                    guildData.roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.id;
+                        option.textContent = `@${role.name}`;
+                        option.selected = role.id === selectedRoleId;
+                        selectElement.appendChild(option);
+                    });
+                }
+            });
         }
 
         // Load new welcomer settings from Others table
@@ -4770,12 +4806,17 @@
 
         // Load auto role settings from Others table
         function loadAutoRoleSettings(othersData) {
+            console.log('loadAutoRoleSettings called with:', othersData);
+            console.log('auto_role_enabled:', othersData.auto_role_enabled);
+            console.log('auto_role_ids:', othersData.auto_role_ids);
+            
             if (document.getElementById('autoRoleEnabled')) {
                 document.getElementById('autoRoleEnabled').checked = othersData.auto_role_enabled || false;
             }
             
             // Load auto roles
             const autoRoleIds = othersData.auto_role_ids ? othersData.auto_role_ids.split(',').filter(id => id.trim()) : [];
+            console.log('Loading auto roles from database:', autoRoleIds);
             loadAutoRoles(autoRoleIds);
         }
         
@@ -4905,9 +4946,12 @@
             autoRoleForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
+                const autoRoles = collectAutoRoles();
+                console.log('Collected auto roles:', autoRoles);
+                
                 const formData = {
                     auto_role_enabled: document.getElementById('autoRoleEnabled').checked,
-                    auto_role_ids: collectAutoRoles().join(',')
+                    auto_role_ids: autoRoles.join(',')
                 };
                 
                 try {

@@ -27,6 +27,11 @@ class LevelRoles extends BaseModel {
     const instance = new LevelRoles();
     return await instance.deleteOne(query);
   }
+
+  static async deleteMany(query = {}) {
+    const instance = new LevelRoles();
+    return await instance.deleteMany(query);
+  }
 }
 
 module.exports = LevelRoles;

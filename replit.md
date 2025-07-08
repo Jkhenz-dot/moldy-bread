@@ -259,6 +259,36 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 07, 2025: Implemented permanent Level 1 announcement prevention - Level 1 can only be announced once per user
 - July 07, 2025: Fixed level-up logic to only trigger on actual level increases (newLevel > oldLevel)
 - July 07, 2025: Level 1 announcements are now permanently locked to prevent any re-announcements
+- July 07, 2025: Removed verbose console logging - memory usage, debug logs, and XP processing logs cleaned up
+- July 07, 2025: Enhanced PostgreSQL pool error handling to suppress 57P01 administrator termination spam
+- July 07, 2025: Silenced database connection establishment and removal logs for cleaner console output
+- July 07, 2025: Cleaned up level-up announcement logging and duplicate prevention messages
+- July 07, 2025: Fixed XP system cache issues preventing proper level updates for user hachiyafuyu  
+- July 07, 2025: Enhanced concurrent processing locks with automatic timeout to prevent race conditions
+- July 07, 2025: Resolved duplicate level announcements by improving processing synchronization
+- July 07, 2025: Added XP level requirements calculator showing progressive difficulty scaling (Level 1: 1 XP, Level 2: 101 XP, etc.)
+- July 07, 2025: Completely fixed XP system cache conflicts causing XP decreases - now uses fresh database queries for all XP processing
+- July 07, 2025: Resolved syntax error in try-catch block that was preventing bot startup
+- July 07, 2025: XP system fully operational - users properly gain XP without cache interference or race conditions
+- July 07, 2025: Removed guild data loading logs from server.js for cleaner production console output
+- July 07, 2025: Fixed XP system to only award +1 XP for messages in allowed channels instead of variable amounts
+- July 07, 2025: Fixed allowed_channels parsing to handle both string and array formats in database
+- July 07, 2025: Fixed Level Role Rewards loading order - guild data now loads before role dropdowns populate
+- July 07, 2025: Added deleteMany method to BaseModel and LevelRoles for proper role rewards functionality
+- July 07, 2025: Fixed Discord bot connection by supporting both DISCORD_TOKEN and DISCORD_TOKEN_2 formats
+- July 07, 2025: Role selection dropdowns now properly populate from Discord server roles
+- July 08, 2025: Fixed role rewards loading issue - existing database data now properly loads into dropdown selectors
+- July 08, 2025: Added comprehensive error logging for role rewards troubleshooting
+- July 08, 2025: Enhanced XP system documentation with complete level requirements and progression tiers
+- July 08, 2025: Confirmed forum thread creation rewards: 10-15 XP bonus for creating new forum threads
+- July 08, 2025: Added +2 XP bonus for slash command usage in allowed channels
+- July 08, 2025: Enhanced XP system with slash command support and comprehensive gain rules
+- July 08, 2025: Verified Auto Role Assignment and Welcome Messages functionality (currently disabled in database)
+- July 08, 2025: Updated XP system to differentiate between regular messages (+1 XP) and slash commands (+3 XP)
+- July 08, 2025: Fixed Auto Role Assignment dropdown loading - now properly loads selected roles from database after restart
+- July 08, 2025: Improved remove button styling across all forms with consistent trendy-btn design
+- July 08, 2025: Added repopulation system for role dropdowns to handle guild data loading timing
+- July 08, 2025: Enhanced Auto Role Assignment system with better error handling and role selection
 
 ## User Preferences
 
