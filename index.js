@@ -253,9 +253,7 @@ const initializeReactionRoles = async () => {
               if (!existingReaction) {
                 try {
                   await foundMessage.react(emoji);
-                  console.log(
-                    `Added missing reaction ${emoji} to message ${messageId}`,
-                  );
+                  // Reaction added to message
                 } catch (error) {
                   console.error(
                     `Failed to add reaction ${emoji} to message ${messageId}:`,
@@ -265,10 +263,7 @@ const initializeReactionRoles = async () => {
               }
             }
           } else {
-            // Message not found - delete all reaction role sets for this message
-            console.log(
-              `Message ${messageId} not found, deleting associated reaction role sets...`,
-            );
+            // Message not found - cleaning up orphaned reaction role sets
 
             try {
               // Get unique set IDs for this message
@@ -276,9 +271,7 @@ const initializeReactionRoles = async () => {
 
               for (const setId of setIds) {
                 const deletedCount = await ReactionRole.deleteBySetId(setId);
-                console.log(
-                  `Deleted reaction role set ${setId} (${deletedCount} entries) - orphaned from message ${messageId}`,
-                );
+                // Reaction role set deleted due to missing message
               }
             } catch (deleteError) {
               console.error(
@@ -295,9 +288,9 @@ const initializeReactionRoles = async () => {
         }
       }
 
-      console.log("Reaction roles initialization completed");
+      // Reaction roles initialization completed
     } else {
-      console.log("No reaction roles found to initialize");
+      // No reaction roles found to initialize
     }
   } catch (error) {
     console.error("Error initializing reaction roles:", error);
@@ -463,7 +456,7 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Always fetch fresh user data from database to prevent cache conflicts
     const userCacheKey = `user-${userId}`;
-    let user = await UserData.findOne({ userId });
+    let user = await UserData.findOne({ discord_id: userId });
     if (!user) {
         const guild = client1.guilds.cache.get(guildId);
         let member = guild?.members.cache.get(userId);
@@ -486,13 +479,13 @@ const addXP = async (userId, guildId, message = null) => {
 
         // Use upsert to handle duplicate key errors gracefully
         user = await UserData.findOneAndUpdate(
-          { userId },
+          { discord_id: userId },
           {
-            userId,
+            discord_id: userId,
             username,
             xp: 0,
             level: 0,
-            lastXpGain: new Date(),
+            last_xp_gain: new Date(),
           },
           { upsert: true },
         );
@@ -525,7 +518,7 @@ const addXP = async (userId, guildId, message = null) => {
         // Username updated silently
 
         user = await UserData.findOneAndUpdate(
-          { userId },
+          { discord_id: userId },
           { username: newUsername },
           { upsert: false },
         );
@@ -586,6 +579,10 @@ const addXP = async (userId, guildId, message = null) => {
         // -1 XP for emoji-only messages (minimum 1 XP)
         randomXp = Math.max(1, randomXp - 1);
         // XP penalty applied for emoji-only message
+      } else if (content.length === 1) {
+        // Single character messages get -1 XP (minimum 1 XP)
+        randomXp = Math.max(1, randomXp - 1);
+        // XP penalty applied for single character message
       }
     }
 
@@ -593,11 +590,11 @@ const addXP = async (userId, guildId, message = null) => {
     const newLevel = calculateLevel(newXp);
 
     user = await UserData.findOneAndUpdate(
-      { userId },
+      { discord_id: userId },
       {
         xp: newXp,
         level: newLevel,
-        lastXpGain: new Date(),
+        last_xp_gain: new Date(),
       },
       { upsert: true },
     );
@@ -1536,11 +1533,11 @@ const setupBot = async (client, botToken, botName) => {
 
         let conversationHistory = "";
         try {
-          let userData = await UserData.findOne({ userId: message.author.id });
+          let userData = await UserData.findOne({ discord_id: message.author.id });
           if (!userData) {
             const username = message.author.username || "Unknown";
             userData = await UserData.create({
-              userId: message.author.id,
+              discord_id: message.author.id,
               username,
             });
           }
@@ -1591,7 +1588,7 @@ const setupBot = async (client, botToken, botName) => {
           let updateResult = null;
           try {
             await UserData.findOneAndUpdate(
-              { userId: message.author.id },
+              { discord_id: message.author.id },
               {
                 conversationHistory: JSON.stringify(
                   userData.conversationHistory,
@@ -1687,7 +1684,7 @@ const setupBot = async (client, botToken, botName) => {
 
           try {
             let userData = await UserData.findOne({
-              userId: message.author.id,
+              discord_id: message.author.id,
             });
             if (userData) {
               // Initialize conversationHistory array if it doesn't exist
@@ -1724,7 +1721,7 @@ const setupBot = async (client, botToken, botName) => {
               let updateResult2 = null;
               try {
                 await UserData.findOneAndUpdate(
-                  { userId: message.author.id },
+                  { discord_id: message.author.id },
                   {
                     conversationHistory: JSON.stringify(
                       userData.conversationHistory,
@@ -1789,10 +1786,10 @@ const setupBot = async (client, botToken, botName) => {
           const UserData = require("./models/postgres/UserData");
 
           // Get current user data
-          let userData = await UserData.findOne({ user_id: thread.ownerId });
+          let userData = await UserData.findOne({ discord_id: thread.ownerId });
           if (!userData) {
             userData = await UserData.create({
-              user_id: thread.ownerId,
+              discord_id: thread.ownerId,
               username:
                 thread.guild.members.cache.get(thread.ownerId)?.user
                   ?.username || "Unknown",
@@ -1810,7 +1807,7 @@ const setupBot = async (client, botToken, botName) => {
           const previousLevel = userData.level;
 
           await UserData.findOneAndUpdate(
-            { user_id: thread.ownerId },
+            { discord_id: thread.ownerId },
             {
               xp: newXP,
               level: newLevel,

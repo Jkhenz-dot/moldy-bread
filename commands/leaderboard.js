@@ -9,7 +9,7 @@ module.exports = {
     try {
       const allUsers = await UserData.find();
       const users = allUsers.sort((a, b) => b.xp - a.xp).slice(0, 10);
-      const leaderboard = users.map((user, index) => `${index + 1}. <@${user.user_id}> - Level ${user.level} (${user.xp} XP)`).join('\n') || 'No users found';
+      const leaderboard = users.map((user, index) => `${index + 1}. <@${user.discord_id}> - Level ${user.level} (${user.xp} XP)`).join('\n') || 'No users found';
       
       const embed = new EmbedBuilder()
         .setTitle('Leaderboard')

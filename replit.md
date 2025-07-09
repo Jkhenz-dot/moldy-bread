@@ -133,6 +133,128 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - **Error Handling**: Comprehensive error recovery and logging
 
 ## Changelog
+- July 09, 2025: Implemented comprehensive database protection system - automated backups every 30 minutes, health monitoring every 5 minutes, auto-backup before destructive operations, backup tables with restore capabilities, database resilience against connection failures
+- July 09, 2025: Added database backup management endpoints for manual backup creation and status monitoring
+- July 09, 2025: Fixed database schema issues - added missing avatar_path and blacklisted_users columns to bot tables
+- July 09, 2025: Removed Text Channels/Voice Channels/Forum Channels cards from dashboard as requested
+- July 09, 2025: Fixed dashboard console errors with proper null checks for innerHTML operations
+- July 09, 2025: Comprehensive dashboard improvements - removed emojis from home section cards, renamed cards for clarity, reordered member display (Total Members after Bot Members)
+- July 09, 2025: Enhanced guild data details with comprehensive server information - added text/voice/forum channel counts, role count, creation date, verification level, boost level/count
+- July 09, 2025: Improved avatar upload UX - replaced upload buttons with clickable profile circles with hover effects and "Click to change" tooltip
+- July 09, 2025: Added System Performance card to home section with proper trend card styling
+- July 09, 2025: Removed Connected Servers card from home section (count still shown in status overview)
+- July 09, 2025: Enhanced dashboard styling and guild data display - applied trend card theme to home, general, and AI sections to match reactions section
+- July 09, 2025: Fixed mobile navigation background - lightened from black to transparent for better usability
+- July 09, 2025: Improved guild member counting with async member fetching for accurate human/bot breakdown
+- July 09, 2025: Removed guild owner field from display to prevent display issues
+- July 09, 2025: Added loading states for guild statistics during startup
+- July 09, 2025: Fixed jkhenz's user data - restored original XP (345) and level (2) after database restore issue
+- July 09, 2025: Added automatic message validation cleanup - orphaned reaction role sets are removed when message IDs no longer exist
+- July 09, 2025: Enhanced refresh functionality to validate message existence and clean up deleted Discord messages
+- July 09, 2025: Fixed reaction role display showing "undefined" - now properly displays emoji → @role_name mappings
+- July 09, 2025: Added automatic cleanup when reaction role sets are deleted - removes all Discord message reactions when no more sets exist
+- July 09, 2025: Removed excessive console logging from reaction role system for cleaner production output
+- July 09, 2025: Enhanced reaction role database queries to return individual pairs instead of grouped aggregates
+- July 09, 2025: Fixed all database table schemas - added missing columns (avatar_path, blacklisted_users, level_up_channel, etc.)
+- July 09, 2025: Fixed users table to use discord_id instead of user_id column for proper field mapping
+- July 09, 2025: Fixed dashboard server startup by correcting malformed try-catch block syntax error
+- July 09, 2025: All database tables now properly configured with complete schema
+- July 09, 2025: Fixed level command progress bar width issue - removed hardcoded 100% width to show actual XP progress
+- July 09, 2025: Recreated PostgreSQL database with all necessary tables after endpoint access issues
+- July 09, 2025: Database fully operational with users, bots, and configuration tables restored
+- July 09, 2025: Implemented merged message ID validation in advanced reaction roles - single "Create Set & Continue" button validates message and proceeds automatically
+- July 09, 2025: Added real-time message validation with visual feedback showing message content and channel name when found
+- July 09, 2025: Enhanced reaction role creation workflow with seamless validation and error handling
+- July 09, 2025: Fixed mobile navigation to be always visible as fixed bottom horizontal sliding tabs
+- July 09, 2025: Removed duplicate level_announcement column from others table, using level_up_announcement instead
+- July 09, 2025: Fixed reaction roles database schema - removed unnecessary channel_id column and updated model mappings
+- July 09, 2025: Enhanced mobile navigation to display as fixed bottom scrollable tabs with proper styling
+- July 09, 2025: Updated VC-TTS command maximum text length from 500 to 200 characters per user request
+- July 09, 2025: Successfully restored complete database from user backup with user_id to discord_id field conversion
+- July 09, 2025: Imported 14 users with XP/level data, bot configurations, and system settings
+- July 09, 2025: Fixed all database model field mappings and column compatibility issues
+- July 09, 2025: Database models fully optimized with comprehensive field mapping for all 25+ configuration options
+- July 09, 2025: Both Heilos and Wisteria restored with original personalities, activities, and channel permissions
+- July 09, 2025: XP system, level roles, forum auto-react, and welcomer configurations fully restored
+- July 09, 2025: Fixed database connection issues by creating fresh PostgreSQL database with proper schema
+- July 09, 2025: Recreated all database tables including temp_audio_files table for TTS functionality
+- July 09, 2025: Successfully restored all user data and bot configurations to new database
+- July 09, 2025: Database management functionality now working properly in dashboard
+- July 09, 2025: Fixed TTS command parameter format to use correct array structure with blob audio upload
+- July 09, 2025: Enhanced TTS command with proper bot-specific audio file selection (bot1.mp3 for Heilos, bot2.mp3 for Wisteria)
+- July 09, 2025: Implemented proper speed control (0.7x for Bot1/Heilos, 0.5x for Bot2/Wisteria)
+- July 09, 2025: Added comprehensive temp file cleanup system for FFmpeg processing
+- July 09, 2025: Fixed interaction timeout handling with proper defer/reply logic
+- July 09, 2025: Enhanced voice channel conflict management - same bot blocks itself, different bots can overlap
+- July 09, 2025: Fixed TTS voice channel conflicts - only one bot can speak at a time now
+- July 09, 2025: Resolved Discord interaction timeout errors with proper error handling
+- July 09, 2025: Enhanced audio source separation to prevent bot voice mixing issues
+- July 09, 2025: Fixed voice connection isolation with unique bot groups for simultaneous TTS support
+- July 09, 2025: Resolved audio cross-contamination - each bot now uses completely isolated voice connections
+- July 09, 2025: Enhanced connection tracking and subscription verification for reliable multi-bot audio
+- July 09, 2025: Fixed undefined botId variable error in audio playback function
+- July 09, 2025: Optimized TTS system with in-memory FFmpeg processing - no more temp files on disk
+- July 09, 2025: Added rich Discord embeds for all TTS responses with color-coded status
+- July 09, 2025: Removed excessive logging for cleaner production console output
+- July 09, 2025: Enhanced auto-reconnect functionality to handle voice channel disconnections
+- July 09, 2025: Reduced timeouts and improved connection stability for faster TTS responses
+- July 09, 2025: Fixed TTS generation failures with enhanced error handling and fallback processing system
+- July 09, 2025: Added robust FFmpeg fallback from in-memory to temp file processing when needed
+- July 09, 2025: Successfully restored user's old database export with complete data migration
+- July 09, 2025: Imported 14 users with XP/level data, conversation history, and proper discord_id mapping
+- July 09, 2025: Restored bot configurations for Heilos and Wisteria with original personalities and settings
+- July 09, 2025: Restored XP system settings (2-8 XP per message, 6s cooldown, level announcements enabled)
+- July 09, 2025: Restored level roles, forum auto-react settings, and welcomer configurations
+- July 09, 2025: Fixed all database schema errors - added missing columns and tables
+- July 09, 2025: Added missing 'xp_enabled' column to others table
+- July 09, 2025: Added missing 'updated_at' column to level_roles table
+- July 09, 2025: Created missing 'ai_questions' table with proper schema
+- July 09, 2025: Fixed auto role settings parsing to handle empty array strings ("[]")
+- July 09, 2025: Enhanced dashboard JavaScript to filter out invalid role IDs
+- July 09, 2025: Fixed critical database error - corrected UserData model field mapping from discord_id to discord_id
+- July 09, 2025: Fixed PostgreSQL NOT NULL constraint violation by using correct column names in user creation
+- July 09, 2025: Updated leaderboard and level commands to use discord_id field instead of discord_id
+- July 09, 2025: Extended TTS functionality to both bots with voice file selection (bot1.mp3 for Heilos, bot2.mp3 for Wisteria)
+- July 09, 2025: Implemented database storage for temporary audio files with PostgreSQL tracking
+- July 09, 2025: Added voice channel conflict prevention to avoid multiple bots speaking simultaneously
+- July 09, 2025: Removed bot restrictions - TTS command now available to all users on both bots
+- July 09, 2025: Enhanced database with temp_audio_files table for comprehensive audio tracking
+- July 09, 2025: Simplified users table schema - removed guild_id, discriminator, messages_sent, and last_message_at columns
+- July 09, 2025: Updated UserData model to match simplified database structure from JSON export
+- July 09, 2025: Users table now only contains: id, discord_id, username, xp, level, last_xp_gain, conversation_history, created_at, updated_at
+- July 09, 2025: Successfully restored user's old database export with complete data migration
+- July 09, 2025: Imported 14 users with XP/level data, conversation history, and proper discord_id mapping
+- July 09, 2025: Restored bot configurations for Heilos and Wisteria with original personalities and settings
+- July 09, 2025: Restored XP system settings (2-8 XP per message, 6s cooldown, level announcements enabled)
+- July 09, 2025: Restored level roles, forum auto-react settings, and welcomer configurations
+- July 09, 2025: Fixed all database schema errors - added missing columns and tables
+- July 09, 2025: Added missing 'xp_enabled' column to others table
+- July 09, 2025: Added missing 'updated_at' column to level_roles table
+- July 09, 2025: Created missing 'ai_questions' table with proper schema
+- July 09, 2025: Fixed auto role settings parsing to handle empty array strings ("[]")
+- July 09, 2025: Enhanced dashboard JavaScript to filter out invalid role IDs
+- July 09, 2025: Fixed critical database error - corrected UserData model field mapping from discord_id to discord_id
+- July 09, 2025: Fixed PostgreSQL NOT NULL constraint violation by using correct column names in user creation
+- July 09, 2025: Updated leaderboard and level commands to use discord_id field instead of discord_id
+- July 09, 2025: Extended TTS functionality to both bots with voice file selection (bot1.mp3 for Heilos, bot2.mp3 for Wisteria)
+- July 09, 2025: Implemented database storage for temporary audio files with PostgreSQL tracking
+- July 09, 2025: Added voice channel conflict prevention to avoid multiple bots speaking simultaneously
+- July 09, 2025: Removed bot restrictions - TTS command now available to all users on both bots
+- July 09, 2025: Enhanced database with temp_audio_files table for comprehensive audio tracking
+- July 09, 2025: Fixed Discord voice audio compression by installing @discordjs/opus package for proper audio encoding
+- July 09, 2025: Enhanced audio speed control by pre-processing files with FFmpeg atempo filter for proper 0.5x playback speed
+- July 09, 2025: Updated TTS voice reference to use local bot1.mp3 file instead of remote audio sample
+- July 09, 2025: Fixed TTS audio playback by installing FFmpeg system dependency for Discord voice support
+- July 09, 2025: Updated TTS command to download audio files from Gradio server to local storage for playback
+- July 09, 2025: Resolved Discord interaction timeout issues and deprecated ephemeral flag warnings
+- July 09, 2025: Successfully implemented @gradio/client with dynamic import for ES module compatibility
+- July 09, 2025: Fixed TTS audio path handling to properly extract file path from Gradio API response
+- July 09, 2025: TTS functionality fully operational using remote audio sample as voice reference
+- July 09, 2025: Fixed @gradio/client import error by switching to gradio-client package
+- July 09, 2025: Updated TTS command to use local bot1.mp3 file instead of remote audio
+- July 09, 2025: Resolved Client.connect API usage for proper Gradio integration
+- July 09, 2025: Added vc-tts command for Bot 1 (Heilos) using Gradio API voice cloning service
+- July 09, 2025: Implemented TTS functionality with bot1.mp3 voice reference file
 - July 06, 2025: Initial setup
 - July 07, 2025: Fixed duplicate key constraint violation error in user creation system
 - July 07, 2025: Added proper error handling for PostgreSQL unique constraint violations  
@@ -180,7 +302,7 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 06, 2025: Cleaned up duplicate BotA database entries (removed 2 duplicate rows)
 - July 06, 2025: Conversation history now properly stores and retrieves chat messages for memory functionality
 - July 06, 2025: Fixed database import issue in conversation history saving - corrected to use singleton DatabaseManager instance
-- July 06, 2025: Resolved user_id null constraint violation by using message.author.id directly in SQL queries
+- July 06, 2025: Resolved discord_id null constraint violation by using message.author.id directly in SQL queries
 - July 06, 2025: Successfully verified conversation history system working with proper JSON storage in PostgreSQL JSONB fields
 - July 06, 2025: Conversation memory system fully operational - maintains 20 messages per bot with proper timestamp sorting
 - July 06, 2025: Implemented automatic cleanup of orphaned reaction role sets when Discord messages are not found
@@ -274,7 +396,7 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - July 08, 2025: Fixed botConfig undefined error in index.js by adding proper database loading in channel restriction checks
 - July 08, 2025: Enhanced PostgreSQL error handling to suppress recoverable connection termination messages
 - July 08, 2025: Fixed level command XP bar accuracy by properly calculating current level progress vs total XP
-- July 08, 2025: Fixed leaderboard command user ID field name mismatch (user_id vs userId)
+- July 08, 2025: Fixed leaderboard command user ID field name mismatch (discord_id vs userId)
 - July 08, 2025: Added comprehensive interaction timeout handling for "Unknown interaction" errors (10062)
 - July 08, 2025: Created ai_utils.py for Hugging Face API integration with music and video generation
 - July 08, 2025: Updated AI generation commands to use HF_TOKEN environment variable

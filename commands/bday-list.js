@@ -37,7 +37,7 @@ module.exports = {
           // Use the month and day fields directly from database
           const month = bday.month.toString().padStart(2, '0');
           const day = bday.day.toString().padStart(2, '0');
-          return `<@${bday.user_id}> - ${month}/${day}`;
+          return `<@${bday.discord_id}> - ${month}/${day}`;
         }).join('\n');
         
         return new EmbedBuilder()

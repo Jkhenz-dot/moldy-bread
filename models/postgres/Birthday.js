@@ -3,7 +3,7 @@ const BaseModel = require('./BaseModel');
 class Birthday extends BaseModel {
   constructor() {
     super('birthdays', {
-      userId: 'user_id',
+      userId: 'discord_id',
       guildId: 'guild_id'
     });
   }

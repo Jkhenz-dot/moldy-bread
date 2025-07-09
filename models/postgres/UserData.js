@@ -3,9 +3,10 @@ const BaseModel = require("./BaseModel");
 class UserData extends BaseModel {
   constructor() {
     super("users", {
-      userId: "user_id",
       lastXpGain: "last_xp_gain",
       conversationHistory: "conversation_history",
+      discordId: "discord_id",
+      userId: "discord_id" // Map user_id to discord_id for backup compatibility
     });
   }
 
@@ -58,9 +59,9 @@ class UserData extends BaseModel {
       return user;
     } catch (error) {
       // Handle duplicate key constraint violation
-      if (error.code === '23505' && error.constraint === 'users_user_id_key') {
-        console.log(`User ${userData.userId} already exists, fetching existing user`);
-        return await UserData.findOne({ userId: userData.userId });
+      if (error.code === '23505' && error.constraint === 'users_discord_id_key') {
+        console.log(`User ${userData.discord_id} already exists, fetching existing user`);
+        return await UserData.findOne({ discord_id: userData.discord_id });
       }
       
       console.error('Error creating user:', error);

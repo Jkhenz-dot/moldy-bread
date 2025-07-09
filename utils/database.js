@@ -38,7 +38,9 @@ class DatabaseManager {
             } else if (
                 err.code !== "ECONNRESET" &&
                 !err.message.includes("Connection terminated unexpectedly") &&
-                !err.message.includes("server closed the connection unexpectedly")
+                !err.message.includes(
+                    "server closed the connection unexpectedly",
+                )
             ) {
                 // Only log non-recoverable errors to avoid spam
                 console.log("PostgreSQL pool error");
@@ -59,7 +61,7 @@ class DatabaseManager {
             // Force reconnecting to database silently
             // End all existing connections
             await this.pool.end();
-            
+
             // Recreate the pool with same configuration
             const connectionConfig = {
                 connectionString: process.env.DATABASE_URL,
@@ -77,12 +79,12 @@ class DatabaseManager {
                 keepAliveInitialDelayMillis: 5000,
                 application_name: "discord-bot",
             };
-            
+
             this.pool = new Pool(connectionConfig);
-            
+
             // Re-attach event listeners
             this.pool.on("error", (err) => {
-               console.log("PostgreSQL pool error");
+                console.log("PostgreSQL pool error");
                 if (
                     err.code === "57P01" ||
                     err.message.includes("terminating connection") ||
@@ -100,7 +102,7 @@ class DatabaseManager {
             this.pool.on("remove", (client) => {
                 // Database connection removed from pool silently
             });
-            
+
             // Database force reconnection completed silently
         } catch (error) {
             console.error("Failed to force reconnect database:", error);
@@ -112,6 +114,12 @@ class DatabaseManager {
         let client;
         try {
             client = await this.pool.connect();
+            
+            // Auto-backup critical operations
+            if (text.toUpperCase().includes('UPDATE') || text.toUpperCase().includes('DELETE')) {
+                await this.createAutoBackup(text, params);
+            }
+            
             const res = await client.query(text, params);
             return res;
         } catch (error) {
@@ -182,6 +190,73 @@ class DatabaseManager {
     async close() {
         await this.pool.end();
         console.info("Database connection closed");
+    }
+
+    async createAutoBackup(queryText, params) {
+        try {
+            // Only backup if it's a potentially destructive operation
+            if (queryText.toUpperCase().includes('UPDATE bota') || 
+                queryText.toUpperCase().includes('UPDATE botb') ||
+                queryText.toUpperCase().includes('UPDATE others')) {
+                
+                const backupClient = await this.pool.connect();
+                
+                // Backup bot configurations
+                await backupClient.query(`
+                    INSERT INTO bot_config_backups (bot_type, config_data)
+                    SELECT 'bota', row_to_json(bota.*) FROM bota
+                `);
+                
+                await backupClient.query(`
+                    INSERT INTO bot_config_backups (bot_type, config_data)
+                    SELECT 'botb', row_to_json(botb.*) FROM botb
+                `);
+                
+                // Backup others table
+                await backupClient.query(`
+                    INSERT INTO others_backups (config_data)
+                    SELECT row_to_json(others.*) FROM others
+                `);
+                
+                backupClient.release();
+            }
+        } catch (error) {
+            // Backup failure shouldn't block the main operation
+            console.log('Auto-backup failed, continuing with operation');
+        }
+    }
+
+    async restoreFromBackup(backupId, tableName) {
+        try {
+            const client = await this.pool.connect();
+            
+            if (tableName === 'bota' || tableName === 'botb') {
+                const backupResult = await client.query(`
+                    SELECT config_data FROM bot_config_backups 
+                    WHERE id = $1 AND bot_type = $2
+                `, [backupId, tableName]);
+                
+                if (backupResult.rows.length > 0) {
+                    const config = backupResult.rows[0].config_data;
+                    
+                    // Restore the configuration
+                    await client.query(`
+                        DELETE FROM ${tableName};
+                        INSERT INTO ${tableName} (${Object.keys(config).join(', ')})
+                        VALUES (${Object.keys(config).map((_, i) => `$${i + 1}`).join(', ')})
+                    `, Object.values(config));
+                    
+                    client.release();
+                    return true;
+                }
+            }
+            
+            client.release();
+            return false;
+        } catch (error) {
+            console.error('Error restoring from backup:', error);
+            return false;
+        }
     }
 
     // User management methods
@@ -276,7 +351,7 @@ class DatabaseManager {
     // Command usage tracking
     async logCommandUsage(userId, guildId, commandName) {
         const query = `
-            INSERT INTO command_usage (user_id, guild_id, command_name)
+            INSERT INTO command_usage (discord_id, guild_id, command_name)
             VALUES ($1, $2, $3)
             RETURNING *
         `;
@@ -314,7 +389,7 @@ class DatabaseManager {
         messageType = "command",
     ) {
         const query = `
-            INSERT INTO bot_messages (user_id, guild_id, message_content, response_content, message_type)
+            INSERT INTO bot_messages (discord_id, guild_id, message_content, response_content, message_type)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING *
         `;
@@ -331,7 +406,7 @@ class DatabaseManager {
     async getUserMessages(userId, limit = 50) {
         const query = `
             SELECT * FROM bot_messages
-            WHERE user_id = $1
+            WHERE discord_id = $1
             ORDER BY created_at DESC
             LIMIT $2
         `;

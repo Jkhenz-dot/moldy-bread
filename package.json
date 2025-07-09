@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
     "@google/genai": "^1.8.0",
     "@google/generative-ai": "^0.24.1",
@@ -22,10 +23,14 @@
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "gamecord": "^1.2.2",
+    "gradio-client": "^1.0.0",
     "multer": "^2.0.1",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
     "play-dl": "^1.9.7",
     "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "@gradio/client": "^1.15.4"
   }
 }
