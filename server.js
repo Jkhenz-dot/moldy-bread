@@ -23,16 +23,18 @@ const PORT = 5000;
 
 // Enable compression middleware for better performance
 const compression = require("compression");
-app.use(compression({
-  level: 6, // Balanced compression level
-  threshold: 1024, // Only compress responses > 1KB
-  filter: (req, res) => {
-    // Don't compress if client doesn't support it
-    if (req.headers['x-no-compression']) return false;
-    // Use compression for all other cases
-    return compression.filter(req, res);
-  }
-}));
+app.use(
+    compression({
+        level: 6, // Balanced compression level
+        threshold: 1024, // Only compress responses > 1KB
+        filter: (req, res) => {
+            // Don't compress if client doesn't support it
+            if (req.headers["x-no-compression"]) return false;
+            // Use compression for all other cases
+            return compression.filter(req, res);
+        },
+    }),
+);
 
 // Optimize Express settings for production
 app.set("x-powered-by", false);
@@ -41,17 +43,17 @@ app.set("view cache", true);
 
 // Add response caching headers
 app.use((req, res, next) => {
-  // Cache static assets for 1 hour
-  if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-  }
-  next();
+    // Cache static assets for 1 hour
+    if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
+        res.setHeader("Cache-Control", "public, max-age=3600");
+    }
+    next();
 });
 
 // Request timeout middleware
 app.use((req, res, next) => {
-  req.setTimeout(30000); // 30 second timeout
-  next();
+    req.setTimeout(30000); // 30 second timeout
+    next();
 });
 
 // Memory storage for file uploads (no disk storage)
@@ -166,59 +168,63 @@ app.get("/", (req, res) => {
 
 // Health check endpoint for keep-alive mechanism
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "healthy", 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    bots: {
-      bot1: global.discordClient1?.isReady() || false,
-      bot2: global.discordClient2?.isReady() || false
-    }
-  });
+    res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        bots: {
+            bot1: global.discordClient1?.isReady() || false,
+            bot2: global.discordClient2?.isReady() || false,
+        },
+    });
 });
 
 // Database backup management endpoints
 app.get("/api/database-backups", async (req, res) => {
-  try {
-    const { DatabaseProtection } = require('./utils/databaseProtection');
-    const dbProtection = new DatabaseProtection();
-    
-    const backups = await dbProtection.getRecentBackups();
-    const healthStatus = dbProtection.getHealthStatus();
-    
-    res.json({
-      success: true,
-      backups: backups,
-      healthStatus: healthStatus
-    });
-  } catch (error) {
-    console.error('Error fetching database backups:', error);
-    res.json({
-      success: false,
-      message: 'Failed to fetch database backups'
-    });
-  }
+    try {
+        const { DatabaseProtection } = require("./utils/databaseProtection");
+        const dbProtection = new DatabaseProtection();
+
+        const backups = await dbProtection.getRecentBackups();
+        const healthStatus = dbProtection.getHealthStatus();
+
+        res.json({
+            success: true,
+            backups: backups,
+            healthStatus: healthStatus,
+        });
+    } catch (error) {
+        console.error("Error fetching database backups:", error);
+        res.json({
+            success: false,
+            message: "Failed to fetch database backups",
+        });
+    }
 });
 
 app.post("/api/create-backup", async (req, res) => {
-  try {
-    const { reason } = req.body;
-    const { DatabaseProtection } = require('./utils/databaseProtection');
-    const dbProtection = new DatabaseProtection();
-    
-    const success = await dbProtection.createManualBackup(reason || 'manual_dashboard_backup');
-    
-    res.json({
-      success: success,
-      message: success ? 'Backup created successfully' : 'Failed to create backup'
-    });
-  } catch (error) {
-    console.error('Error creating backup:', error);
-    res.json({
-      success: false,
-      message: 'Failed to create backup'
-    });
-  }
+    try {
+        const { reason } = req.body;
+        const { DatabaseProtection } = require("./utils/databaseProtection");
+        const dbProtection = new DatabaseProtection();
+
+        const success = await dbProtection.createManualBackup(
+            reason || "manual_dashboard_backup",
+        );
+
+        res.json({
+            success: success,
+            message: success
+                ? "Backup created successfully"
+                : "Failed to create backup",
+        });
+    } catch (error) {
+        console.error("Error creating backup:", error);
+        res.json({
+            success: false,
+            message: "Failed to create backup",
+        });
+    }
 });
 
 // Test endpoint for database operations
@@ -386,11 +392,16 @@ app.get("/api/bot-data", async (req, res) => {
                     roleIds: (() => {
                         try {
                             if (!others?.auto_role_ids) return [];
-                            if (others.auto_role_ids === '[]') return [];
-                            if (others.auto_role_ids.startsWith('[') && others.auto_role_ids.endsWith(']')) {
+                            if (others.auto_role_ids === "[]") return [];
+                            if (
+                                others.auto_role_ids.startsWith("[") &&
+                                others.auto_role_ids.endsWith("]")
+                            ) {
                                 return JSON.parse(others.auto_role_ids);
                             }
-                            return others.auto_role_ids.split(',').filter(id => id.trim());
+                            return others.auto_role_ids
+                                .split(",")
+                                .filter((id) => id.trim());
                         } catch (e) {
                             return [];
                         }
@@ -418,7 +429,7 @@ app.get("/api/dashboard-stats", async (req, res) => {
 
         // Prefer client1 for guild data, fallback to client2
         const primaryClient = client1 || client2;
-        
+
         if (!primaryClient) {
             console.error("No Discord client available for dashboard stats");
             return res.json({
@@ -435,138 +446,194 @@ app.get("/api/dashboard-stats", async (req, res) => {
                     bot1Name: "Assistant",
                     bot2Name: "Assistant",
                     recentActivity: [],
-                }
+                },
             });
         }
 
         if (primaryClient && primaryClient.guilds) {
             guildCount = primaryClient.guilds.cache.size;
             try {
-                guilds = await Promise.all(primaryClient.guilds.cache
-                    .map(async (guild) => {
-                        try {
-                            // Use guild.memberCount for accurate total
-                            const totalMembers = guild.memberCount || guild.members.cache.size;
-                            
-                            // For human/bot breakdown, try to fetch members if cache is empty
-                            let humanMembers = 0;
-                            let botMembers = 0;
-                            
+                guilds = await Promise.all(
+                    primaryClient.guilds.cache
+                        .map(async (guild) => {
                             try {
-                                // If cache is empty or small, try to fetch members
-                                if (guild.members.cache.size < Math.min(100, totalMembers * 0.1)) {
-                                    await guild.members.fetch({ limit: 1000 });
-                                }
-                                
-                                // Use cache data
-                                humanMembers = guild.members.cache.filter(member => !member.user.bot).size;
-                                botMembers = guild.members.cache.filter(member => member.user.bot).size;
-                                
-                                // If we still don't have good data, estimate
-                                if (humanMembers + botMembers === 0 && totalMembers > 0) {
+                                // Use guild.memberCount for accurate total
+                                const totalMembers =
+                                    guild.memberCount ||
+                                    guild.members.cache.size;
+
+                                // For human/bot breakdown, try to fetch members if cache is empty
+                                let humanMembers = 0;
+                                let botMembers = 0;
+
+                                try {
+                                    // If cache is empty or small, try to fetch members
+                                    if (
+                                        guild.members.cache.size <
+                                        Math.min(100, totalMembers * 0.1)
+                                    ) {
+                                        await guild.members.fetch({
+                                            limit: 1000,
+                                        });
+                                    }
+
+                                    // Use cache data
+                                    humanMembers = guild.members.cache.filter(
+                                        (member) => !member.user.bot,
+                                    ).size;
+                                    botMembers = guild.members.cache.filter(
+                                        (member) => member.user.bot,
+                                    ).size;
+
+                                    // If we still don't have good data, estimate
+                                    if (
+                                        humanMembers + botMembers === 0 &&
+                                        totalMembers > 0
+                                    ) {
+                                        botMembers = Math.floor(
+                                            totalMembers * 0.1,
+                                        ); // ~10% bots typical
+                                        humanMembers =
+                                            totalMembers - botMembers;
+                                    }
+                                } catch (error) {
+                                    // Fallback: estimate based on typical Discord server bot/human ratio
                                     botMembers = Math.floor(totalMembers * 0.1); // ~10% bots typical
                                     humanMembers = totalMembers - botMembers;
                                 }
-                            } catch (error) {
-                                // Fallback: estimate based on typical Discord server bot/human ratio
-                                botMembers = Math.floor(totalMembers * 0.1); // ~10% bots typical
-                                humanMembers = totalMembers - botMembers;
+
+                                // Get channel counts
+                                let publicChannels = 0;
+                                let privateChannels = 0;
+
+                                try {
+                                    guild.channels.cache.forEach((channel) => {
+                                        if (channel.type === 4) return; // Skip category channels
+
+                                        // Simple check: if channel has any permission overwrites, consider it potentially private
+                                        // Otherwise consider it public
+                                        if (
+                                            channel.permissionOverwrites &&
+                                            channel.permissionOverwrites
+                                                .cache &&
+                                            channel.permissionOverwrites.cache
+                                                .size > 0
+                                        ) {
+                                            privateChannels++;
+                                        } else {
+                                            publicChannels++;
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error(
+                                        "Error counting channels:",
+                                        error,
+                                    );
+                                    // Fallback to simple count
+                                    publicChannels =
+                                        guild.channels.cache.filter(
+                                            (channel) => channel.type !== 4,
+                                        ).size;
+                                    privateChannels = 0;
+                                }
+
+                                const totalChannels =
+                                    guild.channels.cache.filter(
+                                        (channel) => channel.type !== 4,
+                                    ).size;
+
+                                // Count specific channel types
+                                let textChannels = 0;
+                                let voiceChannels = 0;
+                                let forumChannels = 0;
+
+                                try {
+                                    guild.channels.cache.forEach((channel) => {
+                                        if (channel.type === 0)
+                                            textChannels++; // Text channels
+                                        else if (channel.type === 2)
+                                            voiceChannels++; // Voice channels
+                                        else if (channel.type === 15)
+                                            forumChannels++; // Forum channels
+                                    });
+                                } catch (error) {
+                                    console.error(
+                                        "Error counting channel types:",
+                                        error,
+                                    );
+                                }
+
+                                // Get additional guild information
+                                const createdAt = guild.createdAt
+                                    ? guild.createdAt.toLocaleDateString()
+                                    : "Unknown";
+                                const verificationLevel =
+                                    guild.verificationLevel || 0;
+                                const premiumTier = guild.premiumTier || 0;
+                                const premiumSubscriptionCount =
+                                    guild.premiumSubscriptionCount || 0;
+                                const roleCount = guild.roles.cache.size;
+
+                                // Convert verification level to readable string
+                                const verificationLevels = [
+                                    "None",
+                                    "Low",
+                                    "Medium",
+                                    "High",
+                                    "Very High",
+                                ];
+                                const readableVerificationLevel =
+                                    verificationLevels[verificationLevel] ||
+                                    "Unknown";
+
+                                return {
+                                    id: guild.id,
+                                    name: guild.name,
+                                    memberCount: totalMembers,
+                                    humanCount: humanMembers,
+                                    botCount: botMembers,
+                                    publicChannels: publicChannels,
+                                    privateChannels: privateChannels,
+                                    totalChannels: totalChannels,
+                                    textChannels: textChannels,
+                                    voiceChannels: voiceChannels,
+                                    forumChannels: forumChannels,
+                                    roleCount: roleCount,
+                                    createdAt: createdAt,
+                                    verificationLevel:
+                                        readableVerificationLevel,
+                                    boostLevel: premiumTier,
+                                    boostCount: premiumSubscriptionCount,
+                                };
+                            } catch (guildError) {
+                                console.error(
+                                    `Error processing guild ${guild.name}:`,
+                                    guildError,
+                                );
+                                return {
+                                    id: guild.id,
+                                    name: guild.name,
+                                    memberCount: guild.memberCount || 0,
+                                    humanCount: 0,
+                                    botCount: 0,
+                                    publicChannels: 0,
+                                    privateChannels: 0,
+                                    totalChannels: 0,
+                                    textChannels: 0,
+                                    voiceChannels: 0,
+                                    forumChannels: 0,
+                                    roleCount: 0,
+                                    createdAt: "Unknown",
+                                    verificationLevel: "Unknown",
+                                    boostLevel: 0,
+                                    boostCount: 0,
+                                };
                             }
-                            
-                            // Get channel counts
-                            let publicChannels = 0;
-                            let privateChannels = 0;
-                            
-                            try {
-                                guild.channels.cache.forEach(channel => {
-                                    if (channel.type === 4) return; // Skip category channels
-                                    
-                                    // Simple check: if channel has any permission overwrites, consider it potentially private
-                                    // Otherwise consider it public
-                                    if (channel.permissionOverwrites && channel.permissionOverwrites.cache && channel.permissionOverwrites.cache.size > 0) {
-                                        privateChannels++;
-                                    } else {
-                                        publicChannels++;
-                                    }
-                                });
-                            } catch (error) {
-                                console.error('Error counting channels:', error);
-                                // Fallback to simple count
-                                publicChannels = guild.channels.cache.filter(channel => channel.type !== 4).size;
-                                privateChannels = 0;
-                            }
-                            
-                            const totalChannels = guild.channels.cache.filter(channel => channel.type !== 4).size;
-                            
-                            // Count specific channel types
-                            let textChannels = 0;
-                            let voiceChannels = 0;
-                            let forumChannels = 0;
-                            
-                            try {
-                                guild.channels.cache.forEach(channel => {
-                                    if (channel.type === 0) textChannels++; // Text channels
-                                    else if (channel.type === 2) voiceChannels++; // Voice channels
-                                    else if (channel.type === 15) forumChannels++; // Forum channels
-                                });
-                            } catch (error) {
-                                console.error('Error counting channel types:', error);
-                            }
-                            
-                            // Get additional guild information
-                            const createdAt = guild.createdAt ? guild.createdAt.toLocaleDateString() : 'Unknown';
-                            const verificationLevel = guild.verificationLevel || 0;
-                            const premiumTier = guild.premiumTier || 0;
-                            const premiumSubscriptionCount = guild.premiumSubscriptionCount || 0;
-                            const roleCount = guild.roles.cache.size;
-                            
-                            // Convert verification level to readable string
-                            const verificationLevels = ['None', 'Low', 'Medium', 'High', 'Very High'];
-                            const readableVerificationLevel = verificationLevels[verificationLevel] || 'Unknown';
-                    
-                            return {
-                                id: guild.id,
-                                name: guild.name,
-                                memberCount: totalMembers,
-                                humanCount: humanMembers,
-                                botCount: botMembers,
-                                publicChannels: publicChannels,
-                                privateChannels: privateChannels,
-                                totalChannels: totalChannels,
-                                textChannels: textChannels,
-                                voiceChannels: voiceChannels,
-                                forumChannels: forumChannels,
-                                roleCount: roleCount,
-                                createdAt: createdAt,
-                                verificationLevel: readableVerificationLevel,
-                                boostLevel: premiumTier,
-                                boostCount: premiumSubscriptionCount,
-                            };
-                        } catch (guildError) {
-                            console.error(`Error processing guild ${guild.name}:`, guildError);
-                            return {
-                                id: guild.id,
-                                name: guild.name,
-                                memberCount: guild.memberCount || 0,
-                                humanCount: 0,
-                                botCount: 0,
-                                publicChannels: 0,
-                                privateChannels: 0,
-                                totalChannels: 0,
-                                textChannels: 0,
-                                voiceChannels: 0,
-                                forumChannels: 0,
-                                roleCount: 0,
-                                createdAt: 'Unknown',
-                                verificationLevel: 'Unknown',
-                                boostLevel: 0,
-                                boostCount: 0,
-                            };
-                        }
-                    })
-                    .slice(0, 10)); // Limit to 10 guilds for display
+                        })
+                        .slice(0, 10),
+                ); // Limit to 10 guilds for display
             } catch (guildsError) {
-                console.error('Error processing guilds:', guildsError);
+                console.error("Error processing guilds:", guildsError);
                 guilds = [];
             }
         }
@@ -610,7 +677,7 @@ app.get("/api/dashboard-stats", async (req, res) => {
                 bot1Name: "Assistant",
                 bot2Name: "Assistant",
                 recentActivity: [],
-            }
+            },
         });
     }
 });
@@ -620,8 +687,6 @@ app.get("/api/guild-data", async (req, res) => {
         const client = global.discordClient;
         const serverId = req.query.serverId;
         const guildData = { channels: [], roles: [], emojis: [] };
-
-
 
         if (!client) {
             console.error("Discord client not available");
@@ -1536,31 +1601,41 @@ app.post("/api/validate-message-id", async (req, res) => {
         if (!messageId) {
             return res.json({
                 success: false,
-                message: "Message ID is required"
+                message: "Message ID is required",
             });
         }
 
         // Check if clients exist and are ready
         const client1 = global.discordClient;
         const client2 = global.discordClient2;
-        
+
         console.log("Client status:", {
-            client1: client1 ? (client1.isReady ? client1.isReady() : "Not ready method") : "Not found",
-            client2: client2 ? (client2.isReady ? client2.isReady() : "Not ready method") : "Not found"
+            client1: client1
+                ? client1.isReady
+                    ? client1.isReady()
+                    : "Not ready method"
+                : "Not found",
+            client2: client2
+                ? client2.isReady
+                    ? client2.isReady()
+                    : "Not ready method"
+                : "Not found",
         });
 
-        const clients = [client1, client2].filter(client => {
+        const clients = [client1, client2].filter((client) => {
             return client && client.readyAt; // Use readyAt instead of isReady()
         });
-        
+
         if (clients.length === 0) {
             return res.json({
                 success: false,
-                message: "No Discord bots are currently online"
+                message: "No Discord bots are currently online",
             });
         }
 
-        console.log(`Searching for message ${messageId} across ${clients.length} clients`);
+        console.log(
+            `Searching for message ${messageId} across ${clients.length} clients`,
+        );
 
         let messageFound = null;
         let channelName = null;
@@ -1569,29 +1644,39 @@ app.post("/api/validate-message-id", async (req, res) => {
         // Search through all accessible channels for the message
         searchLoop: for (const client of clients) {
             if (messageFound) break;
-            
+
             const guilds = client.guilds.cache;
             console.log(`Client has ${guilds.size} guilds`);
-            
+
             for (const guild of guilds.values()) {
                 if (messageFound) break searchLoop;
-                
-                const channels = guild.channels.cache.filter(channel => channel.isTextBased());
-                console.log(`Guild ${guild.name} has ${channels.size} text channels`);
-                
+
+                const channels = guild.channels.cache.filter((channel) =>
+                    channel.isTextBased(),
+                );
+                console.log(
+                    `Guild ${guild.name} has ${channels.size} text channels`,
+                );
+
                 for (const channel of channels.values()) {
                     try {
                         const message = await channel.messages.fetch(messageId);
                         if (message) {
                             messageFound = message;
                             channelName = channel.name;
-                            messageContent = message.content || message.embeds?.[0]?.description || '[No text content]';
-                            
+                            messageContent =
+                                message.content ||
+                                message.embeds?.[0]?.description ||
+                                "[No text content]";
+
                             // Truncate very long messages for display
                             if (messageContent.length > 100) {
-                                messageContent = messageContent.substring(0, 97) + '...';
+                                messageContent =
+                                    messageContent.substring(0, 97) + "...";
                             }
-                            console.log(`Message found in channel: ${channelName}`);
+                            console.log(
+                                `Message found in channel: ${channelName}`,
+                            );
                             break searchLoop;
                         }
                     } catch (err) {
@@ -1608,24 +1693,24 @@ app.post("/api/validate-message-id", async (req, res) => {
                 message: "Message found successfully",
                 messageContent: messageContent,
                 channelName: channelName,
-                messageId: messageId
+                messageId: messageId,
             };
             console.log("Sending success response:", response);
             res.json(response);
         } else {
             const response = {
                 success: false,
-                message: "Message not found in any accessible channels"
+                message: "Message not found in any accessible channels",
             };
             console.log("Sending not found response:", response);
             res.json(response);
         }
-
     } catch (error) {
         console.error("Error validating message ID:", error);
         const errorResponse = {
             success: false,
-            message: "Error occurred while validating message: " + error.message
+            message:
+                "Error occurred while validating message: " + error.message,
         };
         console.log("Sending error response:", errorResponse);
         res.json(errorResponse);
@@ -2547,7 +2632,6 @@ app.post("/api/database/view-table", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
-            "ai_questions",
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2588,7 +2672,6 @@ app.get("/api/database/export", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
-            "ai_questions",
         ];
 
         for (const table of tables) {
@@ -2640,7 +2723,6 @@ app.post("/api/database/import", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
-            "ai_questions",
         ];
         let importedCount = 0;
 
@@ -2813,7 +2895,6 @@ app.post("/api/database/update-record", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
-            "ai_questions",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
@@ -2868,7 +2949,6 @@ app.post("/api/database/delete-record", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
-            "ai_questions",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
@@ -2950,7 +3030,7 @@ app.post("/api/update-role-rewards", async (req, res) => {
             for (const reward of roleRewards) {
                 await LevelRoles.create({
                     level: reward.level,
-                    role_id: reward.roleId
+                    role_id: reward.roleId,
                 });
             }
         }
@@ -2973,10 +3053,12 @@ app.post("/api/update-auto-role-settings", async (req, res) => {
     try {
         const Others = require("./models/postgres/Others");
         const { auto_role_enabled, auto_role_ids } = req.body;
-        
+
         const updateData = {
             auto_role_enabled: auto_role_enabled || false,
-            auto_role_ids: Array.isArray(auto_role_ids) ? auto_role_ids.join(',') : (auto_role_ids || null),
+            auto_role_ids: Array.isArray(auto_role_ids)
+                ? auto_role_ids.join(",")
+                : auto_role_ids || null,
         };
 
         await Others.findOneAndUpdate({}, updateData, { upsert: true });
@@ -2998,10 +3080,10 @@ app.post("/api/update-auto-role-settings", async (req, res) => {
 app.post("/api/database/clear-all", async (req, res) => {
     try {
         const database = require("./utils/database");
-        
+
         // Clear all tables using direct SQL
-        const tables = ['users', 'birthdays', 'ai_questions', 'level_roles', 'reaction_roles'];
-        
+        const tables = ["users", "birthdays", "level_roles", "reaction_roles"];
+
         for (const table of tables) {
             await database.query(`DELETE FROM ${table}`);
         }
@@ -3283,18 +3365,22 @@ app.post("/api/reaction-roles/create-set", async (req, res) => {
         let foundMessage = null;
         try {
             // Try to find the message across all channels
-            const clients = [global.discordClient, global.discordClient2].filter(client => client && client.readyAt);
-            
+            const clients = [
+                global.discordClient,
+                global.discordClient2,
+            ].filter((client) => client && client.readyAt);
+
             for (const client of clients) {
                 if (foundMessage) break;
-                
+
                 for (const guild of client.guilds.cache.values()) {
                     if (foundMessage) break;
-                    
+
                     for (const channel of guild.channels.cache.values()) {
                         if (channel.isTextBased()) {
                             try {
-                                const message = await channel.messages.fetch(messageId);
+                                const message =
+                                    await channel.messages.fetch(messageId);
                                 if (message) {
                                     foundChannel = channel;
                                     foundMessage = message;
@@ -3360,9 +3446,7 @@ app.post("/api/reaction-roles/create-set", async (req, res) => {
                     }
                 }
             } else {
-                console.error(
-                    "Channel not found when trying to add reactions",
-                );
+                console.error("Channel not found when trying to add reactions");
             }
         } catch (error) {
             console.error("Error adding reactions to message:", error);
@@ -3409,11 +3493,11 @@ app.get("/api/reaction-roles/get-sets", async (req, res) => {
         // Validate message existence and clean up orphaned sets
         const validSets = [];
         const orphanedSets = new Set();
-        
+
         if (sets && sets.length > 0) {
             // Group sets by message ID for efficient checking
             const messageGroups = {};
-            sets.forEach(set => {
+            sets.forEach((set) => {
                 if (!messageGroups[set.message_id]) {
                     messageGroups[set.message_id] = [];
                 }
@@ -3421,22 +3505,28 @@ app.get("/api/reaction-roles/get-sets", async (req, res) => {
             });
 
             // Check each message ID
-            for (const [messageId, messageSets] of Object.entries(messageGroups)) {
+            for (const [messageId, messageSets] of Object.entries(
+                messageGroups,
+            )) {
                 let messageExists = false;
-                
+
                 // Try to find the message across all clients and channels
-                const clients = [global.discordClient, global.discordClient2].filter(client => client && client.readyAt);
-                
+                const clients = [
+                    global.discordClient,
+                    global.discordClient2,
+                ].filter((client) => client && client.readyAt);
+
                 for (const client of clients) {
                     if (messageExists) break;
-                    
+
                     for (const guild of client.guilds.cache.values()) {
                         if (messageExists) break;
-                        
+
                         for (const channel of guild.channels.cache.values()) {
                             if (channel.isTextBased()) {
                                 try {
-                                    const message = await channel.messages.fetch(messageId);
+                                    const message =
+                                        await channel.messages.fetch(messageId);
                                     if (message) {
                                         messageExists = true;
                                         break;
@@ -3448,13 +3538,13 @@ app.get("/api/reaction-roles/get-sets", async (req, res) => {
                         }
                     }
                 }
-                
+
                 if (messageExists) {
                     // Message exists, add all sets for this message to valid sets
                     validSets.push(...messageSets);
                 } else {
                     // Message doesn't exist, mark all sets for this message as orphaned
-                    messageSets.forEach(set => {
+                    messageSets.forEach((set) => {
                         orphanedSets.add(set.set_id);
                     });
                 }
@@ -3493,30 +3583,39 @@ app.delete("/api/reaction-roles/delete-set", async (req, res) => {
         }
 
         const ReactionRole = require("./models/postgres/ReactionRole");
-        
+
         // Get the reactions before deleting to track message ID
         const reactionRoles = await ReactionRole.find({ set_id: setId });
-        const messageId = reactionRoles.length > 0 ? reactionRoles[0].message_id : null;
-        
+        const messageId =
+            reactionRoles.length > 0 ? reactionRoles[0].message_id : null;
+
         // Delete the set
         const deletedCount = await ReactionRole.deleteBySetId(setId);
 
         if (deletedCount > 0) {
             // Check if there are any remaining reaction roles for this message
             if (messageId) {
-                const remainingReactions = await ReactionRole.find({ message_id: messageId });
-                
+                const remainingReactions = await ReactionRole.find({
+                    message_id: messageId,
+                });
+
                 if (remainingReactions.length === 0) {
                     // No more reaction roles for this message - remove all bot reactions
                     try {
-                        const clients = [global.discordClient, global.discordClient2].filter(client => client && client.readyAt);
-                        
+                        const clients = [
+                            global.discordClient,
+                            global.discordClient2,
+                        ].filter((client) => client && client.readyAt);
+
                         for (const client of clients) {
                             for (const guild of client.guilds.cache.values()) {
                                 for (const channel of guild.channels.cache.values()) {
                                     if (channel.isTextBased()) {
                                         try {
-                                            const message = await channel.messages.fetch(messageId);
+                                            const message =
+                                                await channel.messages.fetch(
+                                                    messageId,
+                                                );
                                             if (message) {
                                                 // Remove all reactions from the message
                                                 await message.reactions.removeAll();
@@ -3530,11 +3629,14 @@ app.delete("/api/reaction-roles/delete-set", async (req, res) => {
                             }
                         }
                     } catch (cleanupError) {
-                        console.error('Error cleaning up message reactions:', cleanupError);
+                        console.error(
+                            "Error cleaning up message reactions:",
+                            cleanupError,
+                        );
                     }
                 }
             }
-            
+
             addActivity(
                 `Deleted reaction role set "${setId}" (${deletedCount} entries)`,
             );
