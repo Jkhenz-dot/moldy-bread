@@ -112,10 +112,12 @@ setInterval(
 
     // Level-up announcements are auto-cleaned by individual timeouts
     // No manual cleanup needed as each entry removes itself after 120 seconds
-    
+
     // Safety log to monitor processing locks (should normally be 0)
     if (processingUsers.size > 0) {
-      console.warn(`${processingUsers.size} users still processing XP - possible stuck locks`);
+      console.warn(
+        `${processingUsers.size} users still processing XP - possible stuck locks`,
+      );
     }
 
     // Clean old user data cache
@@ -433,10 +435,10 @@ const addXP = async (userId, guildId, message = null) => {
     if (processingUsers.has(processingKey)) {
       return; // Exit immediately if already processing
     }
-    
+
     // Lock this user for processing
     processingUsers.add(processingKey);
-    
+
     // Auto-release lock after 5 seconds to prevent permanent locks
     setTimeout(() => {
       processingUsers.delete(processingKey);
@@ -458,38 +460,38 @@ const addXP = async (userId, guildId, message = null) => {
     const userCacheKey = `user-${userId}`;
     let user = await UserData.findOne({ discord_id: userId });
     if (!user) {
-        const guild = client1.guilds.cache.get(guildId);
-        let member = guild?.members.cache.get(userId);
+      const guild = client1.guilds.cache.get(guildId);
+      let member = guild?.members.cache.get(userId);
 
-        // If member not in cache, try to fetch from Discord API
-        if (!member && guild) {
-          try {
-            member = await guild.members.fetch(userId);
-          } catch (error) {
-            console.log(`Could not fetch member ${userId}: ${error.message}`);
-          }
+      // If member not in cache, try to fetch from Discord API
+      if (!member && guild) {
+        try {
+          member = await guild.members.fetch(userId);
+        } catch (error) {
+          console.log(`Could not fetch member ${userId}: ${error.message}`);
         }
-
-        const username =
-          member?.user?.username ||
-          member?.displayName ||
-          `User_${userId.slice(-4)}`;
-
-        console.log(`Creating new user: ${userId} with username: ${username}`);
-
-        // Use upsert to handle duplicate key errors gracefully
-        user = await UserData.findOneAndUpdate(
-          { discord_id: userId },
-          {
-            discord_id: userId,
-            username,
-            xp: 0,
-            level: 0,
-            last_xp_gain: new Date(),
-          },
-          { upsert: true },
-        );
       }
+
+      const username =
+        member?.user?.username ||
+        member?.displayName ||
+        `User_${userId.slice(-4)}`;
+
+      console.log(`Creating new user: ${userId} with username: ${username}`);
+
+      // Use upsert to handle duplicate key errors gracefully
+      user = await UserData.findOneAndUpdate(
+        { discord_id: userId },
+        {
+          discord_id: userId,
+          username,
+          xp: 0,
+          level: 0,
+          last_xp_gain: new Date(),
+        },
+        { upsert: true },
+      );
+    }
 
     // Check if user is null (database error)
     if (!user) {
@@ -549,10 +551,11 @@ const addXP = async (userId, guildId, message = null) => {
       const hasAttachments =
         message.attachments && message.attachments.size > 0;
       const content = message.content.trim();
-      
+
       // Check if message mentions any bot (client1 or client2)
-      const mentionsBot = message.mentions.has(client1.user) || 
-                          (client2 && message.mentions.has(client2.user));
+      const mentionsBot =
+        message.mentions.has(client1.user) ||
+        (client2 && message.mentions.has(client2.user));
 
       // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
       const isEmojiOnly =
@@ -609,7 +612,7 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Only announce actual level increases - never re-announce same level
     const actualLevelUp = newLevel > oldLevel;
-    
+
     // Announce when user actually levels up (including 0->1 and any higher level ups)
     if (actualLevelUp && othersData?.level_up_announcement) {
       // Mark this announcement to prevent duplicates BEFORE sending
@@ -920,31 +923,38 @@ const setupBot = async (client, botToken, botName) => {
         }
       }
 
-      // Welcome Message
-      if (othersData.welcomer_enabled && othersData.welcomer_channel) {
+      // Welcome Message - using new WelcomeMessage table
+      const WelcomeMessage = require("./models/postgres/WelcomeMessage");
+      const welcomeMessageData = await WelcomeMessage.findOne();
+
+      if (
+        welcomeMessageData &&
+        welcomeMessageData.enabled &&
+        welcomeMessageData.channel_id
+      ) {
         const welcomeChannel = member.guild.channels.cache.get(
-          othersData.welcomer_channel,
+          welcomeMessageData.channel_id,
         );
         if (welcomeChannel && welcomeChannel.isTextBased()) {
           const userMention = `<@${member.user.id}>`;
 
-          if (othersData.welcomer_embed_enabled) {
+          if (welcomeMessageData.embed_enabled) {
             // Send rich embed welcome message
             const embed = new EmbedBuilder()
-              .setTitle(othersData.welcomer_embed_title || "Welcome!")
+              .setTitle(welcomeMessageData.embed_title || "Welcome!")
               .setDescription(
                 (
-                  othersData.welcomer_embed_description ||
+                  welcomeMessageData.embed_description ||
                   "Welcome to our server, {user}! We're glad you're here."
                 ).replace("{user}", userMention),
               )
-              .setColor(othersData.welcomer_embed_color || "#7c3aed")
+              .setColor(welcomeMessageData.embed_color || "#7c3aed")
               .setFooter({
-                text: othersData.welcomer_embed_footer || "Have a great time!",
+                text: welcomeMessageData.embed_footer || "Have a great time!",
               })
               .setTimestamp();
 
-            if (othersData.welcomer_embed_thumbnail) {
+            if (welcomeMessageData.embed_thumbnail !== false) {
               embed.setThumbnail(
                 member.user.displayAvatarURL({ dynamic: true }),
               );
@@ -954,7 +964,7 @@ const setupBot = async (client, botToken, botName) => {
           } else {
             // Send plain text welcome message
             const welcomeMessage = (
-              othersData.welcomer_message || "Welcome to the server, {user}!"
+              welcomeMessageData.message || "Welcome to the server, {user}!"
             ).replace("{user}", userMention);
             await welcomeChannel.send(welcomeMessage);
           }
@@ -1100,15 +1110,18 @@ const setupBot = async (client, botToken, botName) => {
         let botConfig = {};
         try {
           if (client.botId === "bot1") {
-            botConfig = await BotA.findOne() || {};
+            botConfig = (await BotA.findOne()) || {};
           } else if (client.botId === "bot2") {
-            botConfig = await BotB.findOne() || {};
+            botConfig = (await BotB.findOne()) || {};
           }
         } catch (error) {
-          console.error("Error loading bot config for channel restrictions:", error);
+          console.error(
+            "Error loading bot config for channel restrictions:",
+            error,
+          );
           botConfig = {};
         }
-        
+
         // Also check if VC command is allowed in this channel
         const allowedChannels = botConfig?.allowed_channels || [];
         if (allowedChannels.length > 0) {
@@ -1132,15 +1145,18 @@ const setupBot = async (client, botToken, botName) => {
         let botConfig = {};
         try {
           if (client.botId === "bot1") {
-            botConfig = await BotA.findOne() || {};
+            botConfig = (await BotA.findOne()) || {};
           } else if (client.botId === "bot2") {
-            botConfig = await BotB.findOne() || {};
+            botConfig = (await BotB.findOne()) || {};
           }
         } catch (error) {
-          console.error("Error loading bot config for channel restrictions:", error);
+          console.error(
+            "Error loading bot config for channel restrictions:",
+            error,
+          );
           botConfig = {};
         }
-        
+
         // All other commands check allowed channels
         const allowedChannels = botConfig?.allowed_channels || [];
         if (allowedChannels.length > 0) {
@@ -1202,8 +1218,11 @@ const setupBot = async (client, botToken, botName) => {
           "The specified channel was not found or I don't have access to it.";
       }
 
-      // Handle interaction timeout specifically  
-      if (error.code === 10062 || error.message.includes("Unknown interaction")) {
+      // Handle interaction timeout specifically
+      if (
+        error.code === 10062 ||
+        error.message.includes("Unknown interaction")
+      ) {
         console.log("Interaction expired - command took too long to respond");
         return; // Can't reply to expired interactions
       }
@@ -1236,7 +1255,7 @@ const setupBot = async (client, botToken, botName) => {
             .setTitle(errorTitle)
             .setDescription(errorMessage)
             .setColor(0xff0000);
-          
+
           await interaction.editReply({ embeds: [embed] });
         } catch (editError) {
           if (editError.code === 10062) {
@@ -1296,7 +1315,7 @@ const setupBot = async (client, botToken, botName) => {
           }
 
           const number = parseInt(content);
-          const expectedNumber = (othersData.current_count || 0) + 1;
+          const expectedNumber = (othersData.counting_current || 0) + 1;
 
           if (othersData.counting_last_user === message.author.id) {
             await Others.findOneAndUpdate(
@@ -1533,7 +1552,9 @@ const setupBot = async (client, botToken, botName) => {
 
         let conversationHistory = "";
         try {
-          let userData = await UserData.findOne({ discord_id: message.author.id });
+          let userData = await UserData.findOne({
+            discord_id: message.author.id,
+          });
           if (!userData) {
             const username = message.author.username || "Unknown";
             userData = await UserData.create({

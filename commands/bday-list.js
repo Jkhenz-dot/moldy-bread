@@ -7,7 +7,7 @@ module.exports = {
     .setDescription('Show all birthdays in this server'),
   async execute(interaction) {
     try {
-      const birthdays = await Birthday.find({ guildId: interaction.guildId });
+      const birthdays = await Birthday.find({});
       
       if (!birthdays.length) {
         const embed = new EmbedBuilder()
@@ -19,9 +19,11 @@ module.exports = {
       }
       
       const sortedBirthdays = birthdays.sort((a, b) => {
+        const dateA = new Date(a.birth_date);
+        const dateB = new Date(b.birth_date);
         // Sort by month first, then by day
-        if (a.month !== b.month) return a.month - b.month;
-        return a.day - b.day;
+        if (dateA.getMonth() !== dateB.getMonth()) return dateA.getMonth() - dateB.getMonth();
+        return dateA.getDate() - dateB.getDate();
       });
       
       const itemsPerPage = 5;
@@ -34,9 +36,9 @@ module.exports = {
         const pageItems = sortedBirthdays.slice(start, end);
         
         const birthdayList = pageItems.map(bday => {
-          // Use the month and day fields directly from database
-          const month = bday.month.toString().padStart(2, '0');
-          const day = bday.day.toString().padStart(2, '0');
+          const date = new Date(bday.birth_date);
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
           return `<@${bday.discord_id}> - ${month}/${day}`;
         }).join('\n');
         

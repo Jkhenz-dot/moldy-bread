@@ -18,7 +18,7 @@ module.exports = {
       
       // Note: Blacklist functionality needs to be implemented in Others model
       const embed = new EmbedBuilder()
-        .setTitle('✅ User Whitelisted')
+        .setTitle('User Whitelisted')
         .setDescription(`${user} has been removed from blacklist`)
         .setColor(0x00ff00);
       

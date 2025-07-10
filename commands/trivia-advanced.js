@@ -160,7 +160,7 @@ module.exports = {
           : `${['A', 'B', 'C', 'D'][correctIndex]}) ${decodedCorrectAnswer}`;
         
         const resultEmbed = new EmbedBuilder()
-          .setTitle(isCorrect ? '✅ Correct!' : '❌ Incorrect!')
+          .setTitle(isCorrect ? 'Correct!' : 'Incorrect!')
           .setDescription(`**Question:** ${decodedQuestion}\n\n**Correct Answer:** ${correctAnswerText}\n**Your Answer:** ${yourAnswer}`)
           .setColor(isCorrect ? '#00ff00' : '#ff0000')
           .addFields(

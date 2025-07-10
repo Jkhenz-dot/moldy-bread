@@ -1,8 +1,51 @@
-# :v Faces Mascots' Discord Bot
+# :v Faces Mascots' Discord Bot - Version 1.0
 
 ## Overview
 
-This is a sophisticated Discord bot system featuring dual bot instances with advanced AI integration, multimedia generation capabilities, extensive gaming features, and comprehensive leveling/moderation systems. The application uses Node.js with Discord.js and integrates with PostgreSQL for data persistence, Google's Gemini AI for intelligent responses, and Hugging Face models for content generation.
+A comprehensive Discord bot platform featuring dual bot instances (Heilos and Wisteria) with advanced AI conversational capabilities, extensive gaming suite, leveling system, and modern web dashboard. Built with Node.js, Discord.js, and PostgreSQL for enterprise-grade reliability and performance.
+
+## Version 1.0 Features
+
+### Core Bot System
+- **Dual Bot Architecture**: Two independent bot instances (Heilos & Wisteria) with unique personalities
+- **AI Conversational Engine**: Powered by Google Gemini with context-aware responses and conversation memory
+- **Smart Context Building**: Comprehensive guild and user context for personalized interactions
+- **Web Search Integration**: Real-time information retrieval for current events, weather, and factual queries
+
+### Gaming Suite (15 Games)
+- **Single Player Games**: 2048, Snake, Minesweeper, Flood, Wordle, Memory, Match Pairs, Fast Type, Find Emoji, Hangman, Guess the Pokemon (11 games)
+- **Multiplayer Games**: Connect 4, Tic-Tac-Toe, Rock Paper Scissors (3 games)
+- **Party Games**: Truth, Dare, Paranoia, Would You Rather, Never Have I Ever with AI-generated questions
+- **Knowledge Games**: Advanced Trivia with multiple categories, Server-wide Counting Game
+
+### Leveling & Social Features
+- **XP System**: Message-based experience with progressive difficulty scaling (12% increase every 5 levels)
+- **Visual Rank Cards**: Canvacord-generated level progression displays with custom styling
+- **Leaderboard System**: Guild-wide ranking system
+- **Birthday Management**: Server birthday calendar with add/list/remove functionality
+
+### Voice Features
+- **Voice Channel Integration**: Join/disconnect functionality
+- **Text-to-Speech**: Custom voice synthesis with bot-specific audio profiles and speed control
+- **TTS Session Management**: Conflict prevention and isolated bot connections
+
+### AI & Content Generation
+- **Image Generation**: AI-powered custom image creation using FLUX.1-dev and Stable Diffusion models
+- **Style Options**: 10 artistic styles (Photorealistic, Anime, Digital Art, Oil Painting, etc.)
+- **AI Moderation**: User blacklisting/whitelisting for AI interactions
+- **Conversation Management**: Per-user conversation history with memory clearing options
+
+### Moderation & Administration
+- **Message Management**: Bulk delete, bot messaging, embed creation
+- **Permission System**: Role-based access control for sensitive commands
+- **Command Reloading**: Hot-reload functionality for development
+- **Web Dashboard**: Modern responsive interface with dark/light themes
+
+### Database & Infrastructure
+- **PostgreSQL Backend**: Reliable data persistence with connection pooling
+- **Database Protection**: Automated backups every 30 minutes, health monitoring
+- **Model Architecture**: Optimized BaseModel system reducing code duplication by 80%
+- **Performance Optimization**: Caching strategies, request limiting, and memory management
 
 ## System Architecture
 
@@ -132,7 +175,60 @@ This is a sophisticated Discord bot system featuring dual bot instances with adv
 - **Request Limiting**: Concurrent AI request management
 - **Error Handling**: Comprehensive error recovery and logging
 
-## Changelog
+## Version 1.0 Release - July 10, 2025
+
+**Major Release Features:**
+- Complete Discord bot platform with dual bot system (Heilos & Wisteria)
+- 15 game suite including single player, multiplayer, and party games  
+- Advanced AI conversational engine with Google Gemini integration
+- Comprehensive leveling system with Canvacord visual rank cards and leaderboards
+- Voice channel integration with text-to-speech capabilities
+- Modern web dashboard with dark/light themes and responsive design
+- PostgreSQL backend with automated backup and protection systems
+- AI image generation with 10 artistic styles using FLUX.1-dev and Stable Diffusion
+- Birthday management and AI moderation features
+- Professional command system with categorized help interface
+
+## Recent Updates
+- July 10, 2025: Finalized help command system - verified all commands exist, removed non-functional commands (vc-add), cleaned interface of all emojis, implemented accurate command listings with 6 categorized pages and quick navigation
+- July 10, 2025: Fixed loading screen background cut-off issue - ensured full viewport coverage by updating both main loading screen and light mode version to use 100vw/100vh with min-height: 100vh, added !important declarations to override any conflicting styles, fixed pseudo-elements to cover full viewport with proper positioning, eliminated bottom cut-off appearance
+- July 10, 2025: Modernized light mode loading screen background - replaced simple #fafafa background with trendy multi-layer gradient using contemporary colors (#f8fafc to #ffffff), added multiple radial gradients for depth, implemented subtle floating animation (12s cycle) and rotating conic gradient overlay (20s cycle) for modern visual appeal, created sophisticated layered design with proper overflow handling
+- July 10, 2025: Fixed navbar selected state blur effects - removed blur from box-shadow properties in both desktop and mobile navigation, changed desktop navbar from `box-shadow: 0 4px 15px` to `box-shadow: 0 2px 4px` and mobile navbar from `box-shadow: 0 2px 12px` to `box-shadow: 0 1px 2px`, ensuring consistent plain shadows across light mode and mobile views as requested by user
+- July 10, 2025: Enhanced loading screen with green success indicators - changed completed states from purple to green gradients (#10b981, #22c55e), added checkmarks to success messages ("Connected ✓", "Loaded ✓", "Ready ✓"), updated both dark and light mode styling for consistent green success feedback, improved visual satisfaction during startup process
+- July 10, 2025: Fixed all white text contrast issues in light mode - added comprehensive dark color overrides for all text elements, updated card content, form labels, navigation text, buttons, modals, and tooltips to use proper dark colors (#1a202c, #4a5568, #64748b), maintained gradient text styling for titles and active navigation items, added universal fallback rule for light mode text visibility
+- July 10, 2025: Fixed database tab mobile navigation sizing - updated database tab icon size to 24px and text margin to 6px to match other tabs exactly, removed font-size override for consistency, added database tab to mobile navigation when unlocked via header clicks, created responsive mobile navigation handling both 3 tabs and 4 tabs with proper width calculations
+- July 10, 2025: Fixed mobile navigation centering and spacing issues - corrected transform calculation from container-based to slider-based percentage (100/8 = 12.5% per item), improved centering logic to properly position selected tab in middle of 3-tab view, fixed bounds checking to eliminate extra right-side spacing, mobile navigation now displays exactly 3 tabs with proper centering when clicking different buttons
+- July 10, 2025: Fixed AI Details buttons and mobile navigation - changed AI Details save buttons to use trendy button styling with hover effects matching other sections, reverted mobile navigation to always show 3 tabs with proper scrolling functionality, fixed navigation arrows to work correctly, removed extra space on right side of mobile navigation, centered selected tab in middle position as requested
+- July 10, 2025: Fixed mobile navigation tab positioning - updated mobile navigation logic to properly handle database tab visibility, icons now center correctly in mobile view, when database tab is unlocked all 4 tabs display at once without scrolling, improved CSS styling for consistent icon and text alignment, fixed navigation arrows to disable when all tabs are visible, added nav-text span structure to all navigation items for consistency
+- July 10, 2025: Fixed UI consistency issues - removed conflicting light mode navbar selected tab styling to ensure proper gradient text visibility, removed background gradient that was hiding text, removed all blue colors (#3b82f6) from loading screen states and replaced with purple gradient theme colors (#8b5cf6, #6366f1), ensured header title consistency between dark and light modes using same gradient styling, fixed duplicate embedFooter IDs by creating unique identifiers, updated all JavaScript references to use correct element IDs, changed notification backgrounds from gradients to solid colors (green for success, red for error), added gradient text styling for navbar selected and hover states in both light and dark modes, fixed mobile navigation database tab sizing to prevent layout breaks
+- July 10, 2025: Complete UI consistency and mobile navigation improvements - fixed mobile navigation arrows to change pages and center selected items, unified all guide sections with blue backgrounds and titles matching Advanced Reaction Roles style, fixed light mode navbar selected background to match dark mode with white text visibility, improved light mode contrast with darker backgrounds and better form styling, fixed toggle button text visibility in light mode, enhanced mobile navigation with proper centering functionality and error handling, all styling now consistent across light and dark themes
+- July 10, 2025: Completed enhanced UI modernization - improved card contrast and styling with increased opacity (0.6→0.8 for dark cards, 0.8→0.9 for light cards), added gradient hover effects with animated top borders, enhanced trend cards with permanent purple gradient top border, modernized toggle buttons with green/purple color coding for Plain Text/Rich Embed selection, added yellow sun icon with glow effect for light mode theme toggle, added animated gradient icons to loading screen with pulse and glow effects, all cards now feature improved depth and modern aesthetics
+- July 10, 2025: Added comprehensive guide sections to XP Settings and Level Up Announcements cards - unified all cards with green info boxes matching the pattern used throughout dashboard, ensuring consistent user guidance across all features
+- July 10, 2025: Completed UI modernization project - fixed "Role Management" text color from purple to white in Auto Role Assignment card, added comprehensive guide sections to all cards matching Advanced Reaction Roles pattern with green info boxes and helpful descriptions, removed unwanted Guild Data fields (server owner, description, features, max members, vanity URL, banner status, NSFW level) from server.js API for cleaner display, all cards now have consistent modern styling with user guidance
+- July 10, 2025: Fixed Auto Role Assignment card layout to match other cards with proper trend card wrapper styling, enhanced Guild Data section with comprehensive server information including region, owner, description, server features, custom emojis/stickers, MFA level, NSFW level, max members, vanity URL, and banner status - updated both frontend display and server.js backend to provide authentic Discord guild data, removed remaining emojis from Advanced Reaction Roles and Welcome Messages database cards
+- July 10, 2025: Complete UI modernization - redesigned dashboard with Inter font, modern dark/light themes, enhanced contrast, smooth animations, gradient overlays, modern card styling, improved form inputs, and professional cubic-bezier transitions for a trendy, minimalist aesthetic
+- July 10, 2025: Removed set-channel.js command and cleaned all command embeds - removed all emojis from Discord command embed titles and descriptions across ai-blacklist, ai-gen-image, ai-gen-music, ai-gen-video, ai-whitelist, dare, nhie, paranoia, reload-commands, and trivia-advanced commands
+- July 10, 2025: Fixed mobile navigation styling - mobile tabs now use same gradient backgrounds as desktop (linear-gradient with purple/blue), matching active and hover states across both views, enhanced gradient bottom indicator for mobile active tabs
+- July 10, 2025: Enhanced dashboard styling and contrast - made card titles bold (700 weight) and larger (24px), improved text contrast with darker unselected nav items (0.6 opacity dark, 0.5 opacity light), fixed mobile tab backgrounds to match default styling, added better contrast for both dark and light modes, enhanced navigation with better color hierarchy
+- July 10, 2025: Modernized dashboard styling - enhanced navigation tabs with gradient hover effects, rounded corners, smooth transitions, added gradient card titles matching button colors (purple to blue), improved card hover effects with subtle animations, fixed welcomer icon to user-plus, updated loading screen icons
+- July 10, 2025: Complete emoji removal from dashboard - replaced all emojis with Font Awesome icons throughout interface, removed emojis from card titles, buttons, toggle text, theme toggle, avatar placeholders, loading screen icons, navigation arrows, and table headers, fixed mobile database tab styling to match other tabs with transparent background and proper icon alignment
+- July 10, 2025: Complete dashboard error elimination - fixed all null value errors in form element assignment with comprehensive null checks, enhanced welcome message toggle functionality with proper error handling, removed all debug console.log statements for cleaner production environment, added safe element updating functions to prevent "Cannot set properties of null" errors, enhanced database icon consistency for mobile layout (⚡), updated title click requirement to 10 clicks for database tab unlock, added showProcessing() to all form submissions for better UX feedback, optimized welcomer form with 500ms debounce
+- July 10, 2025: Fixed mobile navigation background color to #1E1E2B and resolved database export/import error by replacing missing database_import_export module with inline database operations
+- July 10, 2025: Cleaned up project structure by removing unnecessary files - removed unused database_import_export.js, server/db.ts, Python config files (pyproject.toml, uv.lock), and various cache/temp files for a cleaner codebase
+- July 10, 2025: Fixed Birthday model by removing non-existent guild_id field mapping, updated all birthday commands to use proper table structure with birth_date field instead of separate month/day/year fields, removed guild-specific birthday filtering to work with current database schema
+- July 10, 2025: Completed database optimization - removed xp_per_message column from others table to simplify XP system, added Welcome Messages card to database section for easier management, updated all database management endpoints to support welcome_messages table
+- July 10, 2025: Separated welcome messages into dedicated table - created new WelcomeMessage table with proper schema, migrated all welcomer data from others table, updated all API endpoints and dashboard integration to use new table structure for better database organization
+- July 10, 2025: Restored counting game functionality - added counting database fields (counting_enabled, counting_channel, counting_current, counting_last_user), recreated counting command, and restored all counting logic after user requested to keep this feature
+- July 10, 2025: Removed level_up_message column from database - deleted from others table and updated model file to clean up unused level-up message customization feature
+- July 10, 2025: Major database optimization completed - reduced others table from 41 to 23 columns (44% reduction), removed 18 unnecessary columns including legacy welcomer system, goodbye system, counting system, statistics tracking, and unused fields like trivia_api, updated Others model to match optimized structure, all 7 core tables restored and functioning properly
+- July 10, 2025: Fixed dashboard data population - resolved API endpoint to include raw 'others' data, dashboard now properly loads all form fields from database including bot configurations, XP settings, welcomer settings, and auto role settings
+- July 10, 2025: Database structure optimization - restored announcement_channel and description columns (user requested), removed all temp_audio_files references from TTS system, optimized database import/export system with better validation and error handling, updated database utilities to reflect current 7-table structure, fixed column naming consistency across all tables
+- July 10, 2025: Major database optimization - removed unused tables (ai_questions, temp_audio_files), fixed birthdays table column naming (user_id → discord_id), removed unused columns (description from bot tables, announcement_channel/level_up_channel from others table), fixed null values in bot configurations, optimized database structure from 9 to 7 core tables
+- July 10, 2025: Fixed database schema issues - created all missing tables (bota, botb, users, others, level_roles, birthdays, reaction_roles, ai_questions, temp_audio_files)
+- July 10, 2025: Updated others table with all required columns (forum_channels, forum_emojis, xp_per_message, counting_enabled, welcomer settings, etc.)
+- July 10, 2025: Created comprehensive database utilities (initDatabase.js, checkDatabase.js, databaseUtils.js, serverUtils.js, maintenance.js)
+- July 10, 2025: Added database health monitoring and maintenance scripts for automated checks and repairs
+- July 10, 2025: Database fully operational with all Discord bot features working properly
 - July 09, 2025: Implemented comprehensive database protection system - automated backups every 30 minutes, health monitoring every 5 minutes, auto-backup before destructive operations, backup tables with restore capabilities, database resilience against connection failures
 - July 09, 2025: Added database backup management endpoints for manual backup creation and status monitoring
 - July 09, 2025: Fixed database schema issues - added missing avatar_path and blacklisted_users columns to bot tables

@@ -185,7 +185,7 @@ module.exports = {
         } catch (error) {
           console.error("NHIE error:", error);
           const errorEmbed = new EmbedBuilder()
-            .setTitle("❌ Error")
+            .setTitle("Error")
             .setDescription("Failed to fetch question. Please try again.")
             .setColor(0xff0000);
 
@@ -208,7 +208,7 @@ module.exports = {
     } catch (error) {
       console.error("NHIE command error:", error);
       const errorEmbed = new EmbedBuilder()
-        .setTitle("❌ Error")
+        .setTitle("Error")
         .setDescription("Failed to fetch question. Please try again.")
         .setColor(0xff0000);
 

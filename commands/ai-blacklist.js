@@ -18,7 +18,7 @@ module.exports = {
       
       // Note: Blacklist functionality needs to be implemented in Others model
       const embed = new EmbedBuilder()
-        .setTitle('✅ User Blacklisted')
+        .setTitle('User Blacklisted')
         .setDescription(`${user} has been blacklisted from AI responses`)
         .setColor(0x00ff00);
       

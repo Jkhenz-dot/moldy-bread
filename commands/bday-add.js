@@ -45,13 +45,10 @@ module.exports = {
     
     try {
       await Birthday.findOneAndUpdate(
-        { userId: user.id, guildId: interaction.guildId },
+        { userId: user.id },
         { 
           username: user.username,
-          day: day,
-          month: month,
-          year: currentYear,
-          guildId: interaction.guildId
+          birth_date: birthday.toISOString().split('T')[0]
         },
         { upsert: true }
       );

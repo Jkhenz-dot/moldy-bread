@@ -371,21 +371,7 @@ async function generateTTS(text, interaction, speed = 0.5) {
                 }
             }
 
-            // Save to database (store as memory buffer, not file path)
-            try {
-                await database.query(
-                    "INSERT INTO temp_audio_files (guild_id, discord_id, bot_name, text_content, file_path) VALUES ($1, $2, $3, $4, $5)",
-                    [
-                        interaction.guild.id,
-                        interaction.user.id,
-                        interaction.client.user.username,
-                        text,
-                        "memory_buffer",
-                    ],
-                );
-            } catch (dbError) {
-                // Silent fail for database logging
-            }
+            // TTS generated successfully (no database logging needed for temporary audio)
 
             return processedAudioBuffer;
         } else {
@@ -427,15 +413,7 @@ async function playAudio(connection, audioBuffer, interaction, text) {
 
         return new Promise((resolve) => {
             player.on(AudioPlayerStatus.Idle, async () => {
-                // Update database to mark as played
-                try {
-                    await database.query(
-                        "UPDATE temp_audio_files SET played_at = NOW() WHERE guild_id = $1 AND discord_id = $2 AND text_content = $3",
-                        [interaction.guild.id, interaction.user.id, text],
-                    );
-                } catch (dbError) {
-                    // Silent fail for database update
-                }
+                // TTS played successfully (no database logging needed for temporary audio)
 
                 resolve(true);
             });

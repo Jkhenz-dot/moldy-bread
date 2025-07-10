@@ -16,8 +16,7 @@ module.exports = {
     
     try {
       const result = await Birthday.deleteOne({ 
-        userId: user.id, 
-        guildId: interaction.guildId 
+        userId: user.id
       });
       
       if (!result) {

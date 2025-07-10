@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, AttachmentBuilde
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('ai-gen-image')
+    .setName('ai-image')
     .setDescription('Generate high-quality images using AI (FLUX.1-dev & Stable Diffusion)')
     .addStringOption(option =>
       option.setName('prompt')
@@ -66,7 +66,7 @@ module.exports = {
     
     const embed = new EmbedBuilder()
       .setTitle('AI Image Generation')
-      .setDescription(`**Prompt:** ${prompt}\n**Style:** ${style.split(',')[0]}\n**Size:** ${size}\n**Quality:** ${quality} steps\n\n⏳ Generating with FLUX.1-dev...`)
+      .setDescription(`**Prompt:** ${prompt}\n**Style:** ${style.split(',')[0]}\n**Size:** ${size}\n**Quality:** ${quality} steps\n\nGenerating with FLUX.1-dev...`)
       .setColor(0x7c3aed);
     
     await interaction.editReply({ embeds: [embed] });
@@ -185,7 +185,7 @@ module.exports = {
       
       // Method 3: If both HF models fail, show error message
       const errorEmbed = new EmbedBuilder()
-        .setTitle('❌ Generation Failed')
+        .setTitle('Generation Failed')
         .setDescription(`Sorry, AI image generation failed. This could be due to:\n\n• High server load on Hugging Face models\n• Content policy restrictions\n• API rate limits\n• Network connectivity issues\n\nPlease try again in a few minutes or with a different prompt.`)
         .addFields([
           { name: 'Your Prompt', value: prompt, inline: false },

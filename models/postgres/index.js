@@ -6,5 +6,6 @@ module.exports = {
   ReactionRole: require('./ReactionRole'),
   BotA: require('./BotA'),
   BotB: require('./BotB'),
-  Others: require('./Others')
+  Others: require('./Others'),
+  WelcomeMessage: require('./WelcomeMessage')
 };

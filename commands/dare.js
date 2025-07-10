@@ -277,7 +277,7 @@ Examples of good variety:
         } catch (error) {
           console.error("Truth/Dare error:", error);
           const errorEmbed = new EmbedBuilder()
-            .setTitle("❌ Error")
+            .setTitle("Error")
             .setDescription("Failed to fetch question. Please try again.")
             .setColor(0xff0000);
 
@@ -298,7 +298,7 @@ Examples of good variety:
     } catch (error) {
       console.error("Dare command error:", error);
       const errorEmbed = new EmbedBuilder()
-        .setTitle("❌ Error")
+        .setTitle("Error")
         .setDescription("Failed to fetch question. Please try again.")
         .setColor(0xff0000);
 

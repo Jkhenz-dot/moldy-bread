@@ -11,6 +11,7 @@ const LevelRoles = require("./models/postgres/LevelRoles");
 const ReactionRole = require("./models/postgres/ReactionRole");
 const UserData = require("./models/postgres/UserData");
 const Birthday = require("./models/postgres/Birthday");
+const WelcomeMessage = require("./models/postgres/WelcomeMessage");
 // Use existing database utilities
 const database = require("./utils/database");
 require("dotenv").config();
@@ -263,6 +264,7 @@ app.get("/api/bot-data", async (req, res) => {
         const botA = await BotA.findOne();
         const botB = await BotB.findOne();
         const others = await Others.findOne();
+        const welcomeMessage = await WelcomeMessage.findOne();
 
         // Create default data structure, filling with actual database values where available
         const defaultBotA = {
@@ -328,17 +330,17 @@ app.get("/api/bot-data", async (req, res) => {
                 levelRoles: levelRoles || [],
                 reactionRoles: reactionRoles || [],
                 welcomer: {
-                    enabled: others?.welcomer_enabled || false,
-                    channelId: others?.welcomer_channel || "",
+                    enabled: welcomeMessage?.enabled || false,
+                    channelId: welcomeMessage?.channel_id || "",
                     message:
-                        others?.welcomer_message ||
+                        welcomeMessage?.message ||
                         "Welcome {user} to the server!",
-                    useEmbed: others?.welcomer_embed_enabled || false,
-                    embedTitle: others?.welcomer_embed_title || "Welcome!",
+                    useEmbed: welcomeMessage?.embed_enabled || false,
+                    embedTitle: welcomeMessage?.embed_title || "Welcome!",
                     embedDescription:
-                        others?.welcomer_embed_description ||
+                        welcomeMessage?.embed_description ||
                         "Welcome {user} to our server!",
-                    embedColor: others?.welcomer_embed_color || "#00ff00",
+                    embedColor: welcomeMessage?.embed_color || "#00ff00",
                 },
                 forumAutoReact: {
                     enabled: others?.forum_auto_react_enabled || false,
@@ -407,6 +409,7 @@ app.get("/api/bot-data", async (req, res) => {
                         }
                     })(),
                 },
+                others: others || {}, // Add raw others data for dashboard compatibility
             },
         });
     } catch (error) {
@@ -604,6 +607,10 @@ app.get("/api/dashboard-stats", async (req, res) => {
                                         readableVerificationLevel,
                                     boostLevel: premiumTier,
                                     boostCount: premiumSubscriptionCount,
+                                    region: guild.preferredLocale || "Unknown",
+                                    emojis: guild.emojis?.cache?.size || 0,
+                                    stickers: guild.stickers?.cache?.size || 0,
+                                    mfaLevel: guild.mfaLevel === 1 ? "Required" : "Not Required",
                                 };
                             } catch (guildError) {
                                 console.error(
@@ -2593,6 +2600,7 @@ app.get("/api/database/table/:tableName", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
+            "welcome_messages",
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2632,6 +2640,7 @@ app.post("/api/database/view-table", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
+            "welcome_messages",
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2661,36 +2670,30 @@ app.post("/api/database/view-table", async (req, res) => {
 app.get("/api/database/export", async (req, res) => {
     try {
         const database = require("./utils/database");
-        const exportData = {};
+        
+        // Export all tables
+        const tables = ['users', 'bota', 'botb', 'others', 'birthdays', 'level_roles', 'reaction_roles', 'welcome_messages'];
+        const exportData = {
+            timestamp: new Date().toISOString(),
+            tables: {},
+            metadata: {
+                totalRecords: 0,
+                exportDate: new Date().toISOString()
+            }
+        };
 
-        // List of tables to export
-        const tables = [
-            "users",
-            "bota",
-            "botb",
-            "others",
-            "birthdays",
-            "level_roles",
-            "reaction_roles",
-        ];
-
-        for (const table of tables) {
+        for (const tableName of tables) {
             try {
-                const result = await database.query(`SELECT * FROM ${table}`);
-                exportData[table] = result.rows;
-            } catch (error) {
-                console.error(`Error exporting table ${table}:`, error);
-                exportData[table] = [];
+                const result = await database.query(`SELECT * FROM ${tableName}`);
+                exportData.tables[tableName] = result.rows;
+                exportData.metadata.totalRecords += result.rows.length;
+            } catch (tableError) {
+                console.log(`Table ${tableName} not found or empty:`, tableError.message);
+                exportData.tables[tableName] = [];
             }
         }
 
-        // Add metadata
-        exportData.metadata = {
-            exportDate: new Date().toISOString(),
-            version: "1.0",
-            source: "Discord Bot Dashboard",
-        };
-
+        addActivity(`Database exported: ${exportData.metadata.totalRecords} records`);
         res.json(exportData);
     } catch (error) {
         console.error("Error exporting database:", error);
@@ -2704,63 +2707,52 @@ app.get("/api/database/export", async (req, res) => {
 // Import Database Data
 app.post("/api/database/import", async (req, res) => {
     try {
-        const importData = req.body;
         const database = require("./utils/database");
-
-        // Validate import data structure
-        if (!importData || typeof importData !== "object") {
+        const importData = req.body;
+        
+        if (!importData.tables) {
             return res.json({
                 success: false,
-                error: "Invalid import data format",
+                error: "Invalid import data format"
             });
         }
 
-        const tables = [
-            "users",
-            "bota",
-            "botb",
-            "others",
-            "birthdays",
-            "level_roles",
-            "reaction_roles",
-        ];
-        let importedCount = 0;
+        let totalImported = 0;
+        const results = {};
 
-        for (const table of tables) {
-            if (importData[table] && Array.isArray(importData[table])) {
-                try {
+        for (const [tableName, rows] of Object.entries(importData.tables)) {
+            try {
+                if (rows && rows.length > 0) {
                     // Clear existing data
-                    await database.query(`DELETE FROM ${table}`);
-
-                    // Import new data
-                    for (const record of importData[table]) {
-                        const columns = Object.keys(record).filter(
-                            (key) => key !== "id",
+                    await database.query(`DELETE FROM ${tableName}`);
+                    
+                    // Insert new data
+                    for (const row of rows) {
+                        const columns = Object.keys(row).join(', ');
+                        const values = Object.values(row);
+                        const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+                        
+                        await database.query(
+                            `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`,
+                            values
                         );
-                        const values = columns.map((col) => record[col]);
-                        const placeholders = columns
-                            .map((_, i) => `$${i + 1}`)
-                            .join(", ");
-
-                        if (columns.length > 0) {
-                            await database.query(
-                                `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${placeholders})`,
-                                values,
-                            );
-                            importedCount++;
-                        }
+                        totalImported++;
                     }
-                } catch (error) {
-                    console.error(`Error importing table ${table}:`, error);
+                    results[tableName] = `Imported ${rows.length} records`;
+                } else {
+                    results[tableName] = 'No data to import';
                 }
+            } catch (tableError) {
+                console.error(`Error importing table ${tableName}:`, tableError.message);
+                results[tableName] = `Error: ${tableError.message}`;
             }
         }
 
-        addActivity(`Database imported: ${importedCount} records restored`);
-
+        addActivity(`Database imported: ${totalImported} records restored`);
         res.json({
             success: true,
-            message: `Database imported successfully. ${importedCount} records restored.`,
+            totalImported,
+            results
         });
     } catch (error) {
         console.error("Error importing database:", error);
@@ -2895,6 +2887,7 @@ app.post("/api/database/update-record", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
+            "welcome_messages",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
@@ -2949,6 +2942,7 @@ app.post("/api/database/delete-record", async (req, res) => {
             "birthdays",
             "level_roles",
             "reaction_roles",
+            "welcome_messages",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
@@ -2983,25 +2977,20 @@ app.post("/api/database/delete-record", async (req, res) => {
 // Update welcomer settings
 app.post("/api/update-welcomer-settings", async (req, res) => {
     try {
-        const Others = require("./models/postgres/Others");
+        const WelcomeMessage = require("./models/postgres/WelcomeMessage");
         const updateData = {
-            welcomer_enabled: req.body.welcomer_enabled || false,
-            welcomer_channel: req.body.welcomer_channel || null,
-            welcomer_message:
-                req.body.welcomer_message || "Welcome to the server, {user}!",
-            welcomer_embed_enabled: req.body.welcomer_embed_enabled || false,
-            welcomer_embed_title: req.body.welcomer_embed_title || "Welcome!",
-            welcomer_embed_description:
+            enabled: req.body.welcomer_enabled || false,
+            channel_id: req.body.welcomer_channel || null,
+            message: req.body.welcomer_message || "Welcome to the server, {user}!",
+            embed_enabled: req.body.welcomer_embed_enabled || false,
+            embed_title: req.body.welcomer_embed_title || "Welcome!",
+            embed_description:
                 req.body.welcomer_embed_description ||
                 "Welcome to our server, {user}! We're glad you're here.",
-            welcomer_embed_color: req.body.welcomer_embed_color || "#7c3aed",
-            welcomer_embed_thumbnail:
-                req.body.welcomer_embed_thumbnail !== false,
-            welcomer_embed_footer:
-                req.body.welcomer_embed_footer || "Have a great time!",
+            embed_color: req.body.welcomer_embed_color || "#7c3aed",
         };
 
-        await Others.findOneAndUpdate({}, updateData);
+        await WelcomeMessage.findOneAndUpdate({}, updateData, { upsert: true });
 
         res.json({
             success: true,

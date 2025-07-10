@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>:v Faces Mascots Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -12,10 +16,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1b23;
             color: #ffffff;
             min-height: 100vh;
+            line-height: 1.6;
         }
 
         /* Login Page Styles */
@@ -24,69 +29,108 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            background: #1a1b23;
+            position: relative;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .login-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 40px;
-            width: 400px;
+            background: rgba(42, 43, 55, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 48px;
+            width: 440px;
             max-width: 90vw;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
         }
 
         .login-title {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 30px;
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.025em;
         }
 
         .login-input {
             width: 100%;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
             color: white;
             font-size: 16px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .login-input:focus {
             outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .login-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .login-btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
+            padding: 18px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             color: white;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-btn:hover::before {
+            opacity: 1;
         }
 
         .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .login-btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .error-message {
@@ -100,30 +144,57 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1b23 0%, #242530 50%, #2a2b3d 100%);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            overflow: hidden;
+        }
+
+        .loading-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Light mode loading screen */
+        body.light-mode .loading-screen {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+        }
+
+        body.light-mode .loading-screen::before {
+            background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
         }
 
         .loading-content {
             text-align: center;
-            max-width: 500px;
-            padding: 40px;
+            max-width: 560px;
+            padding: 48px;
+            position: relative;
+            z-index: 1;
         }
 
         .loading-logo {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: pulse 2s infinite;
+            letter-spacing: -0.025em;
         }
 
         @keyframes pulse {
@@ -145,21 +216,22 @@
         }
 
         .loading-steps {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
+            background: rgba(42, 43, 55, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
         }
 
         .loading-step {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
+            padding: 16px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .loading-step:last-child {
@@ -167,13 +239,15 @@
         }
 
         .loading-step.active {
-            background: rgba(124, 58, 237, 0.2);
-            border-left: 4px solid #7c3aed;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid #6366f1;
+            border-color: rgba(99, 102, 241, 0.2);
         }
 
         .loading-step.completed {
-            background: rgba(34, 197, 94, 0.2);
-            border-left: 4px solid #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22c55e;
+            border-color: rgba(34, 197, 94, 0.2);
         }
 
         .step-icon {
@@ -181,6 +255,29 @@
             margin-right: 15px;
             width: 30px;
             text-align: center;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: iconPulse 2s infinite ease-in-out;
+        }
+
+        .loading-step.completed .step-icon {
+            background: linear-gradient(135deg, #10b981, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: iconGlow 1s ease-in-out;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes iconGlow {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.2); filter: brightness(1.5); }
         }
 
         .step-text {
@@ -205,19 +302,19 @@
 
         .loading-progress {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #7c3aed, #06b6d4);
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
             width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
         }
 
         .loading-details {
@@ -232,10 +329,10 @@
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px 30px;
+            background: rgba(42, 43, 55, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -247,18 +344,20 @@
         }
 
         .theme-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             color: white;
-            padding: 8px 12px;
+            padding: 12px 16px;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
         }
 
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
         }
 
         .header-controls {
@@ -267,40 +366,386 @@
             align-items: center;
         }
 
+        /* Light Theme Styles */
+        body.light-theme {
+            background: #fafafa;
+            color: #0f172a;
+        }
+
+        body.light-theme .login-container {
+            background: #fafafa;
+        }
+
+        body.light-theme .login-container::before {
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+        }
+
+        body.light-theme .login-box {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme .login-input {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        body.light-theme .login-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        body.light-theme .login-input::placeholder {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        body.light-theme .loading-screen {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #f8fafc 75%, #ffffff 100%);
+            width: 100vw !important;
+            height: 100vh !important;
+            min-height: 100vh !important;
+            position: fixed !important;
+            overflow: hidden;
+        }
+
+        body.light-theme .loading-screen::before {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.10) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 10%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
+                        linear-gradient(45deg, rgba(99, 102, 241, 0.03) 0%, transparent 30%, rgba(139, 92, 246, 0.03) 70%, transparent 100%);
+            animation: lightModeFloat 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        body.light-theme .loading-screen::after {
+            content: '';
+            position: absolute !important;
+            top: -50% !important;
+            left: -50% !important;
+            width: 200vw !important;
+            height: 200vh !important;
+            background: conic-gradient(from 0deg at 50% 50%, 
+                rgba(99, 102, 241, 0.02) 0deg, 
+                transparent 90deg, 
+                rgba(139, 92, 246, 0.03) 180deg, 
+                transparent 270deg, 
+                rgba(99, 102, 241, 0.02) 360deg);
+            animation: lightModeRotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes lightModeFloat {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-10px) scale(1.02);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes lightModeRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body.light-theme .loading-steps {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .loading-step {
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme .loading-step.active {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 3px solid #6366f1;
+            border-color: rgba(99, 102, 241, 0.15);
+        }
+
+        body.light-theme .loading-step.completed {
+            background: rgba(34, 197, 94, 0.08);
+            border-left: 3px solid #22c55e;
+            border-color: rgba(34, 197, 94, 0.15);
+        }
+
+        body.light-theme .loading-progress {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .header {
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
         body.light-theme .theme-toggle {
-            background: rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            color: #1a202c;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0f172a;
         }
 
         body.light-theme .theme-toggle:hover {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
         }
 
-        /* Fix white text and icons in light mode */
-        body.light-theme {
-            color: #1a202c;
+        /* Yellow sun icon in light mode */
+        body.light-theme .theme-toggle .fa-sun {
+            color: #fbbf24 !important;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
         }
 
-        body.light-theme .card-title {
-            color: #1a202c;
+        /* Light Theme - Modern Components */
+        body.light-theme .sidebar {
+            background: rgba(255, 255, 255, 0.8);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .nav-item {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme .nav-item:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
+            border-left-color: #6366f1;
+        }
+
+        body.light-theme .nav-item:hover .nav-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+
+
+        body.light-theme .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+
+
+        body.light-theme .card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .card::before {
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+        }
+
+        body.light-theme .card:hover {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        body.light-theme .trend-card {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12);
+        }
+
+        body.light-theme .trend-card:hover {
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.2);
+        }
+
+        body.light-theme .stat-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
         }
 
         body.light-theme .stat-value {
-            color: #7c3aed;
+            color: #6366f1;
         }
 
         body.light-theme .stat-label {
-            color: #4a5568;
+            color: rgba(0, 0, 0, 0.6);
         }
 
-        body.light-theme .nav-icon {
-            color: #4a5568;
+        body.light-theme .form-input, 
+        body.light-theme .form-textarea, 
+        body.light-theme .form-select {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0f172a;
         }
 
-        body.light-theme .nav-item.active .nav-icon {
-            color: white;
+        body.light-theme .form-input:focus, 
+        body.light-theme .form-textarea:focus, 
+        body.light-theme .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.8);
         }
+
+        body.light-theme .form-input::placeholder, 
+        body.light-theme .form-textarea::placeholder {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        body.light-theme .form-select option {
+            background: #ffffff;
+            color: #0f172a;
+        }
+
+        body.light-theme .form-label {
+            color: #0f172a;
+        }
+
+        body.light-theme .card-title {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .header h1 {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .login-title {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .loading-title,
+        body.light-theme .loading-subtitle {
+            color: #0f172a;
+        }
+
+        body.light-theme .loading-step {
+            color: #475569;
+        }
+
+        body.light-theme .loading-step.active .step-status {
+            color: #6366f1;
+        }
+
+        body.light-theme .loading-step.completed .step-status {
+            color: #22c55e;
+        }
+
+        body.light-theme .loading-details {
+            color: #64748b;
+        }
+
+        body.light-theme .activity-item {
+            color: #0f172a;
+        }
+
+        body.light-theme .activity-time {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme .guild-item {
+            color: #0f172a;
+        }
+
+        body.light-theme .guild-members {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme .bot-tab {
+            color: #64748b;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .bot-tab:hover {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.2);
+            color: #0f172a;
+        }
+
+        body.light-theme .bot-tab.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+            color: #0f172a;
+        }
+
+        body.light-theme .success-message {
+            background: rgba(34, 197, 94, 0.08);
+            color: #059669;
+            border-color: #10b981;
+        }
+
+        body.light-theme .error-message {
+            background: rgba(239, 68, 68, 0.08);
+            color: #dc2626;
+            border-color: #ef4444;
+        }
+
+        body.light-theme .checkbox {
+            accent-color: #6366f1;
+        }
+
+        body.light-theme .role-item {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .file-upload-label {
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        body.light-theme .file-upload:hover .file-upload-label {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: #6366f1;
+        }
+
+        body.light-theme .avatar-placeholder {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        body.light-theme .activity-item,
+        body.light-theme .guild-item {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .form-separator {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme table {
+            color: #0f172a;
+        }
+
+        body.light-theme th {
+            color: #0f172a;
+            background: rgba(99, 102, 241, 0.08) !important;
+        }
+
+        body.light-theme td {
+            color: #475569;
+        }
+
+        /* These styles are now handled by the modern light theme section above */
 
         body.light-theme .loading-title,
         body.light-theme .loading-subtitle {
@@ -359,9 +804,9 @@
         }
 
         body.light-theme .success-message {
-            background: rgba(34, 197, 94, 0.1);
+            background: rgba(59, 130, 246, 0.1);
             color: #16a34a;
-            border-color: #22c55e;
+            border-color: #3b82f6;
         }
 
         body.light-theme .error-message {
@@ -435,6 +880,122 @@
             color: #4a5568;
         }
 
+        /* Fix all white text elements in light mode */
+        body.light-theme .toggle-btn {
+            color: #4a5568 !important;
+        }
+
+        body.light-theme .toggle-btn.active {
+            color: #0f172a !important;
+        }
+
+        body.light-theme .multi-select {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .reaction-item {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .clickable-avatar:hover::after {
+            color: #ffffff !important;
+        }
+
+        body.light-theme .processing-spinner {
+            border-color: rgba(0, 0, 0, 0.3) !important;
+            border-top-color: #6366f1 !important;
+        }
+
+        body.light-theme .notification {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .card h3,
+        body.light-theme .card h4,
+        body.light-theme .card h5,
+        body.light-theme .card p,
+        body.light-theme .card span,
+        body.light-theme .card div {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .card small {
+            color: #64748b !important;
+        }
+
+        /* Fix menu and navigation text in light mode */
+        body.light-theme .menu-item,
+        body.light-theme .menu-text {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .notification-text {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .modal-content {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .modal-title {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .modal-body {
+            color: #4a5568 !important;
+        }
+
+        body.light-theme .dropdown-item {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .tooltip {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .trendy-btn {
+            color: #1a202c !important;
+        }
+
+        body.light-theme .trendy-btn-primary {
+            color: #ffffff !important;
+        }
+
+        body.light-theme .trendy-btn-success {
+            color: #ffffff !important;
+        }
+
+        body.light-theme .trendy-btn-danger {
+            color: #ffffff !important;
+        }
+
+        body.light-theme .trendy-btn-warning {
+            color: #1a202c !important;
+        }
+
+        /* Fix any remaining white text elements */
+        body.light-theme * {
+            color: #1a202c;
+        }
+
+        body.light-theme .card-title,
+        body.light-theme .header h1,
+        body.light-theme .nav-item.active,
+        body.light-theme .nav-item.active span:not(.nav-icon),
+        body.light-theme .login-title {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .form-separator {
             height: 1px;
             background: rgba(255, 255, 255, 0.1);
@@ -446,12 +1007,23 @@
         }
 
         .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.025em;
+        }
+
+        /* Ensure header h1 has same gradient in both modes */
+        body.light-theme .header h1,
+        body.dark-theme .header h1,
+        .header h1 {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
         }
 
         .container {
@@ -461,10 +1033,11 @@
 
         .sidebar {
             width: 280px;
-            background: rgba(255, 255, 255, 0.05);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 30px 0;
-            transition: transform 0.3s ease;
+            background: rgba(42, 43, 55, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 32px 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* Desktop navigation arrows (hidden) */
@@ -485,24 +1058,95 @@
         }
 
         .nav-item {
-            padding: 15px 30px;
+            padding: 16px 24px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 3px solid transparent;
             display: flex;
             align-items: center;
             font-weight: 500;
+            border-radius: 0 16px 16px 0;
+            margin: 6px 0;
+            margin-right: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-left-color: #7c3aed;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border-left-color: transparent;
+            transform: translateX(4px);
+        }
+
+        .nav-item:hover .nav-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-item:hover::before {
+            left: 0%;
+        }
+
+        .nav-item:hover .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transform: scale(1.1);
         }
 
         .nav-item.active {
-            background: rgba(124, 58, 237, 0.4);
-            border-left-color: #7c3aed;
-            color: #7c3aed;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border-left: 3px solid #6366f1;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-item.active .nav-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        /* Light mode navbar selected and hover text gradient */
+        body.light-theme .nav-item.active .nav-text,
+        body.light-theme .nav-item:hover .nav-text {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+
+        body.light-theme .nav-item.active .nav-icon,
+        body.light-theme .nav-item:hover .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
         }
 
         .nav-icon {
@@ -525,30 +1169,76 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(42, 43, 55, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .trend-card {
-            background: rgba(124, 58, 237, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(99, 102, 241, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trend-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366f1, transparent);
+        }
+
+        .trend-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
         }
 
         .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.025em;
         }
 
         .stats-grid {
@@ -559,25 +1249,34 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 20px;
+            background: rgba(42, 43, 55, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
             text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.2);
         }
 
         .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #7c3aed;
-            margin-bottom: 5px;
+            font-size: 32px;
+            font-weight: 800;
+            color: #6366f1;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
         }
 
         .stat-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 500;
         }
 
         .form-group {
@@ -604,25 +1303,26 @@
 
         .form-input, .form-textarea, .form-select {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             color: white;
-            font-size: 14px;
-            transition: all 0.3s ease;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .form-select option {
-            background: #1a1a2e;
+            background: #1a1b23;
             color: white;
-            padding: 8px 12px;
+            padding: 12px 16px;
         }
 
         .form-input:focus, .form-textarea:focus, .form-select:focus {
             outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .form-textarea {
@@ -635,23 +1335,49 @@
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 16px 32px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
+        }
+
+        .btn-primary::before {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
         .btn-danger {
@@ -659,9 +1385,13 @@
             color: white;
         }
 
-        .btn-danger:hover {
+        .btn-danger::before {
             background: #dc2626;
+        }
+
+        .btn-danger:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
         }
 
         .file-upload {
@@ -757,8 +1487,8 @@
 
         .success-message {
             background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #22c55e;
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
             padding: 12px 16px;
             border-radius: 8px;
             margin-bottom: 20px;
@@ -972,6 +1702,20 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            transition: all 0.3s ease;
+            z-index: 0;
         }
 
         .toggle-btn:hover {
@@ -980,10 +1724,18 @@
         }
 
         .toggle-btn.active {
-            background: linear-gradient(45deg, #7c3aed, #06b6d4);
-            border-color: #7c3aed;
-            color: white;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* Both toggle states use same purple color */
+        .toggle-btn[id="textToggle"].active,
+        .toggle-btn[id="embedToggle"].active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            color: #6366f1;
         }
 
         .form-help {
@@ -1012,12 +1764,12 @@
         }
 
         .popup-notification.success {
-            background: linear-gradient(45deg, #22c55e, #16a34a);
+            background: #22c55e;
             border: 1px solid rgba(34, 197, 94, 0.5);
         }
 
         .popup-notification.error {
-            background: linear-gradient(45deg, #ef4444, #dc2626);
+            background: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.5);
         }
 
@@ -1120,93 +1872,18 @@
         }
 
         body.light-theme .nav-item {
-            color: #1a202c;
-            font-weight: 600;
-        }
-
-        body.light-theme .nav-item:hover {
-            background: rgba(124, 58, 237, 0.1);
-            color: #7c3aed;
-        }
-
-        body.light-theme .nav-item.active {
-            background: #7c3aed;
-            color: white;
-            font-weight: 600;
-        }
-
-        body.light-theme .card {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .form-input, 
-        body.light-theme .form-textarea, 
-        body.light-theme .form-select {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            color: #1a202c;
-        }
-
-        body.light-theme .form-input:focus, 
-        body.light-theme .form-textarea:focus, 
-        body.light-theme .form-select:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        body.light-theme .form-input::placeholder, 
-        body.light-theme .form-textarea::placeholder {
-            color: #718096;
-        }
-
-        body.light-theme .form-label {
-            color: #1a202c;
-            font-weight: 700;
-        }
-
-        body.light-theme .role-item,
-        body.light-theme .reaction-item {
-            background: rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .activity-item {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .guild-item {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .activity-time,
-        body.light-theme .guild-members {
             color: rgba(0, 0, 0, 0.6);
         }
 
-        body.light-theme .avatar-preview {
-            background: rgba(0, 0, 0, 0.05);
-            border: 3px solid #7c3aed;
+        body.light-theme .nav-item:hover {
+            background: linear-gradient(45deg, rgba(124, 58, 237, 0.15), rgba(6, 182, 212, 0.15));
+            border-left-color: #7c3aed;
+            color: #7c3aed;
         }
 
-        body.light-theme .avatar-placeholder {
-            color: rgba(0, 0, 0, 0.4);
-        }
 
-        body.light-theme .file-upload-label {
-            background: rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            color: #1a202c;
-        }
 
-        body.light-theme .file-upload:hover .file-upload-label {
-            background: rgba(0, 0, 0, 0.1);
-        }
+        /* Old light theme styles cleaned up - using modern styles above */
         
         /* Larger text for General and AI settings tabs */
         #general-content .form-label,
@@ -1384,14 +2061,14 @@
                 display: flex !important;
                 overflow: hidden;
                 padding: 0;
-                background: rgba(255, 255, 255, 0.05);
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                background: linear-gradient(135deg, rgba(42, 43, 55, 0.95), rgba(50, 50, 65, 0.95));
+                border-top: 1px solid rgba(99, 102, 241, 0.3);
                 height: 80px;
                 align-items: center;
-                box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.4);
+                box-shadow: 0 -2px 25px rgba(99, 102, 241, 0.3);
                 transform: none !important;
                 justify-content: space-between;
-                backdrop-filter: blur(10px);
+                backdrop-filter: blur(20px);
             }
             
             .sidebar.mobile-hidden {
@@ -1400,9 +2077,9 @@
             }
             
             body.light-theme .sidebar {
-                background: rgba(255, 255, 255, 0.9);
-                border-top: 1px solid rgba(0, 0, 0, 0.1);
-                box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+                border-top: 1px solid rgba(99, 102, 241, 0.2);
+                box-shadow: 0 -2px 25px rgba(99, 102, 241, 0.15);
             }
             
             .mobile-nav-arrow {
@@ -1418,6 +2095,7 @@
                 cursor: pointer;
                 transition: all 0.3s ease;
                 z-index: 1001;
+                flex-shrink: 0;
             }
             
             .mobile-nav-arrow:hover {
@@ -1450,13 +2128,21 @@
             .mobile-nav-slider {
                 display: flex;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                width: 100%;
+                width: calc(100% * (8 / 3)); /* Width for 8 tabs shown 3 at a time */
+                min-width: calc(100% * (8 / 3));
+            }
+            
+            /* When database tab is shown, adjust for 4 tabs total */
+            .mobile-nav-slider.with-database {
+                width: calc(100% * (4 / 3)); /* Width for 4 tabs shown 3 at a time */
+                min-width: calc(100% * (4 / 3));
             }
             
             .nav-item {
                 flex: none;
-                width: calc(100% / 3);
-                padding: 8px 12px;
+                width: calc(100% / 8); /* Each tab takes 1/8 of total slider width */
+                min-width: calc(100% / 8);
+                padding: 8px 4px;
                 border-left: none;
                 border-bottom: none;
                 border-radius: 0;
@@ -1469,24 +2155,91 @@
                 justify-content: center;
                 height: 80px;
                 transition: all 0.3s ease;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 0.5);
                 font-weight: 500;
                 position: relative;
+            }
+            
+            /* When database tab is shown, adjust nav-item width */
+            .mobile-nav-slider.with-database .nav-item {
+                width: calc(100% / 4); /* Each tab takes 1/4 of total slider width */
+                min-width: calc(100% / 4);
+            }
+            
+            /* Database tab mobile sizing */
+            #databaseTab {
+                width: calc(100% / 8) !important;
+                min-width: calc(100% / 8) !important;
+                max-width: calc(100% / 8) !important;
+                background: transparent !important;
+                border: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            /* Database tab when with-database class is active */
+            .mobile-nav-slider.with-database #databaseTab {
+                width: calc(100% / 4) !important;
+                min-width: calc(100% / 4) !important;
+                max-width: calc(100% / 4) !important;
+            }
+            
+            #databaseTab .nav-icon {
+                margin-bottom: 6px !important;
+                margin-right: 0 !important;
+                font-size: 24px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            #databaseTab .nav-text {
+                font-size: 10px !important;
+                text-align: center !important;
+                display: block !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
             }
             
             .nav-item:hover {
                 border-left: none;
                 border-bottom: none;
-                background: rgba(255, 255, 255, 0.1);
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
                 color: rgba(255, 255, 255, 0.9);
+            }
+            
+            .nav-item:hover .nav-icon {
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                transform: scale(1.1);
             }
             
             .nav-item.active {
                 border-left: none;
                 border-bottom: none;
-                background: rgba(124, 58, 237, 0.2);
-                color: #7c3aed;
-                transform: scale(1.05);
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+                color: #ffffff;
+            }
+            
+            .nav-item.active .nav-icon {
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .nav-item.active,
+            .nav-item.active span:not(.nav-icon) {
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-weight: 600;
             }
             
             .nav-item.active::after {
@@ -1495,30 +2248,42 @@
                 bottom: 0;
                 left: 50%;
                 transform: translateX(-50%);
-                width: 30px;
-                height: 3px;
-                background: #7c3aed;
+                width: 40px;
+                height: 4px;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
                 border-radius: 2px;
+                box-shadow: 0 1px 2px rgba(99, 102, 241, 0.5);
             }
             
             body.light-theme .nav-item {
-                color: rgba(0, 0, 0, 0.7);
+                color: rgba(0, 0, 0, 0.5);
             }
             
             body.light-theme .nav-item:hover {
-                background: rgba(0, 0, 0, 0.1);
-                color: rgba(0, 0, 0, 0.9);
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+                color: rgba(0, 0, 0, 0.8);
             }
             
-            body.light-theme .nav-item.active {
-                background: rgba(124, 58, 237, 0.2);
-                color: #7c3aed;
-            }
+
+
+
             
             .nav-icon {
                 margin-right: 0;
                 margin-bottom: 6px;
                 font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .nav-text {
+                font-size: 10px;
+                text-align: center;
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .content {
@@ -1530,8 +2295,20 @@
             }
             
             .header {
-                height: 80px;
-                padding: 15px 20px;
+                height: auto;
+                min-height: 70px;
+                padding: 10px 15px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                text-align: left;
+                gap: 15px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+                margin: 0;
+                flex: 1;
             }
             
             .mobile-menu-toggle {
@@ -1766,6 +2543,118 @@
                 border-color: #7c3aed;
                 box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
             }
+
+            /* Mobile navigation center-fade transition */
+            .nav-item:hover {
+                background: linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.2) 50%, transparent 100%);
+                background-size: 200% 100%;
+                background-position: 100% 0;
+                animation: centerFadeIn 0.3s ease-out forwards;
+                transform: none;
+                border-radius: 0;
+            }
+
+            @keyframes centerFadeIn {
+                0% {
+                    background-position: 100% 0;
+                }
+                100% {
+                    background-position: 50% 0;
+                }
+            }
+        }
+
+        /* Make guide text blue in light mode */
+        body.light-theme h4[style*="color: #3b82f6"] {
+            color: #3b82f6 !important;
+        }
+        
+        body.light-theme p[style*="color: rgba(255, 255, 255, 0.8)"] {
+            color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        /* Fix text selection visibility in light mode */
+        body.light-theme ::selection {
+            background: rgba(99, 102, 241, 0.3);
+            color: #0f172a;
+        }
+
+        body.light-theme ::-moz-selection {
+            background: rgba(99, 102, 241, 0.3);
+            color: #0f172a;
+        }
+
+        /* Fix toggle button text in light mode */
+        body.light-theme .toggle-btn:not(.active) {
+            color: rgba(0, 0, 0, 0.7) !important;
+        }
+
+        /* Fix nav styling in light mode */
+        body.light-theme .nav-item.active {
+            border-left: 3px solid #6366f1 !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+        }
+        
+        /* Fix text and icon to use gradient in light mode */
+        body.light-theme .nav-item.active span,
+        body.light-theme .nav-item.active .nav-text,
+        body.light-theme .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            color: transparent !important;
+        }
+
+        /* Improve light mode contrast */
+        body.light-theme {
+            background: #f8fafc !important;
+        }
+
+        body.light-theme .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Fix bot tabs styling in light mode */
+        body.light-theme .bot-tab {
+            background: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .bot-tab.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: #6366f1;
+            border-color: #6366f1;
+        }
+
+        /* Make light mode navbar match dark mode desktop */
+        body.light-theme .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .nav-item {
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        body.light-theme .nav-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+
+        /* Add more light mode contrast improvements */
+        body.light-theme .form-input,
+        body.light-theme .form-select,
+        body.light-theme .form-textarea {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            color: #0f172a;
+        }
+
+        body.light-theme .trendy-btn {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -1775,7 +2664,7 @@
         <div class="login-box">
             <h2 class="login-title">:v Faces Mascots Dashboard</h2>
             <input type="password" id="passwordInput" class="login-input" placeholder="Enter password" />
-            <button onclick="login()" class="login-btn">Login</button>
+            <button onclick="login()" class="login-btn"><span>Login</span></button>
             <div id="loginError" class="error-message" style="display: none;"></div>
         </div>
     </div>
@@ -1793,17 +2682,17 @@
             
             <div class="loading-steps">
                 <div class="loading-step" id="step1">
-                    <div class="step-icon">🔐</div>
+                    <div class="step-icon"><i class="fas fa-lock"></i></div>
                     <div class="step-text">Connecting</div>
                     <div class="step-status">Waiting...</div>
                 </div>
                 <div class="loading-step" id="step2">
-                    <div class="step-icon">📊</div>
+                    <div class="step-icon"><i class="fas fa-chart-bar"></i></div>
                     <div class="step-text">Loading Data</div>
                     <div class="step-status">Waiting...</div>
                 </div>
                 <div class="loading-step" id="step3">
-                    <div class="step-icon">✨</div>
+                    <div class="step-icon"><i class="fas fa-magic"></i></div>
                     <div class="step-text">Preparing Interface</div>
                     <div class="step-status">Waiting...</div>
                 </div>
@@ -1818,10 +2707,10 @@
     <!-- Dashboard -->
     <div id="dashboard" class="dashboard">
         <div class="header">
-            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
             <h1>:v Faces Mascots Dashboard</h1>
             <div class="header-controls">
-                <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
             </div>
         </div>
 
@@ -1829,44 +2718,44 @@
         
         <div class="container">
             <div class="sidebar" id="sidebar">
-                <button class="mobile-nav-arrow" id="mobileNavLeft" onclick="navigateMobileNav(-1)">◀</button>
+                <button class="mobile-nav-arrow" id="mobileNavLeft" onclick="navigateMobileNav(-1)"><i class="fas fa-chevron-left"></i></button>
                 <div class="mobile-nav-container">
                     <div class="mobile-nav-slider" id="mobileNavSlider">
                         <div class="nav-item active" onclick="showTab('home')">
-                            <span class="nav-icon">🏠</span>
-                            Home
+                            <span class="nav-icon"><i class="fas fa-home"></i></span>
+                            <span class="nav-text">Home</span>
                         </div>
                         <div class="nav-item" onclick="showTab('general')">
-                            <span class="nav-icon">⚙️</span>
-                            General
+                            <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                            <span class="nav-text">General</span>
                         </div>
                         <div class="nav-item" onclick="showTab('personality')">
-                            <span class="nav-icon">🤖</span>
-                            AI Details
+                            <span class="nav-icon"><i class="fas fa-robot"></i></span>
+                            <span class="nav-text">AI Details</span>
                         </div>
                         <div class="nav-item" onclick="showTab('levels')">
-                            <span class="nav-icon">📊</span>
-                            Level System
+                            <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
+                            <span class="nav-text">Level System</span>
                         </div>
                         <div class="nav-item" onclick="showTab('reactions')">
-                            <span class="nav-icon">⚡</span>
-                            Reaction
+                            <span class="nav-icon"><i class="fas fa-bolt"></i></span>
+                            <span class="nav-text">Reaction</span>
                         </div>
                         <div class="nav-item" onclick="showTab('messages')">
-                            <span class="nav-icon">💬</span>
-                            Messages
+                            <span class="nav-icon"><i class="fas fa-comments"></i></span>
+                            <span class="nav-text">Messages</span>
                         </div>
                         <div class="nav-item" onclick="showTab('welcomer')">
-                            <span class="nav-icon">👋</span>
-                            Welcomer
+                            <span class="nav-icon"><i class="fas fa-user-plus"></i></span>
+                            <span class="nav-text">Welcomer</span>
                         </div>
                         <div class="nav-item" id="databaseTab" onclick="showTab('database')" style="display: none;">
-                            <span class="nav-icon">🗄️</span>
-                            Database
+                            <span class="nav-icon"><i class="fas fa-database"></i></span>
+                            <span class="nav-text">Database</span>
                         </div>
                     </div>
                 </div>
-                <button class="mobile-nav-arrow" id="mobileNavRight" onclick="navigateMobileNav(1)">▶</button>
+                <button class="mobile-nav-arrow" id="mobileNavRight" onclick="navigateMobileNav(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
 
             <div class="content">
@@ -1874,7 +2763,7 @@
                 <div id="home" class="tab-content active">
                     <!-- Bot Status Overview -->
                     <div class="card" style="margin-bottom: 20px;">
-                        <h3 class="card-title">v Faces Mascots Status</h3>
+                        <h3 class="card-title">:v Faces Mascots Status</h3>
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div class="stats-grid">
                             <div class="stat-card">
@@ -1968,6 +2857,24 @@
                                 <div class="stat-value" id="guildBoostCount">--</div>
                                 <div class="stat-label">Boost Count</div>
                             </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildRegion">--</div>
+                                <div class="stat-label">Guild Region</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildEmojis">--</div>
+                                <div class="stat-label">Custom Emojis</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildStickers">--</div>
+                                <div class="stat-label">Custom Stickers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildMfaLevel">--</div>
+                                <div class="stat-label">MFA Requirement</div>
+                            </div>
+
                         </div>
                         </div>
                     </div>
@@ -1976,6 +2883,14 @@
 
                     <div class="card">
                         <h3 class="card-title">Recent Activity</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Monitor your bot's recent activities and command executions. Track system events and user interactions in real-time.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div id="activityLog" class="activity-log"></div>
                         </div>
@@ -1986,6 +2901,13 @@
                 <div id="personality" class="tab-content">
                     <div class="card">
                         <h3 class="card-title">AI Details</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Configure your bot's personality traits, appearance, and behavior. This information helps the AI respond in character during conversations.
+                            </p>
+                        </div>
                         
                         <!-- Bot Selection Tabs -->
                         <div class="bot-tabs">
@@ -2034,7 +2956,7 @@
                                     <label class="form-label">To Do</label>
                                     <textarea id="bot1Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary" id="bot1PersonalityBtn">Save Bot 1 AI Details</button>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot1PersonalityBtn">Save Bot 1 AI Details</button>
                             </form>
                         </div>
                         
@@ -2076,7 +2998,7 @@
                                     <label class="form-label">To Do</label>
                                     <textarea id="bot2Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary" id="bot2PersonalityBtn">Save Bot 2 AI Details</button>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot2PersonalityBtn">Save Bot 2 AI Details</button>
                             </form>
                         </div>
                         </div>
@@ -2087,6 +3009,13 @@
                 <div id="general" class="tab-content">
                     <div class="card">
                         <h3 class="card-title">General Settings</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Manage your bot's basic configuration including username, status, activity, and channel permissions. Upload custom avatars and set activity text.
+                            </p>
+                        </div>
                         
                         <!-- Bot Selection Tabs -->
                         <div class="bot-tabs">
@@ -2102,7 +3031,7 @@
                             <form id="bot1GeneralForm">
                                 <div class="avatar-container">
                                     <div class="avatar-preview clickable-avatar" id="bot1AvatarPreview" onclick="document.getElementById('bot1Avatar').click()">
-                                        <div class="avatar-placeholder">🤖</div>
+                                        <div class="avatar-placeholder"><i class="fas fa-robot"></i></div>
                                     </div>
                                     <input type="file" id="bot1Avatar" name="avatar" accept="image/*" onchange="previewAvatar('bot1')" style="display: none;">
                                 </div>
@@ -2157,7 +3086,7 @@
                             <form id="bot2GeneralForm">
                                 <div class="avatar-container">
                                     <div class="avatar-preview clickable-avatar" id="bot2AvatarPreview" onclick="document.getElementById('bot2Avatar').click()">
-                                        <div class="avatar-placeholder">🤖</div>
+                                        <div class="avatar-placeholder"><i class="fas fa-robot"></i></div>
                                     </div>
                                     <input type="file" id="bot2Avatar" name="avatar" accept="image/*" onchange="previewAvatar('bot2')" style="display: none;">
                                 </div>
@@ -2215,6 +3144,14 @@
                     <!-- XP Settings Card -->
                     <div class="card">
                         <h3 class="card-title">XP Settings</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Configure how much XP users earn per message and the cooldown between XP gains. Balance progression to keep members engaged without spam.
+                            </p>
+                        </div>
+                        
                         <div id="xpMessage"></div>
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <form id="xpForm">
@@ -2238,6 +3175,14 @@
                     <!-- Level Up Announcements Card -->
                     <div class="card">
                         <h3 class="card-title">Level Up Announcements</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Enable or disable level up announcements and choose which channel they appear in. Auto-detect uses the channel where the user leveled up.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div id="announcementMessage"></div>
                         <form id="announcementForm">
@@ -2260,6 +3205,14 @@
                     <!-- Level Role Rewards Card -->
                     <div class="card">
                         <h3 class="card-title">Level Role Rewards</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Set up role rewards that members receive when they reach specific levels. Configure what level unlocks which roles.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div id="roleRewardsMessage"></div>
                         <form id="roleRewardsForm">
@@ -2284,6 +3237,14 @@
                     <!-- Auto React Section -->
                     <div class="card" style="margin-bottom: 30px;">
                         <h3 class="card-title">Forum Auto React</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Automatically add emoji reactions to new posts in specific forum channels. Configure which emojis each bot should add.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <form id="autoReactForm">
                             <div class="checkbox-group">
@@ -2314,6 +3275,14 @@
                     <!-- React to Message Section -->
                     <div class="card" style="margin-bottom: 30px;">
                         <h3 class="card-title">React to Specific Message</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Add specific emoji reactions to any message by providing the message ID. Useful for quickly reacting to important messages.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div id="messageReactSection">
                             <form id="messageReactForm">
@@ -2342,9 +3311,10 @@
 
                     <!-- Advanced Reaction Roles Section -->
                     <div class="card">
-                        <h3 class="card-title">🎯 Advanced Reaction Roles</h3>
-                        <div class="info-box" style="margin-bottom: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid #3b82f6;">
-                            <p style="margin: 0; color: rgba(255, 255, 255, 0.8); font-size: 14px;">
+                        <h3 class="card-title">Advanced Reaction Roles</h3>
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
                                 Create reaction role sets with single or multiple selection modes. Configure message reactions with advanced controls.
                             </p>
                         </div>
@@ -2353,7 +3323,7 @@
 
                         <!-- Step 1: Create New Set -->
                         <div id="newSetCreation" class="card" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 20px;">
-                            <h4 style="margin-bottom: 15px; color: #a855f7;">📝 Create New Reaction Role Set</h4>
+                            <h4 style="margin-bottom: 15px; color: #a855f7;">Create New Reaction Role Set</h4>
                             <div id="createSetForm">
                                 <div class="form-group">
                                     <label class="form-label">Set Name</label>
@@ -2379,7 +3349,7 @@
 
                         <!-- Step 2: Add Emoji/Role Pairs (Hidden initially) -->
                         <div id="emojiRoleBuilder" class="card" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 20px; display: none;">
-                            <h4 style="margin-bottom: 15px; color: #a855f7;">⚡ Add Emoji & Role Pairs</h4>
+                            <h4 style="margin-bottom: 15px; color: #a855f7;">Add Emoji & Role Pairs</h4>
                             <div id="currentSetInfo" style="background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px;">
                                 <!-- Set info will be populated here -->
                             </div>
@@ -2418,8 +3388,8 @@
                         </div>
 
                         <!-- Existing Sets Management -->
-                        <div class="card" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
-                            <h4 style="margin-bottom: 15px; color: #22c55e;">📋 Existing Reaction Role Sets</h4>
+                        <div class="card" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <h4 style="margin-bottom: 15px; color: #3b82f6;">Existing Reaction Role Sets</h4>
                             <div id="existingSets">
                                 <p style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin: 0;">Loading existing reaction role sets...</p>
                             </div>
@@ -2435,6 +3405,14 @@
                     <!-- Send Message Section -->
                     <div class="card" style="margin-bottom: 20px;">
                         <h3 class="card-title">Send Message</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Send plain text messages as your bot to any channel. You can include files and attachments for media sharing.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <div id="messagesMessage"></div>
                         <form id="sendMessageForm">
@@ -2468,6 +3446,14 @@
                     <!-- Send Embed Section -->
                     <div class="card" style="margin-bottom: 20px;">
                         <h3 class="card-title">Send Embed</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Send rich embed messages with custom colors, titles, descriptions, and formatting. Perfect for announcements and formatted content.
+                            </p>
+                        </div>
+                        
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <form id="sendEmbedForm">
                             <div class="form-group">
@@ -2494,7 +3480,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Embed Color</label>
-                                <input type="color" id="embedMessageColor" class="form-input" value="#7c3aed">
+                                <input type="color" id="embedMessageColor" class="form-input" value="#0099ff" style="width: 120px; height: 50px; padding: 5px;">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Image URL</label>
@@ -2506,7 +3492,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Footer Text</label>
-                                <input type="text" id="embedFooter" class="form-input" placeholder="Footer text (optional)">
+                                <input type="text" id="embedFooterText" class="form-input" placeholder="Footer text (optional)">
                             </div>
                             <div class="checkbox-group">
                                 <input type="checkbox" id="embedTimestamp" class="checkbox">
@@ -2523,10 +3509,21 @@
                 <div id="welcomer" class="tab-content">
                     <!-- Welcome Messages -->
                     <div class="card">
-                        <h3 class="card-title">👋 Welcome Messages</h3>
+                        <h3 class="card-title">Welcome Messages</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Set up automatic welcome messages for new server members. Choose between plain text or rich embed formats with customizable content.
+                            </p>
+                        </div>
+                        
                         <div id="welcomerMessage"></div>
                         <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <form id="welcomerForm">
+                            <!-- Hidden field for embed toggle state -->
+                            <input type="hidden" id="useEmbed" value="false">
+                            
                             <div class="checkbox-group">
                                 <input type="checkbox" id="welcomerEnabled" class="checkbox">
                                 <label for="welcomerEnabled" class="form-label">Enable Welcome Messages</label>
@@ -2545,8 +3542,8 @@
                             <div class="form-group">
                                 <label class="form-label">Message Format</label>
                                 <div class="toggle-buttons">
-                                    <button type="button" class="toggle-btn active" id="textToggle">📝 Plain Text</button>
-                                    <button type="button" class="toggle-btn" id="embedToggle">🎨 Rich Embed</button>
+                                    <button type="button" class="toggle-btn active" id="textToggle">Plain Text</button>
+                                    <button type="button" class="toggle-btn" id="embedToggle">Rich Embed</button>
                                 </div>
                             </div>
                             
@@ -2571,7 +3568,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Embed Color</label>
-                                    <input type="color" id="embedColor" class="form-input" value="#7c3aed">
+                                    <input type="color" id="embedColor" class="form-input" value="#7c3aed" style="width: 120px; height: 50px; padding: 5px;">
                                 </div>
                                 <div class="checkbox-group">
                                     <input type="checkbox" id="embedThumbnail" class="checkbox" checked>
@@ -2579,7 +3576,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Embed Footer</label>
-                                    <input type="text" id="embedFooter" class="form-input" placeholder="Have a great time!" value="Have a great time!">
+                                    <input type="text" id="welcomeEmbedFooter" class="form-input" placeholder="Have a great time!" value="Have a great time!">
                                 </div>
                             </div>
                             
@@ -2593,8 +3590,17 @@
 
                     <!-- Auto Role Assignment -->
                     <div class="card">
-                        <h3 class="card-title">🎭 Auto Role Assignment</h3>
+                        <h3 class="card-title">Auto Role Assignment</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Automatically assign roles to new members when they join your server. Add multiple roles that will be given immediately upon joining.
+                            </p>
+                        </div>
+                        
                         <div id="autoRoleMessage"></div>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
                         <form id="autoRoleForm">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="autoRoleEnabled" class="checkbox">
@@ -2603,9 +3609,9 @@
                             
                             <div class="form-group">
                                 <label class="form-label">Auto Roles</label>
-                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                                <div style="background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                        <h4 style="margin: 0; color: #7c3aed;">Role Management</h4>
+                                        <h4 style="margin: 0; color: #ffffff;">Role Management</h4>
                                         <div style="display: flex; gap: 10px;">
                                             <button type="button" onclick="addAutoRole()" class="trendy-btn trendy-btn-primary" style="padding: 10px 20px; font-size: 14px;">Add Role</button>
                                             <button type="button" onclick="clearAllAutoRoles()" class="trendy-btn trendy-btn-danger" style="padding: 10px 20px; font-size: 14px;">Clear All</button>
@@ -2623,18 +3629,27 @@
                                 <div class="loading-bar-fill"></div>
                             </div>
                         </form>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Database Tab -->
                 <div id="database" class="tab-content">
                     <div class="card">
-                        <h3 class="card-title">🗄️ Database Management</h3>
+                        <h3 class="card-title">Database Management</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Manage your bot's database tables and data. Export backups, import configurations, and view table contents for troubleshooting.
+                            </p>
+                        </div>
+                        
                         <div id="databaseMessage"></div>
                         
                         <!-- Database Controls -->
                         <div style="margin-bottom: 30px; padding: 20px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                            <h4 style="color: #7c3aed; margin-bottom: 15px;">🛠️ Database Controls</h4>
+                            <h4 style="color: #7c3aed; margin-bottom: 15px;">Database Controls</h4>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
 
                                 <button onclick="exportDatabase()" class="trendy-btn trendy-btn-info" title="Export Database">Export Database</button>
@@ -2651,39 +3666,44 @@
                             <h4 style="color: #7c3aed; margin-bottom: 15px;">Database Tables</h4>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">👥 Users</h5>
+                                    <h5 style="margin-bottom: 10px;">Users</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Discord user data, XP, levels</p>
                                     <button onclick="viewTable('users')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">🤖 Bot A (Heilos)</h5>
+                                    <h5 style="margin-bottom: 10px;">Bot A (Heilos)</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Bot A configurations</p>
                                     <button onclick="viewTable('bota')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">🤖 Bot B (Wisteria)</h5>
+                                    <h5 style="margin-bottom: 10px;">Bot B (Wisteria)</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Bot B configurations</p>
                                     <button onclick="viewTable('botb')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">⚙️ Others</h5>
+                                    <h5 style="margin-bottom: 10px;">Others</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">System settings, XP, counting</p>
                                     <button onclick="viewTable('others')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">🎂 Birthdays</h5>
+                                    <h5 style="margin-bottom: 10px;">Birthdays</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">User birthday information</p>
                                     <button onclick="viewTable('birthdays')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">🏆 Level Roles</h5>
+                                    <h5 style="margin-bottom: 10px;">Level Roles</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Level-based role rewards</p>
                                     <button onclick="viewTable('level_roles')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
-                                    <h5 style="margin-bottom: 10px;">⚡ Reaction Roles</h5>
+                                    <h5 style="margin-bottom: 10px;">Reaction Roles</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Emoji reaction role assignments</p>
                                     <button onclick="viewTable('reaction_roles')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Welcome Messages</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Welcome message configurations</p>
+                                    <button onclick="viewTable('welcome_messages')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
 
                             </div>
@@ -2731,7 +3751,7 @@
                                 </div>
                                 <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: end;">
                                     <button onclick="closeEditModal()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Cancel</button>
-                                    <button onclick="saveEdit()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Save Changes</button>
+                                    <button onclick="saveEdit()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Save Changes</button>
                                 </div>
                             </div>
                         </div>
@@ -2970,6 +3990,20 @@
                 }
             });
             
+            // Check if database tab is visible
+            const databaseTab = document.getElementById('databaseTab');
+            const isDatabaseVisible = databaseTab && databaseTab.style.display !== 'none';
+            
+            // Update slider class based on database tab visibility
+            const slider = document.getElementById('mobileNavSlider');
+            if (slider) {
+                if (isDatabaseVisible) {
+                    slider.classList.add('with-database');
+                } else {
+                    slider.classList.remove('with-database');
+                }
+            }
+            
             // Set initial position to show first 3 items with middle selected
             currentMobileIndex = 0;
             updateMobileNavigation();
@@ -2982,21 +4016,28 @@
                 const leftArrow = document.getElementById('mobileNavLeft');
                 const rightArrow = document.getElementById('mobileNavRight');
                 
-                if (slider) {
-                    // Calculate transform based on current index
-                    const itemWidth = 100 / 3; // Each item takes 1/3 of container width
+                if (slider && leftArrow && rightArrow) {
+                    // Check if database tab is visible
+                    const isDatabaseVisible = slider.classList.contains('with-database');
+                    
+                    // Calculate item width based on total number of tabs
+                    const itemWidth = isDatabaseVisible ? 100 / 4 : 100 / 8; // 4 tabs or 8 tabs
                     const translateX = -currentMobileIndex * itemWidth;
                     slider.style.transform = `translateX(${translateX}%)`;
                     
-                    // Update arrow states
-                    leftArrow.disabled = currentMobileIndex === 0;
-                    rightArrow.disabled = currentMobileIndex >= navItems.length - 3;
+                    // Update arrow states with proper bounds checking
+                    if (leftArrow) {
+                        leftArrow.disabled = currentMobileIndex === 0;
+                    }
+                    if (rightArrow) {
+                        rightArrow.disabled = currentMobileIndex >= Math.max(0, navItems.length - 3);
+                    }
                     
                     // Highlight middle item as active if not manually selected
                     const middleIndex = currentMobileIndex + 1;
-                    if (middleIndex < navItems.length) {
+                    if (middleIndex < navItems.length && navItems[middleIndex]) {
                         // Only auto-select if no item is manually active
-                        const hasActiveItem = navItems.some(item => item.classList.contains('active'));
+                        const hasActiveItem = navItems.some(item => item && item.classList && item.classList.contains('active'));
                         if (!hasActiveItem) {
                             navItems[middleIndex].classList.add('active');
                         }
@@ -3007,9 +4048,57 @@
         
         // Navigate mobile tabs
         function navigateMobileNav(direction) {
-            const maxIndex = Math.max(0, navItems.length - 3);
-            currentMobileIndex = Math.max(0, Math.min(maxIndex, currentMobileIndex + direction));
-            updateMobileNavigation();
+            // Ensure we have nav items initialized
+            if (navItems.length === 0) {
+                initMobileNavigation();
+                return;
+            }
+            
+            // Find current active tab
+            const activeTab = document.querySelector('.nav-item.active');
+            if (!activeTab) {
+                // If no active tab, activate the first one
+                if (navItems[0]) {
+                    navItems[0].classList.add('active');
+                    const onclickAttr = navItems[0].getAttribute('onclick');
+                    if (onclickAttr) {
+                        const tabMatch = onclickAttr.match(/showTab\(['"]([^'"]+)['"]\)/);
+                        if (tabMatch) {
+                            showTab(tabMatch[1]);
+                        }
+                    }
+                }
+                return;
+            }
+            
+            const activeIndex = navItems.findIndex(item => item === activeTab);
+            
+            if (activeIndex !== -1) {
+                // Calculate new index with proper bounds checking
+                const newIndex = activeIndex + direction;
+                
+                // Check bounds more carefully
+                if (newIndex >= 0 && newIndex < navItems.length && navItems[newIndex]) {
+                    // Remove active from current
+                    activeTab.classList.remove('active');
+                    
+                    // Add active to new tab
+                    navItems[newIndex].classList.add('active');
+                    
+                    // Get the tab name from onclick attribute and trigger navigation
+                    const onclickAttr = navItems[newIndex].getAttribute('onclick');
+                    if (onclickAttr) {
+                        const tabMatch = onclickAttr.match(/showTab\(['"]([^'"]+)['"]\)/);
+                        if (tabMatch) {
+                            showTab(tabMatch[1]);
+                        }
+                    }
+                    
+                    // Update mobile navigation to center the selected item
+                    currentMobileIndex = Math.max(0, Math.min(newIndex - 1, navItems.length - 3));
+                    updateMobileNavigation();
+                }
+            }
         }
         
         // Tab navigation
@@ -3025,24 +4114,41 @@
             });
             
             // Show selected tab
-            document.getElementById(tabName).classList.add('active');
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
             
-            // Add active to clicked nav item
-            event.target.closest('.nav-item').classList.add('active');
+            // Find and activate the corresponding nav item
+            let targetNavItem = null;
+            if (event && event.target) {
+                targetNavItem = event.target.closest('.nav-item');
+            } else {
+                // Find nav item by tab name if no event (for programmatic calls)
+                targetNavItem = document.querySelector(`.nav-item[onclick*="${tabName}"]`);
+            }
             
-            // On mobile, center the active tab
-            if (window.innerWidth <= 768) {
-                const activeItem = event.target.closest('.nav-item');
-                const activeIndex = navItems.indexOf(activeItem);
-                if (activeIndex >= 0) {
-                    // Center the active item
-                    currentMobileIndex = Math.max(0, Math.min(navItems.length - 3, activeIndex - 1));
-                    updateMobileNavigation();
-                }
+            if (targetNavItem) {
+                targetNavItem.classList.add('active');
                 
+                // On mobile, center the active tab
+                if (window.innerWidth <= 768 && navItems.length > 0) {
+                    const activeIndex = navItems.indexOf(targetNavItem);
+                    if (activeIndex >= 0) {
+                        // Center the active item in the 3-tab view
+                        // For centering, we want the selected tab to appear in the middle position
+                        // So if we select index 2, we want to show tabs 1,2,3 (currentMobileIndex = 1)
+                        currentMobileIndex = Math.max(0, Math.min(activeIndex - 1, navItems.length - 3));
+                        updateMobileNavigation();
+                    }
+                }
+            }
+            
+            // Close mobile sidebar if open
+            if (window.innerWidth <= 768) {
                 const sidebar = document.getElementById('sidebar');
                 const overlay = document.querySelector('.mobile-overlay');
-                sidebar.classList.remove('mobile-open');
+                if (sidebar) sidebar.classList.remove('mobile-open');
                 if (overlay) overlay.classList.remove('active');
                 document.body.style.overflow = '';
             }
@@ -3160,7 +4266,7 @@
                     });
                 }
 
-                console.log('All form fields populated successfully');
+
                 
             } catch (error) {
                 console.error('Error populating form fields:', error);
@@ -3194,15 +4300,15 @@
                     
                     bot1Elements.forEach(elem => {
                         const element = document.getElementById(elem.id);
-                        if (element) {
+                        if (element && elem.value !== null && elem.value !== undefined) {
                             try {
-                                element.value = elem.value;
-                                element.placeholder = elem.placeholder;
+                                element.value = String(elem.value);
+                                if (elem.placeholder) {
+                                    element.placeholder = String(elem.placeholder);
+                                }
                             } catch (error) {
-                                console.error(`Error setting value for ${elem.id}:`, error);
+                                console.log(`Error setting value for ${elem.id}:`, error.message);
                             }
-                        } else {
-                            console.warn(`Element not found: ${elem.id}`);
                         }
                     });
                     
@@ -3222,15 +4328,15 @@
                     
                     bot2Elements.forEach(elem => {
                         const element = document.getElementById(elem.id);
-                        if (element) {
+                        if (element && elem.value !== null && elem.value !== undefined) {
                             try {
-                                element.value = elem.value;
-                                element.placeholder = elem.placeholder;
+                                element.value = String(elem.value);
+                                if (elem.placeholder) {
+                                    element.placeholder = String(elem.placeholder);
+                                }
                             } catch (error) {
-                                console.error(`Error setting value for ${elem.id}:`, error);
+                                console.log(`Error setting value for ${elem.id}:`, error.message);
                             }
-                        } else {
-                            console.warn(`Element not found: ${elem.id}`);
                         }
                     });
                     
@@ -3245,14 +4351,12 @@
                     
                     bot1GeneralElements.forEach(elem => {
                         const element = document.getElementById(elem.id);
-                        if (element) {
+                        if (element && elem.value !== null && elem.value !== undefined) {
                             try {
-                                element.value = elem.value;
+                                element.value = String(elem.value);
                             } catch (error) {
-                                console.error(`Error setting value for ${elem.id}:`, error);
+                                console.log(`Error setting value for ${elem.id}:`, error.message);
                             }
-                        } else {
-                            console.warn(`Element not found: ${elem.id}`);
                         }
                     });
                     
@@ -3267,14 +4371,12 @@
                     
                     bot2GeneralElements.forEach(elem => {
                         const element = document.getElementById(elem.id);
-                        if (element) {
+                        if (element && elem.value !== null && elem.value !== undefined) {
                             try {
-                                element.value = elem.value;
+                                element.value = String(elem.value);
                             } catch (error) {
-                                console.error(`Error setting value for ${elem.id}:`, error);
+                                console.log(`Error setting value for ${elem.id}:`, error.message);
                             }
-                        } else {
-                            console.warn(`Element not found: ${elem.id}`);
                         }
                     });
                     
@@ -3282,11 +4384,23 @@
                     populateChannelDropdowns();
                     if (bot1Data.allowedChannels) {
                         const bot1ChannelsEl = document.getElementById('bot1AllowedChannels');
-                        if (bot1ChannelsEl) bot1ChannelsEl.value = bot1Data.allowedChannels;
+                        if (bot1ChannelsEl && bot1Data.allowedChannels !== null && bot1Data.allowedChannels !== undefined) {
+                            try {
+                                bot1ChannelsEl.value = String(bot1Data.allowedChannels);
+                            } catch (error) {
+                                console.log('Error setting bot1 allowed channels:', error.message);
+                            }
+                        }
                     }
                     if (bot2Data.allowedChannels) {
                         const bot2ChannelsEl = document.getElementById('bot2AllowedChannels');
-                        if (bot2ChannelsEl) bot2ChannelsEl.value = bot2Data.allowedChannels;
+                        if (bot2ChannelsEl && bot2Data.allowedChannels !== null && bot2Data.allowedChannels !== undefined) {
+                            try {
+                                bot2ChannelsEl.value = String(bot2Data.allowedChannels);
+                            } catch (error) {
+                                console.log('Error setting bot2 allowed channels:', error.message);
+                            }
+                        }
                     }
                     
                     // Level Settings (shared) with null checks
@@ -3300,14 +4414,12 @@
                     
                     xpElements.forEach(elem => {
                         const element = document.getElementById(elem.id);
-                        if (element) {
+                        if (element && elem.value !== null && elem.value !== undefined) {
                             try {
-                                element.value = elem.value;
+                                element.value = String(elem.value);
                             } catch (error) {
-                                console.error(`Error setting value for ${elem.id}:`, error);
+                                console.log(`Error setting value for ${elem.id}:`, error.message);
                             }
-                        } else {
-                            console.warn(`Element not found: ${elem.id}`);
                         }
                     });
                     
@@ -3318,8 +4430,7 @@
                     loadRoleRewards(data.data.levelRoles || []);
                     loadReactionRoles(data.data.reactionRoles || []);
                     loadWelcomerSettings(data.data);
-                    loadNewWelcomerSettings(data.data.others || {});
-                    console.log('Raw others data:', data.data.others);
+                    loadNewWelcomerSettings(data.data.welcomer || {});
                     loadAutoRoleSettings(data.data.autoRoleSettings || {});
                     // Load forum auto-react settings using the API data
                     if (data.data.forumAutoReact) {
@@ -3331,15 +4442,31 @@
                         
                         // Load selected forum
                         const forumChannelSelectEl = document.getElementById('forumChannelSelect');
-                        if (forumChannelSelectEl && data.data.forumAutoReact.selectedForum) {
-                            forumChannelSelectEl.value = data.data.forumAutoReact.selectedForum;
+                        if (forumChannelSelectEl && data.data.forumAutoReact.selectedForum !== null && data.data.forumAutoReact.selectedForum !== undefined) {
+                            try {
+                                forumChannelSelectEl.value = String(data.data.forumAutoReact.selectedForum);
+                            } catch (error) {
+                                console.log('Error setting forum channel select:', error.message);
+                            }
                         }
                         
                         // Load bot emoji lists
                         const bot1EmojiEl = document.getElementById('bot1EmojiList');
                         const bot2EmojiEl = document.getElementById('bot2EmojiList');
-                        if (bot1EmojiEl) bot1EmojiEl.value = data.data.forumAutoReact.bot1EmojiList || '';
-                        if (bot2EmojiEl) bot2EmojiEl.value = data.data.forumAutoReact.bot2EmojiList || '';
+                        if (bot1EmojiEl && data.data.forumAutoReact.bot1EmojiList !== null && data.data.forumAutoReact.bot1EmojiList !== undefined) {
+                            try {
+                                bot1EmojiEl.value = String(data.data.forumAutoReact.bot1EmojiList || '');
+                            } catch (error) {
+                                console.log('Error setting bot1 emoji list:', error.message);
+                            }
+                        }
+                        if (bot2EmojiEl && data.data.forumAutoReact.bot2EmojiList !== null && data.data.forumAutoReact.bot2EmojiList !== undefined) {
+                            try {
+                                bot2EmojiEl.value = String(data.data.forumAutoReact.bot2EmojiList || '');
+                            } catch (error) {
+                                console.log('Error setting bot2 emoji list:', error.message);
+                            }
+                        }
                     }
                     
                     // Update tab labels with bot names (with null checks)
@@ -3430,6 +4557,17 @@
                         safeUpdateElement('guildVerificationLevel', targetGuild.verificationLevel || 'Loading...');
                         safeUpdateElement('guildBoostLevel', targetGuild.boostLevel || 'Loading...');
                         safeUpdateElement('guildBoostCount', targetGuild.boostCount || 'Loading...');
+                        safeUpdateElement('guildRegion', targetGuild.region || 'Loading...');
+                        safeUpdateElement('guildOwner', targetGuild.owner || 'Loading...');
+                        safeUpdateElement('guildDescription', targetGuild.description || 'Loading...');
+                        safeUpdateElement('guildFeatures', targetGuild.features || 'Loading...');
+                        safeUpdateElement('guildEmojis', targetGuild.emojis || 'Loading...');
+                        safeUpdateElement('guildStickers', targetGuild.stickers || 'Loading...');
+                        safeUpdateElement('guildMfaLevel', targetGuild.mfaLevel || 'Loading...');
+                        safeUpdateElement('guildNsfwLevel', targetGuild.nsfwLevel || 'Loading...');
+                        safeUpdateElement('guildMaxMembers', targetGuild.maxMembers || 'Loading...');
+                        safeUpdateElement('guildVanityUrl', targetGuild.vanityUrl || 'Loading...');
+                        safeUpdateElement('guildBanner', targetGuild.banner || 'Loading...');
                     } else {
                         safeUpdateElement('guildName', '--');
                         safeUpdateElement('guildTotalMembers', 'Loading...');
@@ -3443,6 +4581,17 @@
                         safeUpdateElement('guildVerificationLevel', 'Loading...');
                         safeUpdateElement('guildBoostLevel', 'Loading...');
                         safeUpdateElement('guildBoostCount', 'Loading...');
+                        safeUpdateElement('guildRegion', 'Loading...');
+                        safeUpdateElement('guildOwner', 'Loading...');
+                        safeUpdateElement('guildDescription', 'Loading...');
+                        safeUpdateElement('guildFeatures', 'Loading...');
+                        safeUpdateElement('guildEmojis', 'Loading...');
+                        safeUpdateElement('guildStickers', 'Loading...');
+                        safeUpdateElement('guildMfaLevel', 'Loading...');
+                        safeUpdateElement('guildNsfwLevel', 'Loading...');
+                        safeUpdateElement('guildMaxMembers', 'Loading...');
+                        safeUpdateElement('guildVanityUrl', 'Loading...');
+                        safeUpdateElement('guildBanner', 'Loading...');
                     }
 
                     
@@ -3766,7 +4915,7 @@
 
                 // Show validation success
                 resultDiv.innerHTML = `
-                    <div style="padding: 8px 12px; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; border-radius: 6px; color: #22c55e; font-size: 14px;">
+                    <div style="padding: 8px 12px; background: rgba(34, 197, 94, 0.2); border: 1px solid #3b82f6; border-radius: 6px; color: #3b82f6; font-size: 14px;">
                         ✅ Message found! "${result.messageContent}" in #${result.channelName}
                     </div>
                 `;
@@ -4086,7 +5235,7 @@
                     
                     reactionsHTML += `
                         <div style="background: rgba(124, 58, 237, 0.2); padding: 6px 10px; border-radius: 4px; font-size: 12px; margin: 2px;">
-                            <span style="font-weight: bold;">${reaction.emoji_id}</span> → <span style="color: #22c55e;">@${roleName}</span>
+                            <span style="font-weight: bold;">${reaction.emoji_id}</span> → <span style="color: #3b82f6;">@${roleName}</span>
                         </div>
                     `;
                 });
@@ -4094,7 +5243,7 @@
                 setsHTML += `
                     <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h5 style="margin: 0; color: #22c55e;">${setData.setName}</h5>
+                            <h5 style="margin: 0; color: #3b82f6;">${setData.setName}</h5>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="reapplyReactionSet('${setId}')" class="trendy-btn-sm trendy-btn-primary">Reapply Set</button>
                                 <button onclick="deleteReactionSet('${setId}')" class="trendy-btn-sm trendy-btn-danger">Delete Set</button>
@@ -4656,7 +5805,7 @@
                     if (channel.type === 15) { // Forum channels
                         const option = document.createElement('option');
                         option.value = channel.id;
-                        option.textContent = `📋 ${channel.name}`;
+                        option.textContent = channel.name;
                         forumSelect.appendChild(option);
                     }
                 });
@@ -4668,15 +5817,15 @@
             e.preventDefault();
             
             const formData = {
-                welcomer_enabled: document.getElementById('welcomerEnabled').checked,
-                welcomer_channel: document.getElementById('welcomeChannel').value,
-                welcomer_embed_enabled: document.getElementById('useEmbed').value === 'true',
-                welcomer_message: document.getElementById('welcomeMessage').value,
-                welcomer_embed_title: document.getElementById('embedTitle').value,
-                welcomer_embed_description: document.getElementById('embedDescription').value,
-                welcomer_embed_color: document.getElementById('embedColor').value,
-                welcomer_embed_thumbnail: document.getElementById('embedThumbnail').checked,
-                welcomer_embed_footer: document.getElementById('embedFooter').value
+                welcomer_enabled: document.getElementById('welcomerEnabled')?.checked || false,
+                welcomer_channel: document.getElementById('welcomeChannel')?.value || '',
+                welcomer_embed_enabled: document.getElementById('useEmbed')?.value === 'true',
+                welcomer_message: document.getElementById('welcomeMessage')?.value || '',
+                welcomer_embed_title: document.getElementById('embedTitle')?.value || '',
+                welcomer_embed_description: document.getElementById('embedDescription')?.value || '',
+                welcomer_embed_color: document.getElementById('embedColor')?.value || '#7c3aed',
+                welcomer_embed_thumbnail: document.getElementById('embedThumbnail')?.checked || false,
+                welcomer_embed_footer: document.getElementById('welcomeEmbedFooter')?.value || ''
             };
             
             try {
@@ -4838,7 +5987,7 @@
                 color: document.getElementById('embedMessageColor').value,
                 image: document.getElementById('embedImageUrl').value,
                 thumbnail: document.getElementById('embedThumbnailUrl').value,
-                footer: document.getElementById('embedFooter').value,
+                footer: document.getElementById('embedFooterText').value,
                 timestamp: document.getElementById('embedTimestamp').checked,
                 botId: document.getElementById('embedBotSelection').value
             };
@@ -4860,7 +6009,7 @@
                     document.getElementById('embedMessageColor').value = '#0099ff';
                     document.getElementById('embedImageUrl').value = '';
                     document.getElementById('embedThumbnailUrl').value = '';
-                    document.getElementById('embedFooter').value = '';
+                    document.getElementById('embedFooterText').value = '';
                     document.getElementById('embedTimestamp').checked = false;
                 }
             } catch (error) {
@@ -4870,36 +6019,44 @@
             }
         });
 
-        // Welcomer form handler
+        // Optimized welcomer form handler with debouncing
+        let welcomerSubmitTimeout;
         document.getElementById('welcomerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            showProcessing();
-            
-            const formData = {
-                enabled: document.getElementById('welcomerEnabled').checked,
-                channelId: document.getElementById('welcomeChannel').value,
-                message: document.getElementById('welcomeMessage').value,
-                useEmbed: document.getElementById('useEmbed').value === 'true',
-                embedTitle: document.getElementById('embedTitle').value,
-                embedDescription: document.getElementById('embedDescription').value,
-                embedColor: document.getElementById('embedColor').value
-            };
-            
-            try {
-                const response = await fetch('/api/update-welcomer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                const result = await response.json();
-                showPopupNotification(result.message, result.success);
-            } catch (error) {
-                showPopupNotification('Error updating welcomer settings', false);
-            } finally {
-                hideProcessing();
+            // Debounce rapid submissions
+            if (welcomerSubmitTimeout) {
+                clearTimeout(welcomerSubmitTimeout);
             }
+            
+            welcomerSubmitTimeout = setTimeout(async () => {
+                showProcessing();
+                
+                const formData = {
+                    enabled: document.getElementById('welcomerEnabled').checked,
+                    channelId: document.getElementById('welcomeChannel').value,
+                    message: document.getElementById('welcomeMessage').value,
+                    useEmbed: document.getElementById('useEmbed').value === 'true',
+                    embedTitle: document.getElementById('embedTitle').value,
+                    embedDescription: document.getElementById('embedDescription').value,
+                    embedColor: document.getElementById('embedColor').value
+                };
+                
+                try {
+                    const response = await fetch('/api/update-welcomer', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    showPopupNotification(result.message, result.success);
+                } catch (error) {
+                    showPopupNotification('Error updating welcomer settings', false);
+                } finally {
+                    hideProcessing();
+                }
+            }, 500); // 500ms debounce delay
         });
 
         // Toggle welcome message format
@@ -4910,21 +6067,31 @@
             const embedSection = document.getElementById('embedSection');
             const useEmbedField = document.getElementById('useEmbed');
             
-            textToggle.addEventListener('click', () => {
-                textToggle.classList.add('active');
-                embedToggle.classList.remove('active');
-                textSection.style.display = 'block';
-                embedSection.style.display = 'none';
-                useEmbedField.value = 'false';
-            });
-            
-            embedToggle.addEventListener('click', () => {
-                embedToggle.classList.add('active');
-                textToggle.classList.remove('active');
-                textSection.style.display = 'none';
-                embedSection.style.display = 'block';
-                useEmbedField.value = 'true';
-            });
+            if (textToggle && embedToggle && textSection && embedSection && useEmbedField) {
+                textToggle.addEventListener('click', () => {
+                    try {
+                        textToggle.classList.add('active');
+                        embedToggle.classList.remove('active');
+                        textSection.style.display = 'block';
+                        embedSection.style.display = 'none';
+                        useEmbedField.value = 'false';
+                    } catch (error) {
+                        console.log('Error in text toggle:', error.message);
+                    }
+                });
+                
+                embedToggle.addEventListener('click', () => {
+                    try {
+                        embedToggle.classList.add('active');
+                        textToggle.classList.remove('active');
+                        textSection.style.display = 'none';
+                        embedSection.style.display = 'block';
+                        useEmbedField.value = 'true';
+                    } catch (error) {
+                        console.log('Error in embed toggle:', error.message);
+                    }
+                });
+            }
         }
 
         // Auto Role Management Functions
@@ -4987,24 +6154,19 @@
             const autoRolesList = document.getElementById('autoRolesList');
             autoRolesList.innerHTML = '';
             
-            console.log('LoadAutoRoles called with:', autoRoles);
-            
             if (autoRoles && autoRoles.length > 0) {
                 autoRoles.forEach(roleId => {
                     // Skip empty string representations of arrays
                     if (roleId && roleId !== "[]" && roleId.trim() !== "") {
-                        console.log('Adding auto role:', roleId.trim());
                         addAutoRole(roleId.trim()); // Trim whitespace from role IDs
                     }
                 });
                 
                 // If no valid roles were added, add an empty role
                 if (autoRolesList.children.length === 0) {
-                    console.log('No valid auto roles found, adding empty role');
                     addAutoRole(); // Add one empty role
                 }
             } else {
-                console.log('No auto roles found, adding empty role');
                 addAutoRole(); // Add one empty role
             }
         }
@@ -5037,69 +6199,68 @@
             });
         }
 
-        // Load new welcomer settings from Others table
-        function loadNewWelcomerSettings(othersData) {
-            if (document.getElementById('welcomerEnabled')) {
-                document.getElementById('welcomerEnabled').checked = othersData.welcomer_enabled || false;
-            }
-            if (document.getElementById('welcomeChannel')) {
-                document.getElementById('welcomeChannel').value = othersData.welcomer_channel || '';
-            }
-            if (document.getElementById('welcomeMessage')) {
-                document.getElementById('welcomeMessage').value = othersData.welcomer_message || 'Welcome to the server, {user}!';
-            }
-            if (document.getElementById('embedTitle')) {
-                document.getElementById('embedTitle').value = othersData.welcomer_embed_title || 'Welcome!';
-            }
-            if (document.getElementById('embedDescription')) {
-                document.getElementById('embedDescription').value = othersData.welcomer_embed_description || 'Welcome to our server, {user}! We\'re glad you\'re here.';
-            }
-            if (document.getElementById('embedColor')) {
-                document.getElementById('embedColor').value = othersData.welcomer_embed_color || '#7c3aed';
-            }
-            if (document.getElementById('embedThumbnail')) {
-                document.getElementById('embedThumbnail').checked = othersData.welcomer_embed_thumbnail !== false;
-            }
-            if (document.getElementById('embedFooter')) {
-                document.getElementById('embedFooter').value = othersData.welcomer_embed_footer || 'Have a great time!';
-            }
+        // Load new welcomer settings from WelcomeMessage table
+        function loadNewWelcomerSettings(welcomeData) {
+            // Safe element updating with comprehensive null checks
+            const safeUpdateElement = (id, value, isCheckbox = false) => {
+                const element = document.getElementById(id);
+                if (element && value !== null && value !== undefined) {
+                    try {
+                        if (isCheckbox) {
+                            element.checked = Boolean(value);
+                        } else {
+                            element.value = String(value);
+                        }
+                    } catch (error) {
+                        console.log(`Error setting ${id}:`, error.message);
+                    }
+                }
+            };
+            
+            safeUpdateElement('welcomerEnabled', welcomeData.enabled || false, true);
+            safeUpdateElement('welcomeChannel', welcomeData.channelId || '');
+            safeUpdateElement('welcomeMessage', welcomeData.message || 'Welcome to the server, {user}!');
+            safeUpdateElement('embedTitle', welcomeData.embedTitle || 'Welcome!');
+            safeUpdateElement('embedDescription', welcomeData.embedDescription || 'Welcome to our server, {user}! We\'re glad you\'re here.');
+            safeUpdateElement('embedColor', welcomeData.embedColor || '#7c3aed');
+            safeUpdateElement('embedThumbnail', welcomeData.embedThumbnail !== false, true);
+            safeUpdateElement('welcomeEmbedFooter', welcomeData.embedFooter || 'Have a great time!');
             
             // Set embed toggle state
-            const embedEnabled = othersData.welcomer_embed_enabled || false;
-            if (document.getElementById('useEmbed')) {
-                document.getElementById('useEmbed').value = embedEnabled ? 'true' : 'false';
-            }
+            const embedEnabled = welcomeData.useEmbed || false;
+            safeUpdateElement('useEmbed', embedEnabled ? 'true' : 'false');
             
-            // Update UI based on embed state
-            const textToggle = document.getElementById('textToggle');
-            const embedToggle = document.getElementById('embedToggle');
-            const textSection = document.getElementById('textMessageSection');
-            const embedSection = document.getElementById('embedSection');
-            
-            if (embedEnabled) {
-                if (embedToggle) embedToggle.classList.add('active');
-                if (textToggle) textToggle.classList.remove('active');
-                if (textSection) textSection.style.display = 'none';
-                if (embedSection) embedSection.style.display = 'block';
-            } else {
-                if (textToggle) textToggle.classList.add('active');
-                if (embedToggle) embedToggle.classList.remove('active');
-                if (textSection) textSection.style.display = 'block';
-                if (embedSection) embedSection.style.display = 'none';
+            // Update UI based on embed state with enhanced error handling
+            try {
+                const textToggle = document.getElementById('textToggle');
+                const embedToggle = document.getElementById('embedToggle');
+                const textSection = document.getElementById('textMessageSection');
+                const embedSection = document.getElementById('embedSection');
+                
+                if (embedEnabled) {
+                    if (embedToggle) embedToggle.classList.add('active');
+                    if (textToggle) textToggle.classList.remove('active');
+                    if (textSection) textSection.style.display = 'none';
+                    if (embedSection) embedSection.style.display = 'block';
+                } else {
+                    if (textToggle) textToggle.classList.add('active');
+                    if (embedToggle) embedToggle.classList.remove('active');
+                    if (textSection) textSection.style.display = 'block';
+                    if (embedSection) embedSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.log('Error updating welcomer UI state:', error.message);
             }
         }
 
         // Load auto role settings from API data
         function loadAutoRoleSettings(autoRoleData) {
-            console.log('loadAutoRoleSettings called with:', autoRoleData);
-            
             if (document.getElementById('autoRoleEnabled')) {
                 document.getElementById('autoRoleEnabled').checked = autoRoleData.enabled || false;
             }
             
             // Load auto roles
             const autoRoleIds = autoRoleData.roleIds || [];
-            console.log('Loading auto roles from database:', autoRoleIds);
             loadAutoRoles(autoRoleIds);
         }
         
@@ -5113,18 +6274,22 @@
             
             if (!useEmbedEl) return;
             
-            const useEmbed = useEmbedEl.value === 'true';
-            
-            if (useEmbed) {
-                if (textSection) textSection.style.display = 'none';
-                if (embedSection) embedSection.style.display = 'block';
-                if (embedToggle) embedToggle.classList.add('active');
-                if (textToggle) textToggle.classList.remove('active');
-            } else {
-                if (textSection) textSection.style.display = 'block';
-                if (embedSection) embedSection.style.display = 'none';
-                if (textToggle) textToggle.classList.add('active');
-                if (embedToggle) embedToggle.classList.remove('active');
+            try {
+                const useEmbed = useEmbedEl.value === 'true';
+                
+                if (useEmbed) {
+                    if (textSection) textSection.style.display = 'none';
+                    if (embedSection) embedSection.style.display = 'block';
+                    if (embedToggle) embedToggle.classList.add('active');
+                    if (textToggle) textToggle.classList.remove('active');
+                } else {
+                    if (textSection) textSection.style.display = 'block';
+                    if (embedSection) embedSection.style.display = 'none';
+                    if (textToggle) textToggle.classList.add('active');
+                    if (embedToggle) embedToggle.classList.remove('active');
+                }
+            } catch (error) {
+                console.log('Error in toggleEmbedSection:', error.message);
             }
         }
 
@@ -5196,16 +6361,18 @@
             newWelcomerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
+                showProcessing();
+                
                 const formData = {
-                    welcomer_enabled: document.getElementById('welcomerEnabled').checked,
-                    welcomer_channel: document.getElementById('welcomeChannel').value,
-                    welcomer_message: document.getElementById('welcomeMessage').value,
+                    welcomer_enabled: document.getElementById('welcomerEnabled')?.checked || false,
+                    welcomer_channel: document.getElementById('welcomeChannel')?.value || '',
+                    welcomer_message: document.getElementById('welcomeMessage')?.value || '',
                     welcomer_embed_enabled: document.getElementById('useEmbed')?.value === 'true',
-                    welcomer_embed_title: document.getElementById('embedTitle').value,
-                    welcomer_embed_description: document.getElementById('embedDescription').value,
-                    welcomer_embed_color: document.getElementById('embedColor').value,
+                    welcomer_embed_title: document.getElementById('embedTitle')?.value || '',
+                    welcomer_embed_description: document.getElementById('embedDescription')?.value || '',
+                    welcomer_embed_color: document.getElementById('embedColor')?.value || '#7c3aed',
                     welcomer_embed_thumbnail: document.getElementById('embedThumbnail')?.checked || false,
-                    welcomer_embed_footer: document.getElementById('embedFooter').value
+                    welcomer_embed_footer: document.getElementById('welcomeEmbedFooter')?.value || ''
                 };
                 
                 try {
@@ -5219,6 +6386,8 @@
                     showPopupNotification(result.message, result.success);
                 } catch (error) {
                     showPopupNotification('Error updating welcomer settings', false);
+                } finally {
+                    hideProcessing();
                 }
             });
         }
@@ -5229,8 +6398,9 @@
             autoRoleForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
+                showProcessing();
+                
                 const autoRoles = collectAutoRoles();
-                console.log('Collected auto roles:', autoRoles);
                 
                 const formData = {
                     auto_role_enabled: document.getElementById('autoRoleEnabled').checked,
@@ -5248,6 +6418,8 @@
                     showPopupNotification(result.message, result.success);
                 } catch (error) {
                     showPopupNotification('Error updating auto role settings', false);
+                } finally {
+                    hideProcessing();
                 }
             });
         }
@@ -5291,10 +6463,10 @@
             body.classList.toggle('light-theme');
             
             if (body.classList.contains('light-theme')) {
-                themeToggle.textContent = '☀️';
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
                 localStorage.setItem('theme', 'light');
             } else {
-                themeToggle.textContent = '🌙';
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -5315,7 +6487,7 @@
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
-                document.getElementById('themeToggle').textContent = '☀️';
+                document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
             }
         }
 
@@ -5376,7 +6548,7 @@
                         updateLoadingDetails('Connected with fallback configuration');
                     }
                     
-                    updateLoadingStep(1, 'completed', 'Connected');
+                    updateLoadingStep(1, 'completed', 'Connected ✓');
                     await new Promise(resolve => setTimeout(resolve, 300));
                     
                     // Step 2: Loading Data
@@ -5404,7 +6576,7 @@
                         retryCount++;
                     }
                     
-                    updateLoadingStep(2, 'completed', 'Loaded');
+                    updateLoadingStep(2, 'completed', 'Loaded ✓');
                     await new Promise(resolve => setTimeout(resolve, 300));
                     
                     // Step 3: Preparing Interface
@@ -5430,13 +6602,16 @@
                     }, 100);
                     
                     updateProgress(100);
-                    updateLoadingStep(3, 'completed', 'Ready');
+                    updateLoadingStep(3, 'completed', 'Ready ✓');
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
                     // Show dashboard only after everything is loaded
                     document.getElementById('loadingScreen').style.display = 'none';
                     document.getElementById('dashboard').style.display = 'block';
                     addDashboardTitleClickEvent();
+                    
+                    // Initialize welcome toggle functionality
+                    setupWelcomeToggle();
                     
                 } catch (error) {
                     console.error('Dashboard initialization failed:', error);
@@ -5449,6 +6624,9 @@
                     document.getElementById('dashboard').style.display = 'block';
                     loadDashboardData();
                     addDashboardTitleClickEvent();
+                    
+                    // Initialize welcome toggle functionality (fallback)
+                    setupWelcomeToggle();
                 }
             }, 500);
         });
@@ -5473,12 +6651,17 @@
                         titleClickCount = 0;
                     }, 3000);
                     
-                    // Show database tab after 5 clicks (reduced from 10)
-                    if (titleClickCount >= 5) {
+                    // Show database tab after 10 clicks
+                    if (titleClickCount >= 10) {
                         const databaseTab = document.getElementById('databaseTab');
                         if (databaseTab) {
                             databaseTab.style.display = 'block';
                             showPopupNotification('Database tab unlocked!', true);
+                            
+                            // Update mobile navigation to include database tab
+                            if (window.innerWidth <= 768) {
+                                initMobileNavigation(); // Re-initialize to include database tab
+                            }
                         }
                         titleClickCount = 0;
                     }
@@ -6253,7 +7436,7 @@
                     });
                     tableHTML += `
                         <td style="border: 1px solid rgba(255,255,255,0.1); padding: 6px; text-align: center;">
-                            <button onclick="editRecord('${tableName}', ${index})" style="background: #22c55e; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-right: 5px; min-width: 50px;">Edit</button>
+                            <button onclick="editRecord('${tableName}', ${index})" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-right: 5px; min-width: 50px;">Edit</button>
                             <button onclick="deleteRecord('${tableName}', '${row.id}', ${index})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; min-width: 50px;">Delete</button>
                         </td>
                     `;
@@ -6266,6 +7449,20 @@
             
             document.getElementById('tableDataContainer').style.display = 'block';
         }
+
+        // Add error handling for unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            // Silently handle common network errors and database timeouts
+            if (event.reason && event.reason.message && 
+                (event.reason.message.includes('fetch') || 
+                 event.reason.message.includes('network') ||
+                 event.reason.message.includes('timeout'))) {
+                event.preventDefault();
+                return;
+            }
+            console.log('Promise rejection handled:', event.reason);
+            event.preventDefault();
+        });
     </script>
 </body>
 </html>

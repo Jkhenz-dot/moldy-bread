@@ -32,9 +32,9 @@ module.exports = {
     let othersData = await Others.findOne({});
     if (!othersData) {
       othersData = await Others.create({
-        countingEnabled: false,
-        countingChannel: null,
-        currentCount: 0
+        counting_enabled: false,
+        counting_channel: null,
+        counting_current: 0
       });
     }
 
@@ -44,9 +44,9 @@ module.exports = {
       const channel = interaction.options.getChannel("channel");
 
       await Others.findOneAndUpdate({}, {
-        countingEnabled: true,
-        countingChannel: channel.id,
-        currentCount: 0
+        counting_enabled: true,
+        counting_channel: channel.id,
+        counting_current: 0
       }, { upsert: true });
 
       // Send initial "1" message to start the counting
@@ -54,7 +54,7 @@ module.exports = {
         const startMessage = await channel.send("1");
         await startMessage.react("✅");
         await Others.findOneAndUpdate({}, {
-          currentCount: 1
+          counting_current: 1
         });
       } catch (e) {
         console.log("Failed to send initial counting message:", e.message);
@@ -70,7 +70,7 @@ module.exports = {
       await interaction.reply({ embeds: [embed] });
     } else if (subcommand === "disable") {
       await Others.findOneAndUpdate({}, {
-        countingEnabled: false
+        counting_enabled: false
       }, { upsert: true });
 
       const embed = new EmbedBuilder()

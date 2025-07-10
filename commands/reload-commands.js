@@ -46,7 +46,7 @@ module.exports = {
       
       const embed = new EmbedBuilder()
         .setColor(0x00ff00)
-        .setTitle('✅ Commands Reloaded')
+        .setTitle('Commands Reloaded')
         .setDescription(`Successfully reloaded ${commands.length} commands.\nAll slash commands are now updated.`);
       
       await interaction.reply({
@@ -58,7 +58,7 @@ module.exports = {
       
       const embed = new EmbedBuilder()
         .setColor(0xff0000)
-        .setTitle('❌ Failed to Reload Commands')
+        .setTitle('Failed to Reload Commands')
         .setDescription('Something went wrong while reloading commands. Check console for details.');
       
       await interaction.reply({
