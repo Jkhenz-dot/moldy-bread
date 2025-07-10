@@ -31,10 +31,13 @@ class DatabaseManager {
             if (
                 err.code === "57P01" ||
                 err.message.includes("terminating connection") ||
-                err.message.includes("administrator command")
+                err.message.includes("administrator command") ||
+                err.message.includes("Connection terminated unexpectedly")
             ) {
                 // Database connection terminated by administrator, reconnecting silently
-                this.forceReconnect();
+                setTimeout(() => {
+                    this.forceReconnect();
+                }, 1000); // Wait 1 second before reconnecting
             } else if (
                 err.code !== "ECONNRESET" &&
                 !err.message.includes("Connection terminated unexpectedly") &&
@@ -152,9 +155,11 @@ class DatabaseManager {
                     // For critical failures, return null instead of crashing
                     if (
                         retryError.code === "57P01" ||
-                        retryError.message.includes("terminating connection")
+                        retryError.message.includes("terminating connection") ||
+                        retryError.message.includes("Connection terminated unexpectedly")
                     ) {
                         // Database unavailable, returning empty result to prevent crash
+                        console.log("Database connection lost, returning empty result to prevent crash");
                         return { rows: [] };
                     }
                     throw retryError;

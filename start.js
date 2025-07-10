@@ -9,17 +9,37 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 // Enhanced error handling for production
 process.on('uncaughtException', (error) => {
+  // Handle PostgreSQL connection termination gracefully
+  if (error.code === '57P01' || 
+      error.message.includes('terminating connection due to administrator command') ||
+      error.message.includes('Connection terminated unexpectedly')) {
+    console.log('Database connection terminated by administrator, recovering gracefully...');
+    // Don't restart for expected database disconnections
+    return;
+  }
+  
   console.error('Uncaught Exception in production:', error);
-  // Don't exit immediately in production, try to recover
+  console.log('Uncaught Exception:', error.message);
+  console.log('Received uncaughtException, attempting graceful handling...');
+  
+  // For non-database errors, attempt restart
   setTimeout(() => {
-    console.log('Attempting to restart after uncaught exception...');
-    restartApplication();
-  }, 5000);
+    console.log('Proceeding with shutdown for uncaughtException...');
+    process.exit(1);
+  }, 2000);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
+  // Handle PostgreSQL connection termination gracefully
+  if (reason && (reason.code === '57P01' || 
+                 reason.message?.includes('terminating connection due to administrator command') ||
+                 reason.message?.includes('Connection terminated unexpectedly'))) {
+    console.log('Database connection terminated by administrator, recovering gracefully...');
+    return;
+  }
+  
   console.error('Unhandled Rejection in production:', promise, 'reason:', reason);
-  // Log but don't crash in production
+  // Log but don't crash in production for other rejections
 });
 
 // Restart function for production recovery
