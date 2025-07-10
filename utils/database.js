@@ -118,11 +118,6 @@ class DatabaseManager {
         try {
             client = await this.pool.connect();
             
-            // Auto-backup critical operations
-            if (text.toUpperCase().includes('UPDATE') || text.toUpperCase().includes('DELETE')) {
-                await this.createAutoBackup(text, params);
-            }
-            
             const res = await client.query(text, params);
             return res;
         } catch (error) {
@@ -197,72 +192,7 @@ class DatabaseManager {
         console.info("Database connection closed");
     }
 
-    async createAutoBackup(queryText, params) {
-        try {
-            // Only backup if it's a potentially destructive operation
-            if (queryText.toUpperCase().includes('UPDATE bota') || 
-                queryText.toUpperCase().includes('UPDATE botb') ||
-                queryText.toUpperCase().includes('UPDATE others')) {
-                
-                const backupClient = await this.pool.connect();
-                
-                // Backup bot configurations
-                await backupClient.query(`
-                    INSERT INTO bot_config_backups (bot_type, config_data)
-                    SELECT 'bota', row_to_json(bota.*) FROM bota
-                `);
-                
-                await backupClient.query(`
-                    INSERT INTO bot_config_backups (bot_type, config_data)
-                    SELECT 'botb', row_to_json(botb.*) FROM botb
-                `);
-                
-                // Backup others table
-                await backupClient.query(`
-                    INSERT INTO others_backups (config_data)
-                    SELECT row_to_json(others.*) FROM others
-                `);
-                
-                backupClient.release();
-            }
-        } catch (error) {
-            // Backup failure shouldn't block the main operation
-            console.log('Auto-backup failed, continuing with operation');
-        }
-    }
 
-    async restoreFromBackup(backupId, tableName) {
-        try {
-            const client = await this.pool.connect();
-            
-            if (tableName === 'bota' || tableName === 'botb') {
-                const backupResult = await client.query(`
-                    SELECT config_data FROM bot_config_backups 
-                    WHERE id = $1 AND bot_type = $2
-                `, [backupId, tableName]);
-                
-                if (backupResult.rows.length > 0) {
-                    const config = backupResult.rows[0].config_data;
-                    
-                    // Restore the configuration
-                    await client.query(`
-                        DELETE FROM ${tableName};
-                        INSERT INTO ${tableName} (${Object.keys(config).join(', ')})
-                        VALUES (${Object.keys(config).map((_, i) => `$${i + 1}`).join(', ')})
-                    `, Object.values(config));
-                    
-                    client.release();
-                    return true;
-                }
-            }
-            
-            client.release();
-            return false;
-        } catch (error) {
-            console.error('Error restoring from backup:', error);
-            return false;
-        }
-    }
 
     // User management methods
     async getUser(discordId) {

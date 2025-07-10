@@ -1988,9 +1988,7 @@ const setupBot = async (client, botToken, botName) => {
       const userId = user.id;
       const guildId = reaction.message.guildId;
 
-      console.log(
-        `Reaction added: ${emoji} by ${user.tag} on message ${messageId}`,
-      );
+      // Reaction logging removed per user request
 
       // Find matching reaction role using lazy loaded models
       const { ReactionRole } = loadDatabaseModels();
@@ -2012,9 +2010,7 @@ const setupBot = async (client, botToken, botName) => {
       }
 
       if (!reactionRole) {
-        console.log(
-          `No reaction role found for emoji ${emoji} on message ${messageId}`,
-        );
+        // No reaction role found - silently return without logging
         return;
       }
 

@@ -11,10 +11,13 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 process.on('uncaughtException', (error) => {
   // Handle PostgreSQL connection termination gracefully
   if (error.code === '57P01' || 
-      error.message.includes('terminating connection due to administrator command') ||
-      error.message.includes('Connection terminated unexpectedly')) {
+      error.message?.includes('terminating connection due to administrator command') ||
+      error.message?.includes('Connection terminated unexpectedly') ||
+      error.message?.includes('server closed the connection unexpectedly') ||
+      error.message?.includes('connection terminated') ||
+      (error.routine === 'ProcessInterrupts' && error.file === 'postgres.c')) {
     console.log('Database connection terminated by administrator, recovering gracefully...');
-    // Don't restart for expected database disconnections
+    // Don't exit for expected database disconnections
     return;
   }
   

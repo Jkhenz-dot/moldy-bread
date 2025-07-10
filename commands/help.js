@@ -8,7 +8,7 @@ module.exports = {
     const pages = [
       {
         title: 'General & AI Commands',
-        description: '**Basic Commands:**\n`/ping` - Check bot latency and connection status\n`/help` - Display this comprehensive command list\n`/ai-wack` - Clear your conversation memory with the AI\n\n**AI Generation:**\n`/ai-image` - Generate custom images using AI\n\n**AI Moderation:**\n`/ai-blacklist` - Blacklist user from AI responses (Manage Messages)\n`/ai-whitelist` - Remove user from AI blacklist (Manage Messages)',
+        description: '**Basic Commands:**\n`/ping` - Check bot latency and connection status\n`/help` - Display this comprehensive command list\n`/reminder` - Set personal reminders with custom messages\n`/ai-wack` - Clear your conversation memory with the AI\n\n**AI Generation:**\n`/ai-image` - Generate custom images using AI\n\n**AI Moderation:**\n`/ai-blacklist` - Blacklist user from AI responses (Manage Messages)\n`/ai-whitelist` - Remove user from AI blacklist (Manage Messages)',
         color: 0x6366f1
       },
       {

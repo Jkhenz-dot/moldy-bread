@@ -3,22 +3,16 @@ const dbManager = require('./database');
 class DatabaseProtection {
     constructor() {
         this.dbManager = dbManager;
-        this.backupInterval = null;
         this.healthCheckInterval = null;
         this.isHealthy = true;
         this.lastHealthCheck = new Date();
         this.failureCount = 0;
     }
 
-    // Start comprehensive database protection
+    // Start simplified database protection (no scheduled backups)
     startProtection() {
         console.log('Starting database protection system...');
         
-        // Start periodic backups every 30 minutes
-        this.backupInterval = setInterval(() => {
-            this.createScheduledBackup();
-        }, 30 * 60 * 1000); // 30 minutes
-
         // Start health checks every 5 minutes
         this.healthCheckInterval = setInterval(() => {
             this.performHealthCheck();
@@ -28,55 +22,6 @@ class DatabaseProtection {
         this.performHealthCheck();
         
         console.log('Database protection system active');
-    }
-
-    // Create scheduled backup
-    async createScheduledBackup() {
-        try {
-            const client = await this.dbManager.getClient();
-            
-            // Create comprehensive backup
-            await client.query(`
-                INSERT INTO bot_config_backups (bot_type, config_data, created_by)
-                SELECT 'bota', row_to_json(bota.*), 'scheduled_backup' FROM bota
-            `);
-            
-            await client.query(`
-                INSERT INTO bot_config_backups (bot_type, config_data, created_by)
-                SELECT 'botb', row_to_json(botb.*), 'scheduled_backup' FROM botb
-            `);
-            
-            await client.query(`
-                INSERT INTO others_backups (config_data)
-                SELECT row_to_json(others.*) FROM others
-            `);
-
-            // Clean up old backups (keep last 50 backups)
-            await client.query(`
-                DELETE FROM bot_config_backups 
-                WHERE id NOT IN (
-                    SELECT id FROM bot_config_backups 
-                    ORDER BY backup_date DESC 
-                    LIMIT 50
-                )
-            `);
-
-            await client.query(`
-                DELETE FROM others_backups 
-                WHERE id NOT IN (
-                    SELECT id FROM others_backups 
-                    ORDER BY backup_date DESC 
-                    LIMIT 50
-                )
-            `);
-
-            client.release();
-            console.log('Scheduled database backup completed');
-            
-        } catch (error) {
-            console.error('Scheduled backup failed:', error);
-            this.failureCount++;
-        }
     }
 
     // Perform database health check
@@ -120,7 +65,7 @@ class DatabaseProtection {
             isHealthy: this.isHealthy,
             lastHealthCheck: this.lastHealthCheck,
             failureCount: this.failureCount,
-            backupSystemActive: this.backupInterval !== null
+            healthCheckActive: this.healthCheckInterval !== null
         };
     }
 
@@ -177,11 +122,6 @@ class DatabaseProtection {
 
     // Stop protection system
     stopProtection() {
-        if (this.backupInterval) {
-            clearInterval(this.backupInterval);
-            this.backupInterval = null;
-        }
-        
         if (this.healthCheckInterval) {
             clearInterval(this.healthCheckInterval);
             this.healthCheckInterval = null;
