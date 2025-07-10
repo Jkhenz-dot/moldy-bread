@@ -3651,7 +3651,7 @@
                         <div style="margin-bottom: 30px; padding: 20px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
                             <h4 style="color: #7c3aed; margin-bottom: 15px;">Database Controls</h4>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-
+                                <button onclick="autoCreateTables()" class="trendy-btn trendy-btn-success" title="Auto-Create All Database Tables">Auto-Create Tables</button>
                                 <button onclick="exportDatabase()" class="trendy-btn trendy-btn-info" title="Export Database">Export Database</button>
                                 <button onclick="importDatabase()" class="trendy-btn trendy-btn-info" title="Import Database">Import Database</button>
                                 <button onclick="clearAllDatabase()" class="trendy-btn trendy-btn-danger" title="Clear All Database Tables">Clear All Database</button>
@@ -7133,6 +7133,34 @@
                 }
             } catch (error) {
                 showMessage('databaseMessage', 'Error importing database: ' + error.message, false);
+            } finally {
+                hideProcessing();
+            }
+        }
+
+        // Auto-Create Database Tables
+        async function autoCreateTables() {
+            if (!confirm('This will create all missing database tables with proper schema. Continue?')) {
+                return;
+            }
+            
+            showProcessing();
+            try {
+                const response = await fetch('/api/database/auto-create-tables', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('databaseMessage', 'Database tables created successfully: ' + result.tablesCreated.join(', '), true);
+                    showPopupNotification('Database tables auto-created successfully', true);
+                } else {
+                    showMessage('databaseMessage', 'Failed to create tables: ' + result.error, false);
+                }
+            } catch (error) {
+                showMessage('databaseMessage', 'Error creating tables: ' + error.message, false);
             } finally {
                 hideProcessing();
             }

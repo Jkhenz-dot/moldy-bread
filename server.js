@@ -2763,6 +2763,214 @@ app.post("/api/database/import", async (req, res) => {
     }
 });
 
+// Auto-Create Database Tables
+app.post("/api/database/auto-create-tables", async (req, res) => {
+    try {
+        const database = require("./utils/database");
+        const tablesCreated = [];
+        
+        // Table schemas - based on actual model field mappings
+        const tableSchemas = {
+            users: `
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    discord_id VARCHAR(255) UNIQUE NOT NULL,
+                    username VARCHAR(255) NOT NULL,
+                    xp INTEGER DEFAULT 0,
+                    level INTEGER DEFAULT 0,
+                    last_xp_gain TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    conversation_history JSONB DEFAULT '{}',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            bota: `
+                CREATE TABLE IF NOT EXISTS bota (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) DEFAULT 'Heilos',
+                    age VARCHAR(255) DEFAULT '10',
+                    personality TEXT DEFAULT '',
+                    likes TEXT DEFAULT '',
+                    dislikes TEXT DEFAULT '',
+                    appearance TEXT DEFAULT '',
+                    backstory TEXT DEFAULT '',
+                    description TEXT DEFAULT '',
+                    others TEXT DEFAULT '',
+                    status VARCHAR(255) DEFAULT 'dnd',
+                    activity_text VARCHAR(255) DEFAULT 'Nothing',
+                    activity_type VARCHAR(255) DEFAULT 'streaming',
+                    allowed_channels TEXT DEFAULT '1',
+                    avatar_path TEXT DEFAULT '',
+                    blacklisted_users TEXT DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            botb: `
+                CREATE TABLE IF NOT EXISTS botb (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) DEFAULT 'Wisteria',
+                    age VARCHAR(255) DEFAULT '10',
+                    personality TEXT DEFAULT '',
+                    likes TEXT DEFAULT '',
+                    dislikes TEXT DEFAULT '',
+                    appearance TEXT DEFAULT '',
+                    backstory TEXT DEFAULT '',
+                    description TEXT DEFAULT '',
+                    others TEXT DEFAULT '',
+                    status VARCHAR(255) DEFAULT 'dnd',
+                    activity_text VARCHAR(255) DEFAULT 'Nothing',
+                    activity_type VARCHAR(255) DEFAULT 'streaming',
+                    allowed_channels TEXT DEFAULT '1',
+                    avatar_path TEXT DEFAULT '',
+                    blacklisted_users TEXT DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            others: `
+                CREATE TABLE IF NOT EXISTS others (
+                    id SERIAL PRIMARY KEY,
+                    xp_enabled BOOLEAN DEFAULT true,
+                    min_xp INTEGER DEFAULT 2,
+                    max_xp INTEGER DEFAULT 8,
+                    xp_cooldown INTEGER DEFAULT 6,
+                    level_up_announcement BOOLEAN DEFAULT true,
+                    auto_role_enabled BOOLEAN DEFAULT false,
+                    auto_role_ids TEXT DEFAULT '[]',
+                    forum_auto_react_enabled BOOLEAN DEFAULT false,
+                    forum_channels TEXT DEFAULT '[]',
+                    forum_emojis TEXT DEFAULT '[]',
+                    announcement_channel TEXT DEFAULT '',
+                    counting_enabled BOOLEAN DEFAULT false,
+                    counting_channel VARCHAR(255) DEFAULT NULL,
+                    counting_current INTEGER DEFAULT 0,
+                    counting_last_user VARCHAR(255) DEFAULT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            birthdays: `
+                CREATE TABLE IF NOT EXISTS birthdays (
+                    id SERIAL PRIMARY KEY,
+                    discord_id VARCHAR(255) NOT NULL,
+                    username VARCHAR(255) NOT NULL,
+                    birth_date DATE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            level_roles: `
+                CREATE TABLE IF NOT EXISTS level_roles (
+                    id SERIAL PRIMARY KEY,
+                    level INTEGER NOT NULL,
+                    role_id VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            reaction_roles: `
+                CREATE TABLE IF NOT EXISTS reaction_roles (
+                    id SERIAL PRIMARY KEY,
+                    message_id VARCHAR(255) NOT NULL,
+                    emoji VARCHAR(255) NOT NULL,
+                    role_id VARCHAR(255) NOT NULL,
+                    set_id INTEGER NOT NULL,
+                    set_name VARCHAR(255) DEFAULT '',
+                    set_mode VARCHAR(255) DEFAULT 'toggle',
+                    guild_id VARCHAR(255) DEFAULT '',
+                    emoji_id VARCHAR(255) DEFAULT '',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            welcome_messages: `
+                CREATE TABLE IF NOT EXISTS welcome_messages (
+                    id SERIAL PRIMARY KEY,
+                    enabled BOOLEAN DEFAULT false,
+                    channel_id VARCHAR(255) DEFAULT '',
+                    message TEXT DEFAULT 'Welcome {user} to the server!',
+                    embed_enabled BOOLEAN DEFAULT false,
+                    embed_title TEXT DEFAULT 'Welcome!',
+                    embed_description TEXT DEFAULT 'Welcome to the server!',
+                    embed_color VARCHAR(255) DEFAULT '#0099ff',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `
+        };
+        
+        // Create each table
+        for (const [tableName, schema] of Object.entries(tableSchemas)) {
+            try {
+                await database.query(schema);
+                tablesCreated.push(tableName);
+                console.log(`Created table: ${tableName}`);
+            } catch (tableError) {
+                console.error(`Error creating table ${tableName}:`, tableError.message);
+            }
+        }
+        
+        // Create default records if tables were created
+        if (tablesCreated.length > 0) {
+            // Insert default bot configurations if they don't exist
+            if (tablesCreated.includes('bota')) {
+                const botAExists = await database.query('SELECT id FROM bota LIMIT 1');
+                if (botAExists.rows.length === 0) {
+                    await database.query(`
+                        INSERT INTO bota (name, activity_text, activity_type, status, allowed_channels, blacklisted_users)
+                        VALUES ('Heilos', 'You (joking haha!~)', 'watching', 'idle', '1', '[]')
+                    `);
+                }
+            }
+            
+            if (tablesCreated.includes('botb')) {
+                const botBExists = await database.query('SELECT id FROM botb LIMIT 1');
+                if (botBExists.rows.length === 0) {
+                    await database.query(`
+                        INSERT INTO botb (name, activity_text, activity_type, status, allowed_channels, blacklisted_users)
+                        VALUES ('Wisteria', 'Sleeping music….💤', 'listening', 'dnd', '1', '[]')
+                    `);
+                }
+            }
+            
+            if (tablesCreated.includes('others')) {
+                const othersExists = await database.query('SELECT id FROM others LIMIT 1');
+                if (othersExists.rows.length === 0) {
+                    await database.query(`
+                        INSERT INTO others (xp_enabled, min_xp, max_xp, xp_cooldown, level_up_announcement, auto_role_enabled, auto_role_ids, forum_auto_react_enabled, forum_channels, forum_emojis, announcement_channel, counting_enabled, counting_channel, counting_current, counting_last_user)
+                        VALUES (true, 2, 8, 6, true, false, '[]', false, '[]', '[]', '', false, NULL, 0, NULL)
+                    `);
+                }
+            }
+            
+            if (tablesCreated.includes('welcome_messages')) {
+                const welcomeExists = await database.query('SELECT id FROM welcome_messages LIMIT 1');
+                if (welcomeExists.rows.length === 0) {
+                    await database.query(`
+                        INSERT INTO welcome_messages (enabled, channel_id, message, embed_enabled, embed_title, embed_description, embed_color)
+                        VALUES (false, '', 'Welcome {user} to the server!', false, 'Welcome!', 'Welcome to the server!', '#0099ff')
+                    `);
+                }
+            }
+        }
+        
+        addActivity(`Auto-created database tables: ${tablesCreated.join(', ')}`);
+        res.json({
+            success: true,
+            tablesCreated,
+            message: `Successfully created ${tablesCreated.length} database tables`
+        });
+    } catch (error) {
+        console.error("Error auto-creating tables:", error);
+        res.json({
+            success: false,
+            error: error.message,
+            tablesCreated: []
+        });
+    }
+});
+
 app.post("/api/database/delete-user", async (req, res) => {
     try {
         const { userId } = req.body;
