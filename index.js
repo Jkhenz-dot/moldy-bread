@@ -431,6 +431,7 @@ const xpForLevel = (level) => {
 
 // XP is only handled by Bot 1
 const addXP = async (userId, guildId, message = null) => {
+  let lockTimeout = null; // Declare outside try block for finally access
   try {
     // Check if user recently gained XP to avoid spam
     const userCooldownKey = `${userId}-${guildId}`;
@@ -445,10 +446,11 @@ const addXP = async (userId, guildId, message = null) => {
     // Lock this user for processing
     processingUsers.add(processingKey);
 
-    // Auto-release lock after 5 seconds to prevent permanent locks
-    setTimeout(() => {
+    // Auto-release lock after 10 seconds to prevent permanent locks
+    lockTimeout = setTimeout(() => {
       processingUsers.delete(processingKey);
-    }, 5000);
+      console.warn(`Auto-released stuck XP lock for ${processingKey}`);
+    }, 10000);
 
     // Cache others data to avoid repeated database calls
     const cacheKey = "othersData";
@@ -755,6 +757,10 @@ const addXP = async (userId, guildId, message = null) => {
     // Always unlock the user after processing
     const processingKey = `${userId}-${guildId}`;
     processingUsers.delete(processingKey);
+    // Clear the timeout to prevent memory leak
+    if (lockTimeout) {
+      clearTimeout(lockTimeout);
+    }
   }
 };
 

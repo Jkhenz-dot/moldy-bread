@@ -3,7 +3,7 @@ const { TwoZeroFourEight } = require('discord-gamecord');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('2048')
+    .setName('game-2048')
     .setDescription('Play the classic 2048 puzzle game'),
 
   async execute(interaction) {
@@ -28,7 +28,7 @@ module.exports = {
 
     Game.startGame();
     Game.on('gameOver', result => {
-      console.log(result);
+     
     });
   }
 };

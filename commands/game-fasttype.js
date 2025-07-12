@@ -3,7 +3,7 @@ const { FastType } = require("discord-gamecord");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("fasttype")
+    .setName("game-fasttype")
     .setDescription("Test your typing speed with a quick typing game"),
 
   async execute(interaction) {

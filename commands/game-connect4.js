@@ -3,7 +3,7 @@ const { Connect4 } = require('discord-gamecord');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('connect4')
+    .setName('game-connect4')
     .setDescription('Play Connect 4 with another user')
     .addUserOption(option =>
       option.setName('opponent')

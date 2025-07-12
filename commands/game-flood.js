@@ -3,7 +3,7 @@ const { Flood } = require('discord-gamecord');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('flood')
+    .setName('game-flood')
     .setDescription('Play the color flooding puzzle game'),
 
   async execute(interaction) {

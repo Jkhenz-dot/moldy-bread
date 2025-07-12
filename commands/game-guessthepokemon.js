@@ -3,7 +3,7 @@ const { GuessThePokemon } = require('discord-gamecord');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('guessthepokemon')
+    .setName('game-guessthepokemon')
     .setDescription('Guess the Pokemon from the silhouette'),
 
   async execute(interaction) {

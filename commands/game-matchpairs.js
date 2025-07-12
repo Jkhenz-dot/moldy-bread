@@ -3,7 +3,7 @@ const { MatchPairs } = require("discord-gamecord");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("matchpairs")
+    .setName("game-matchpairs")
     .setDescription("Match pairs of emojis in this memory game"),
 
   async execute(interaction) {

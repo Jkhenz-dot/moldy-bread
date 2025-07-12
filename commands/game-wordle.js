@@ -3,7 +3,7 @@ const { Wordle } = require('discord-gamecord');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('wordle')
+    .setName('game-wordle')
     .setDescription('Play the popular 5-letter word guessing game'),
 
   async execute(interaction) {

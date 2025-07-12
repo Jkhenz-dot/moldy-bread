@@ -3,7 +3,7 @@ const { MatchPairs } = require("discord-gamecord");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("memory")
+    .setName("game-memory")
     .setDescription("Play the memory matching pairs game"),
 
   async execute(interaction) {
