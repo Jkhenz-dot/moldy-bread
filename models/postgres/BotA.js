@@ -7,7 +7,6 @@ class BotA extends BaseModel {
       allowedChannels: 'allowed_channels',
       activityText: 'activity_text',
       activityType: 'activity_type',
-      avatarPath: 'avatar_path',
       blacklistedUsers: 'blacklisted_users'
     });
   }

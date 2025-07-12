@@ -281,7 +281,6 @@ app.get("/api/bot-data", async (req, res) => {
             activityType: botA?.activity_type || "playing",
             activityText: botA?.activity_text || "",
             others: botA?.others || "",
-            avatarPath: botA?.avatar_path || "",
             allowedChannels: Array.isArray(botA?.allowed_channels)
                 ? botA.allowed_channels
                 : botA?.allowed_channels
@@ -304,7 +303,7 @@ app.get("/api/bot-data", async (req, res) => {
             status: botB?.status || "online",
             activityType: botB?.activity_type || "playing",
             activityText: botB?.activity_text || "",
-            avatarPath: botB?.avatar_path || "",
+            others: botB?.others || "",
             allowedChannels: Array.isArray(botB?.allowed_channels)
                 ? botB.allowed_channels
                 : botB?.allowed_channels
