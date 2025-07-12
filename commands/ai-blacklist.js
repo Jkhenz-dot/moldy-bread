@@ -4,7 +4,7 @@ const Others = require('../models/postgres/Others');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ai-blacklist')
-    .setDescription('Blacklist user from AI responses (Admin only)')
+    .setDescription('Blacklist user from AI responses (Manage Messages only)')
     .addUserOption(option =>
       option.setName('user')
         .setDescription('User to blacklist')

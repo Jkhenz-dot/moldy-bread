@@ -9,7 +9,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("purge")
     .setDescription(
-      "🗑️ Advanced message deletion with multiple filtering options",
+      "Advanced message deletion with multiple filtering options (Manage Messages only)",
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
     .addIntegerOption((option) =>

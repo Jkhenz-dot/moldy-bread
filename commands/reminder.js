@@ -19,6 +19,7 @@ module.exports = {
   async execute(interaction) {
     const timeInput = interaction.options.getString('time').toLowerCase();
     const reminderMessage = interaction.options.getString('message');
+    const targetChannel = interaction.channel;
     const userId = interaction.user.id;
 
     // Parse time input
@@ -91,45 +92,45 @@ module.exports = {
         break;
     }
 
-    // Create confirmation embed
-    const confirmEmbed = new EmbedBuilder()
-      .setTitle('Reminder Set')
-      .setDescription(`I'll remind you in ${amount} ${unitName}`)
-      .addFields([
-        { name: 'Reminder', value: reminderMessage, inline: false },
-        { name: 'Time', value: `<t:${Math.floor((Date.now() + delay) / 1000)}:R>`, inline: true },
-        { name: 'Exact Time', value: `<t:${Math.floor((Date.now() + delay) / 1000)}:f>`, inline: true }
-      ])
-      .setColor(0x10b981)
-      .setFooter({ text: 'Reminder System' })
-      .setTimestamp();
+    // Calculate reminder time
+    const remindAt = new Date(Date.now() + delay);
 
-    await interaction.reply({
-      embeds: [confirmEmbed],
-      flags: MessageFlags.Ephemeral
-    });
+    try {
+      // Save reminder to database
+      const Reminder = require('../models/postgres/Reminder');
+      await Reminder.addReminder(userId, targetChannel.id, reminderMessage, remindAt);
 
-    // Set the reminder
-    setTimeout(async () => {
-      try {
-        const reminderEmbed = new EmbedBuilder()
-          .setTitle('Reminder')
-          .setDescription(reminderMessage)
-          .addFields([
-            { name: 'Set', value: `<t:${Math.floor((Date.now() - delay) / 1000)}:R>`, inline: true },
-            { name: 'Channel', value: `<#${interaction.channel.id}>`, inline: true }
-          ])
-          .setColor(0x6366f1)
-          .setFooter({ text: 'Reminder System' })
-          .setTimestamp();
+      // Create confirmation embed
+      const confirmEmbed = new EmbedBuilder()
+        .setTitle('Reminder Set')
+        .setDescription(`I'll remind you in ${amount} ${unitName}`)
+        .addFields([
+          { name: 'Reminder', value: reminderMessage, inline: false },
+          { name: 'Time', value: `<t:${Math.floor(remindAt.getTime() / 1000)}:R>`, inline: true },
+          { name: 'Exact Time', value: `<t:${Math.floor(remindAt.getTime() / 1000)}:f>`, inline: true }
+        ])
+        .setColor(0x10b981)
+        .setFooter({ text: 'Reminder System - Saved to database' })
+        .setTimestamp();
 
-        await interaction.followUp({
-          content: `<@${userId}>`,
-          embeds: [reminderEmbed]
-        });
-      } catch (error) {
-        console.error('Reminder delivery error:', error);
-      }
-    }, delay);
+      await interaction.reply({
+        embeds: [confirmEmbed],
+        flags: MessageFlags.Ephemeral
+      });
+
+    } catch (error) {
+      console.error('Failed to save reminder:', error);
+      
+      const errorEmbed = new EmbedBuilder()
+        .setTitle('Error')
+        .setDescription('Failed to save reminder to database. Please try again.')
+        .setColor(0xef4444)
+        .setFooter({ text: 'Reminder System' });
+
+      await interaction.reply({
+        embeds: [errorEmbed],
+        flags: MessageFlags.Ephemeral
+      });
+    }
   }
 };

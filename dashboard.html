@@ -2857,10 +2857,7 @@
                                 <div class="stat-value" id="guildBoostCount">--</div>
                                 <div class="stat-label">Boost Count</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="guildRegion">--</div>
-                                <div class="stat-label">Guild Region</div>
-                            </div>
+
 
                             <div class="stat-card">
                                 <div class="stat-value" id="guildEmojis">--</div>
@@ -3704,6 +3701,11 @@
                                     <h5 style="margin-bottom: 10px;">Welcome Messages</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Welcome message configurations</p>
                                     <button onclick="viewTable('welcome_messages')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Reminders</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">User reminder data</p>
+                                    <button onclick="viewTable('reminders')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
 
                             </div>
@@ -4557,7 +4559,7 @@
                         safeUpdateElement('guildVerificationLevel', targetGuild.verificationLevel || 'Loading...');
                         safeUpdateElement('guildBoostLevel', targetGuild.boostLevel || 'Loading...');
                         safeUpdateElement('guildBoostCount', targetGuild.boostCount || 'Loading...');
-                        safeUpdateElement('guildRegion', targetGuild.region || 'Loading...');
+
                         safeUpdateElement('guildOwner', targetGuild.owner || 'Loading...');
                         safeUpdateElement('guildDescription', targetGuild.description || 'Loading...');
                         safeUpdateElement('guildFeatures', targetGuild.features || 'Loading...');
@@ -4581,7 +4583,7 @@
                         safeUpdateElement('guildVerificationLevel', 'Loading...');
                         safeUpdateElement('guildBoostLevel', 'Loading...');
                         safeUpdateElement('guildBoostCount', 'Loading...');
-                        safeUpdateElement('guildRegion', 'Loading...');
+
                         safeUpdateElement('guildOwner', 'Loading...');
                         safeUpdateElement('guildDescription', 'Loading...');
                         safeUpdateElement('guildFeatures', 'Loading...');

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const {
     joinVoiceChannel,
     createAudioPlayer,
@@ -20,14 +20,15 @@ const activeTTSSessions = new Map();
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("vc-tts")
-        .setDescription("Convert text to speech and play in voice channel")
+        .setDescription("Convert text to speech and play in voice channel (Manage Messages only)")
         .addStringOption((option) =>
             option
                 .setName("text")
                 .setDescription("Text to convert to speech")
                 .setRequired(true)
                 .setMaxLength(200),
-        ),
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
     async execute(interaction) {
         try {

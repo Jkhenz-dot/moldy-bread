@@ -8,7 +8,7 @@ module.exports = {
     const pages = [
       {
         title: 'General & AI Commands',
-        description: '**Basic Commands:**\n`/ping` - Check bot latency and connection status\n`/help` - Display this comprehensive command list\n`/reminder` - Set personal reminders with custom messages\n`/ai-wack` - Clear your conversation memory with the AI\n\n**AI Generation:**\n`/ai-image` - Generate custom images using AI\n\n**AI Moderation:**\n`/ai-blacklist` - Blacklist user from AI responses (Manage Messages)\n`/ai-whitelist` - Remove user from AI blacklist (Manage Messages)',
+        description: '**Basic Commands:**\n`/help` - Display this comprehensive command list\n`/reminder` - Set personal reminders with custom messages\n`/wack` - Clear your conversation memory with the AI\n\n**AI Generation:**\n`/imagine` - Generate custom images using AI\n\n**AI Moderation:**\n`/ai-blacklist` - Blacklist user from AI responses (Manage Messages)\n`/ai-whitelist` - Remove user from AI blacklist (Manage Messages)',
         color: 0x6366f1
       },
       {
@@ -23,7 +23,7 @@ module.exports = {
       },
       {
         title: 'Voice Commands',
-        description: '**Voice Channel Control:**\n`/vc-join` - Join your current voice channel\n`/vc-disconnect` - Leave voice channel\n\n**Voice Features:**\n`/vc-tts` - Text-to-speech with custom voices\n\n*Note: Voice commands require being in a voice channel*',
+        description: '**Voice Features:**\n`/vc-tts` - Text-to-speech with custom voices\n\n*Note: Voice commands require being in a voice channel*',
         color: 0x8b5cf6
       },
       {
@@ -33,7 +33,7 @@ module.exports = {
       },
       {
         title: 'Moderation & Administration',
-        description: '**Message Management:**\n`/purge` - Bulk delete messages (Manage Messages)\n`/say` - Send messages as the bot (Manage Messages)\n`/say-embed` - Send formatted embed messages (Manage Messages)\n\n**Server Settings:**\n`/reload-commands` - Refresh bot commands (Bot Owner)\n\n**Development Tools:**\nUse the web dashboard for advanced configuration including:\n• AI personality settings\n• XP system customization\n• Welcome message setup\n• Reaction role management\n• Auto-moderation features',
+        description: '**Message Management:**\n`/purge` - Bulk delete messages (Manage Messages)\n`/say` - Send messages as the bot (Manage Messages)\n\n**Server Settings:**\n`/reload-commands` - Refresh bot commands (Bot Owner)\n\n**Development Tools:**\nUse the web dashboard for advanced configuration including:\n• AI personality settings\n• XP system customization\n• Welcome message setup\n• Reaction role management\n• Auto-moderation features',
         color: 0xef4444
       }
     ];

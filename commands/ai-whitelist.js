@@ -4,7 +4,7 @@ const Others = require('../models/postgres/Others');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ai-whitelist')
-    .setDescription('Remove user from AI blacklist (Admin only)')
+    .setDescription('Remove user from AI blacklist (Manage Messages only)')
     .addUserOption(option =>
       option.setName('user')
         .setDescription('User to remove from blacklist')
@@ -12,6 +12,16 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
   async execute(interaction) {
+    // Check if user has Manage Messages permission
+    if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+      const embed = new EmbedBuilder()
+        .setTitle('Permission Denied')
+        .setDescription('You need Manage Messages permission to use this command')
+        .setColor(0xff0000);
+      
+      return await interaction.reply({ embeds: [embed] });
+    }
+
     try {
       const user = interaction.options.getUser('user');
       const othersData = await Others.findOne();

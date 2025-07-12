@@ -8,7 +8,7 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("setup")
-        .setDescription("Set up counting game in a channel")
+        .setDescription("Set up counting game in a channel (Admin Only)")
         .addChannelOption((option) =>
           option
             .setName("channel")
@@ -17,7 +17,7 @@ module.exports = {
         ),
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName("disable").setDescription("Disable counting game"),
+      subcommand.setName("disable").setDescription("Disable counting game (Admin Only)"),
     ),
 
   async execute(interaction, client) {

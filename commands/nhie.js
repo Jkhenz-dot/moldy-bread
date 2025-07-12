@@ -14,12 +14,12 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      // Distribution: 40% API, 40% JSON (AI Generated), 10% Gemini AI
+      // Distribution: 50% API, 50% JSON file questions
       const random = Math.random();
       let question, footerText;
 
-      if (random < 0.4) {
-        // 40% chance to use API
+      if (random < 0.5) {
+        // 50% chance to use API
         try {
           const response = await fetch(
             `https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13`,
@@ -37,8 +37,8 @@ module.exports = {
           question = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
           footerText = `Type: NHIE | AI Generated`;
         }
-      } else if (random < 0.8) {
-        // 40% chance to use JSON file questions (categorized as AI generated)
+      } else {
+        // 50% chance to use JSON file questions
         try {
           const fs = require('fs');
           const path = require('path');
@@ -50,38 +50,6 @@ module.exports = {
           console.log("JSON file failed, falling back to API");
           const response = await fetch(
             `https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13`,
-          );
-          const data = await response.json();
-          question = data.question;
-          footerText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
-        }
-      } else {
-        // 10% chance (and remaining 20% as fallback) to use Gemini AI
-        try {
-          // Generate AI question
-          const { GoogleGenerativeAI } = require("@google/generative-ai");
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
-          });
-
-          let attempts = 0;
-          do {
-            const prompt = `Generate one sentence under 60 characters starting with 'Never have I' about common experiences. Family-friendly, relatable statement.
-            
-          
-            `;
-
-            const result = await model.generateContent(prompt);
-            question = result.response.text().trim();
-            attempts++;
-          } while (false); // Removed question tracking
-          footerText = `Type: NHIE | AI Generated`;
-        } catch (error) {
-          console.log("AI generation failed, falling back to API");
-          // Fallback to original API
-          const response = await fetch(
-            "https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13",
           );
           const data = await response.json();
           question = data.question;
@@ -118,36 +86,41 @@ module.exports = {
         await i.deferUpdate();
 
         try {
-          // Use 20% chance for AI on button interactions (old messages)
-          const useAI = Math.random() < 0.2;
+          // Use 50% chance for API or JSON file
+          const useAPI = Math.random() < 0.5;
           let newQuestion, newFooterText;
 
-          if (useAI) {
+          if (useAPI) {
             try {
-              // Generate AI question
-              const { GoogleGenerativeAI } = require("@google/generative-ai");
-              const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-              const model = genAI.getGenerativeModel({
-                model: "gemini-2.0-flash-exp",
-              });
-
-              let attempts = 0;
-              do {
-                const prompt =
-                  "Generate one sentence under 60 characters starting with 'Never have I' about common experiences. Family-friendly, relatable statement.";
-
-                const result = await model.generateContent(prompt);
-                newQuestion = result.response.text().trim();
-                attempts++;
-              } while ((await isQuestionUsed("nhie", newQuestion)) && attempts < 3);
-
-              if (!(await isQuestionUsed("nhie", newQuestion))) {
-                await saveAIQuestion("nhie", newQuestion);
-              }
+              // Use original API
+              const response = await fetch(
+                "https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13",
+              );
+              const data = await response.json();
+              newQuestion = data.question;
+              newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
+            } catch (error) {
+              console.log("API failed, falling back to JSON questions");
+              // Fallback to JSON questions
+              const fs = require('fs');
+              const path = require('path');
+              const jsonPath = path.join(__dirname, '..', 'data', 'nhie-questions.json');
+              const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+              newQuestion = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
+              newFooterText = `Type: NHIE | AI Generated`;
+            }
+          } else {
+            try {
+              // Use JSON file questions
+              const fs = require('fs');
+              const path = require('path');
+              const jsonPath = path.join(__dirname, '..', 'data', 'nhie-questions.json');
+              const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+              newQuestion = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
               newFooterText = `Type: NHIE | AI Generated`;
             } catch (error) {
-              console.log("AI generation failed, falling back to API");
-              // Fallback to original API
+              console.log("JSON file failed, falling back to API");
+              // Fallback to API
               const response = await fetch(
                 "https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13",
               );
@@ -155,14 +128,6 @@ module.exports = {
               newQuestion = data.question;
               newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
             }
-          } else {
-            // Use original API
-            const response = await fetch(
-              "https://api.truthordarebot.xyz/v1/nhie?rating=pg&rating=pg13",
-            );
-            const data = await response.json();
-            newQuestion = data.question;
-            newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
           }
 
           const newResultEmbed = new EmbedBuilder()

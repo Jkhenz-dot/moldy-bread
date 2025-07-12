@@ -17,7 +17,7 @@ const {
 } = require("discord.js");
 
 // Database models - lazy loaded to improve startup time
-let BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole;
+let BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole, Reminder;
 const loadDatabaseModels = () => {
   if (!BotA) {
     BotA = require("./models/postgres/BotA");
@@ -27,6 +27,7 @@ const loadDatabaseModels = () => {
     LevelRoles = require("./models/postgres/LevelRoles");
     Birthday = require("./models/postgres/Birthday");
     ReactionRole = require("./models/postgres/ReactionRole");
+    Reminder = require("./models/postgres/Reminder");
   }
   return {
     BotA,
@@ -36,6 +37,7 @@ const loadDatabaseModels = () => {
     LevelRoles,
     Birthday,
     ReactionRole,
+    Reminder,
   };
 };
 
@@ -338,6 +340,10 @@ const initializeDashboardData = async () => {
 
     console.log("Dashboard data synchronized with database");
 
+    // Initialize reminder table
+    const { Reminder } = loadDatabaseModels();
+    await Reminder.createTable();
+
     // Initialize reaction roles will be called after both bots are ready
   } catch (error) {
     console.log("PostgreSQL unavailable:", error.message);
@@ -388,7 +394,7 @@ const calculateLevel = (xp) => {
   let level = 0; // Start counting from level 0
 
   while (true) {
-    const tierMultiplier = 1 + Math.floor(level / 5) * 0.18;
+    const tierMultiplier = 1 + Math.floor(level / 5) * 0.21;
     let xpNeeded;
 
     if (level === 0) {
@@ -411,7 +417,7 @@ const xpForLevel = (level) => {
   let totalXP = 0;
 
   for (let i = 0; i < level; i++) {
-    const tierMultiplier = 1 + Math.floor(i / 5) * 0.18;
+    const tierMultiplier = 1 + Math.floor(i / 5) * 0.21;
 
     if (i === 0) {
       totalXP += 1; // Level 1 requires just 1 XP
@@ -810,6 +816,18 @@ const setupBot = async (client, botToken, botName) => {
         console.error(
           `${botName} needs application.commands permission in Discord Developer Portal`,
         );
+      }
+    }
+
+    // Start reminder service only for the first bot to avoid duplicates
+    if (botName === "Bot1") {
+      try {
+        const ReminderService = require('./utils/reminderService');
+        const reminderService = new ReminderService(client);
+        reminderService.start();
+        console.log('Reminder service initialized');
+      } catch (error) {
+        console.error('Failed to start reminder service:', error);
       }
     }
 
@@ -1450,9 +1468,6 @@ const setupBot = async (client, botToken, botName) => {
       const allowedChannels = botConfig?.allowed_channels || [];
       if (allowedChannels.length > 0) {
         shouldThisBotRespond = allowedChannels.includes(message.channel.id);
-        console.log(
-          `${client.botId} mention check: Channel ${message.channel.id}, Allowed: ${allowedChannels}, Should respond: ${shouldThisBotRespond}`,
-        );
       } else {
         // No channel restrictions configured - respond to mentions
         shouldThisBotRespond = true;

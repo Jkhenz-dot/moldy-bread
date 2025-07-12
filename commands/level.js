@@ -45,7 +45,7 @@ module.exports = {
         let level = 0; // Start counting from level 0
 
         while (true) {
-          const tierMultiplier = 1 + Math.floor(level / 5) * 0.18;
+          const tierMultiplier = 1 + Math.floor(level / 5) * 0.21;
           let xpNeeded;
 
           if (level === 0) {
@@ -68,7 +68,7 @@ module.exports = {
         let totalXP = 0;
 
         for (let i = 0; i < level; i++) {
-          const tierMultiplier = 1 + Math.floor(i / 5) * 0.18;
+          const tierMultiplier = 1 + Math.floor(i / 5) * 0.21;
 
           if (i === 0) {
             totalXP += 1; // Level 1 requires just 1 XP

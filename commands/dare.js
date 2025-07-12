@@ -14,12 +14,12 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      // Distribution: 40% API, 40% JSON (AI Generated), 10% Gemini AI
+      // Distribution: 50% API, 50% JSON file questions
       const random = Math.random();
       let question, footerText;
 
-      if (random < 0.4) {
-        // 40% chance to use API
+      if (random < 0.5) {
+        // 50% chance to use API
         try {
           const response = await fetch(
             `https://api.truthordarebot.xyz/v1/dare?rating=pg&rating=pg13`,
@@ -37,8 +37,8 @@ module.exports = {
           question = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
           footerText = `Type: DARE | AI Generated`;
         }
-      } else if (random < 0.8) {
-        // 40% chance to use JSON file questions (categorized as AI generated)
+      } else {
+        // 50% chance to use JSON file questions
         try {
           const fs = require('fs');
           const path = require('path');
@@ -48,54 +48,6 @@ module.exports = {
           footerText = `Type: DARE | AI Generated`;
         } catch (error) {
           console.log("JSON file failed, falling back to API");
-          const response = await fetch(
-            `https://api.truthordarebot.xyz/v1/dare?rating=pg&rating=pg13`,
-          );
-          const data = await response.json();
-          question = data.question;
-          footerText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
-        }
-      } else {
-        // 10% chance (and remaining 20% as fallback) to use Gemini AI
-        try {
-          // Generate AI question
-          const { GoogleGenerativeAI } = require("@google/generative-ai");
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
-          });
-
-          let attempts = 0;
-          do {
-            const prompt = `Generate a unique fun dare under 60 characters. Focus on creative, family-friendly challenges. Be varied and avoid repetitive actions.
-
-Focus on different types:
-- Social media challenges
-- Creative expressions
-- Physical movements
-- Voice/sound challenges
-- Interaction with others
-- Silly performances
-- Quick tasks
-
-Avoid repetitive phrases like "Do 10 jumping jacks" or similar patterns.
-
-Examples of good variety:
-"Sing the alphabet backwards"
-"Text your crush a pickup line"
-"Do your best robot dance"
-"Call a pizza place and ask if they sell tacos"
-"Act like your pet for 2 minutes"
-`;
-
-            const result = await model.generateContent(prompt);
-            question = result.response.text().trim();
-            attempts++;
-          } while (false); // Removed question tracking
-          footerText = `Type: DARE | AI Generated`;
-        } catch (error) {
-          console.log("AI generation failed, falling back to API");
-          // Fallback to original API
           const response = await fetch(
             `https://api.truthordarebot.xyz/v1/dare?rating=pg&rating=pg13`,
           );
@@ -157,81 +109,41 @@ Examples of good variety:
         }
 
         try {
-          // Use 20% chance for AI on button interactions (old messages)
-          const useAI = Math.random() < 0.2;
+          // Use 50% chance for API or JSON file
+          const useAPI = Math.random() < 0.5;
           let newQuestion, newFooterText;
 
-          if (useAI) {
+          if (useAPI) {
             try {
-              // Generate AI question
-              const { GoogleGenerativeAI } = require("@google/generative-ai");
-              const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-              const model = genAI.getGenerativeModel({
-                model: "gemini-2.0-flash-exp",
-              });
-
-              let attempts = 0;
-              do {
-                let prompt;
-                if (newType === "Truth") {
-                  prompt = `Generate a unique personal truth question under 60 characters. Ask about personal experiences, memories, or feelings. Be creative and avoid generic questions.
-
-Focus on varied topics like:
-- Childhood memories or school experiences
-- Personal fears, dreams, or goals
-- Relationships and social situations
-- Hobbies, talents, or skills
-- Life-changing moments or decisions
-- Personal habits or quirks
-- Future aspirations or regrets
-
-Make it conversational and engaging. Avoid repetitive phrases like "What's your favorite way to..." or similar patterns.
-
-Examples of good variety:
-"Ever been caught lying by your parents?"
-"Biggest fear when you were 8 years old?"
-"Most embarrassing thing in your search history?"
-"Would you rather be famous or rich?"
-"Ever had a crush on a teacher?"
-`;
-                } else if (newType === "Dare") {
-                  prompt = `Generate a unique fun dare under 60 characters. Focus on creative, family-friendly challenges. Be varied and avoid repetitive actions.
-
-Focus on different types:
-- Social media challenges
-- Creative expressions
-- Physical movements
-- Voice/sound challenges
-- Interaction with others
-- Silly performances
-- Quick tasks
-
-Avoid repetitive phrases like "Do 10 jumping jacks" or similar patterns.
-
-Examples of good variety:
-"Sing the alphabet backwards"
-"Text your crush a pickup line"
-"Do your best robot dance"
-"Call a pizza place and ask if they sell tacos"
-"Act like your pet for 2 minutes"
-`;
-                }
-
-                const result = await model.generateContent(prompt);
-                newQuestion = result.response.text().trim();
-                attempts++;
-              } while (
-                (await isQuestionUsed(newType.toLowerCase(), newQuestion)) &&
-                attempts < 3
+              // Use original API
+              const response = await fetch(
+                `https://api.truthordarebot.xyz/v1/${newEndpoint}?rating=pg&rating=pg13`,
               );
-
-              if (!(await isQuestionUsed(newType.toLowerCase(), newQuestion))) {
-                await saveAIQuestion(newType.toLowerCase(), newQuestion);
-              }
+              const data = await response.json();
+              newQuestion = data.question;
+              newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
+            } catch (error) {
+              console.log("API failed, falling back to JSON questions");
+              // Fallback to JSON questions
+              const fs = require('fs');
+              const path = require('path');
+              const jsonPath = path.join(__dirname, '..', 'data', `${newEndpoint}-questions.json`);
+              const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+              newQuestion = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
+              newFooterText = `Type: ${newType.toUpperCase()} | AI Generated`;
+            }
+          } else {
+            try {
+              // Use JSON file questions
+              const fs = require('fs');
+              const path = require('path');
+              const jsonPath = path.join(__dirname, '..', 'data', `${newEndpoint}-questions.json`);
+              const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+              newQuestion = jsonData.questions[Math.floor(Math.random() * jsonData.questions.length)];
               newFooterText = `Type: ${newType.toUpperCase()} | AI Generated`;
             } catch (error) {
-              console.log("AI generation failed, falling back to API");
-              // Fallback to original API
+              console.log("JSON file failed, falling back to API");
+              // Fallback to API
               const response = await fetch(
                 `https://api.truthordarebot.xyz/v1/${newEndpoint}?rating=pg&rating=pg13`,
               );
@@ -239,14 +151,6 @@ Examples of good variety:
               newQuestion = data.question;
               newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
             }
-          } else {
-            // Use original API
-            const response = await fetch(
-              `https://api.truthordarebot.xyz/v1/${newEndpoint}?rating=pg&rating=pg13`,
-            );
-            const data = await response.json();
-            newQuestion = data.question;
-            newFooterText = `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`;
           }
 
           const newResultEmbed = new EmbedBuilder()

@@ -12,6 +12,7 @@ const ReactionRole = require("./models/postgres/ReactionRole");
 const UserData = require("./models/postgres/UserData");
 const Birthday = require("./models/postgres/Birthday");
 const WelcomeMessage = require("./models/postgres/WelcomeMessage");
+const Reminder = require("./models/postgres/Reminder");
 // Use existing database utilities
 const database = require("./utils/database");
 require("dotenv").config();
@@ -607,7 +608,7 @@ app.get("/api/dashboard-stats", async (req, res) => {
                                         readableVerificationLevel,
                                     boostLevel: premiumTier,
                                     boostCount: premiumSubscriptionCount,
-                                    region: guild.preferredLocale || "Unknown",
+
                                     emojis: guild.emojis?.cache?.size || 0,
                                     stickers: guild.stickers?.cache?.size || 0,
                                     mfaLevel: guild.mfaLevel === 1 ? "Required" : "Not Required",
@@ -2601,6 +2602,7 @@ app.get("/api/database/table/:tableName", async (req, res) => {
             "level_roles",
             "reaction_roles",
             "welcome_messages",
+            "reminders",
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2641,6 +2643,7 @@ app.post("/api/database/view-table", async (req, res) => {
             "level_roles",
             "reaction_roles",
             "welcome_messages",
+            "reminders",
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2897,6 +2900,17 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
+            `,
+            reminders: `
+                CREATE TABLE IF NOT EXISTS reminders (
+                    id SERIAL PRIMARY KEY,
+                    user_id VARCHAR(25) NOT NULL,
+                    channel_id VARCHAR(25) NOT NULL,
+                    message TEXT NOT NULL,
+                    remind_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    completed BOOLEAN DEFAULT FALSE
+                )
             `
         };
         
@@ -3081,6 +3095,24 @@ app.post("/api/database/delete-all-birthdays", async (req, res) => {
     }
 });
 
+app.post("/api/database/delete-all-reminders", async (req, res) => {
+    try {
+        const database = require("./utils/database");
+        const result = await database.query("DELETE FROM reminders");
+
+        res.json({
+            success: true,
+            message: `Deleted ${result.rowCount} reminders`,
+        });
+    } catch (error) {
+        console.error("Error deleting all reminders:", error);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
+
 app.post("/api/database/update-record", async (req, res) => {
     try {
         const { table, id, data } = req.body;
@@ -3096,6 +3128,7 @@ app.post("/api/database/update-record", async (req, res) => {
             "level_roles",
             "reaction_roles",
             "welcome_messages",
+            "reminders",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
@@ -3151,6 +3184,7 @@ app.post("/api/database/delete-record", async (req, res) => {
             "level_roles",
             "reaction_roles",
             "welcome_messages",
+            "reminders",
         ];
         if (!allowedTables.includes(table)) {
             return res.json({
