@@ -621,8 +621,6 @@ const addXP = async (userId, guildId, message = null) => {
     // Only announce actual level increases - never re-announce same level
     const actualLevelUp = newLevel > oldLevel;
 
-    console.log(`Level check for ${userId}: oldLevel=${oldLevel}, newLevel=${newLevel}, actualLevelUp=${actualLevelUp}, level_up_announcement=${othersData?.level_up_announcement}`);
-
     // Announce when user actually levels up (including 0->1 and any higher level ups)
     if (actualLevelUp && othersData?.level_up_announcement) {
       // Mark this announcement to prevent duplicates BEFORE sending
