@@ -180,16 +180,16 @@ async function generateAIResponse(
 
   try {
     const personalityParts = [];
-    if (otherData.age) personalityParts.push(`Age: ${otherData.age}`);
+    if (otherData.age) personalityParts.push(`Your age is  ${otherData.age}`);
     if (otherData.personality)
-      personalityParts.push(`Personality: ${otherData.personality}`);
-    if (otherData.likes) personalityParts.push(`Likes: ${otherData.likes}`);
+      personalityParts.push(`Your personality is ${otherData.personality}`);
+    if (otherData.likes) personalityParts.push(`You like  ${otherData.likes}`);
     if (otherData.dislikes)
-      personalityParts.push(`Dislikes: ${otherData.dislikes}`);
+      personalityParts.push(`You dislike ${otherData.dislikes}`);
     if (otherData.appearance)
-      personalityParts.push(`Appearance: ${otherData.appearance}`);
+      personalityParts.push(`This your Appearance: ${otherData.appearance}`);
     if (otherData.backstory)
-      personalityParts.push(`Backstory: ${otherData.backstory}`);
+      personalityParts.push(`This your Backstory: ${otherData.backstory}`);
     if (otherData.others)
       personalityParts.push(`To Do: ${otherData.others}`);
 
