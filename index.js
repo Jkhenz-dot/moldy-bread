@@ -621,6 +621,8 @@ const addXP = async (userId, guildId, message = null) => {
     // Only announce actual level increases - never re-announce same level
     const actualLevelUp = newLevel > oldLevel;
 
+    console.log(`Level check for ${userId}: oldLevel=${oldLevel}, newLevel=${newLevel}, actualLevelUp=${actualLevelUp}, level_up_announcement=${othersData?.level_up_announcement}`);
+
     // Announce when user actually levels up (including 0->1 and any higher level ups)
     if (actualLevelUp && othersData?.level_up_announcement) {
       // Mark this announcement to prevent duplicates BEFORE sending
@@ -1837,7 +1839,6 @@ const setupBot = async (client, botToken, botName) => {
                   ?.username || "Unknown",
               xp: 0,
               level: 0,
-              last_message: new Date(),
               conversation_history: [],
             });
           }
@@ -1853,7 +1854,6 @@ const setupBot = async (client, botToken, botName) => {
             {
               xp: newXP,
               level: newLevel,
-              last_message: new Date(),
             },
             { upsert: true },
           );
@@ -1862,65 +1862,7 @@ const setupBot = async (client, botToken, botName) => {
             `Awarded ${threadXP} XP to ${thread.ownerId} for creating forum thread: ${thread.name}`,
           );
 
-          // Check for level up
-          if (newLevel > previousLevel && othersData?.level_up_announcement) {
-            const announcementChannelId = othersData.announcement_channel;
-            let announcementChannel = null;
-
-            if (announcementChannelId) {
-              announcementChannel = thread.guild.channels.cache.get(
-                announcementChannelId,
-              );
-            }
-
-            // If no specific channel set or channel not found, use the thread's parent forum
-            if (!announcementChannel) {
-              announcementChannel = thread.parent;
-            }
-
-            if (announcementChannel) {
-              const member = thread.guild.members.cache.get(thread.ownerId);
-              const username = member?.user?.username || "Unknown User";
-
-              const pastelColors = [
-                "#FFB6C1",
-                "#FFE4E1",
-                "#E0BBE4",
-                "#957DAD",
-                "#D4A5A5",
-                "#FFDAB9",
-                "#E6E6FA",
-                "#F0E68C",
-              ];
-              const randomColor =
-                pastelColors[Math.floor(Math.random() * pastelColors.length)];
-
-              const levelUpEmbed = new EmbedBuilder()
-                .setTitle("🎉 Level Up!")
-                .setDescription(
-                  `Congratulations <@${thread.ownerId}>! You've reached **Level ${newLevel}**!\n\n**Bonus XP:** +${threadXP} for creating a forum thread!`,
-                )
-                .addFields(
-                  { name: "📊 Current XP", value: `${newXP}`, inline: true },
-                  {
-                    name: "🎯 Next Level",
-                    value: `${newLevel * 100 - newXP} XP remaining`,
-                    inline: true,
-                  },
-                )
-                .setColor(randomColor)
-                .setFooter({
-                  text: `Keep posting to level up! | Thread: ${thread.name}`,
-                })
-                .setTimestamp();
-
-              try {
-                await announcementChannel.send({ embeds: [levelUpEmbed] });
-              } catch (error) {
-                console.error("Failed to send level up announcement:", error);
-              }
-            }
-          }
+          // No level-up announcements for forum threads
         } catch (error) {
           console.error("Error awarding XP for thread creation:", error);
         }
