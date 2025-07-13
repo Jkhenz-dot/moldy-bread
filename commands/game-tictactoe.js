@@ -12,51 +12,58 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const opponent = interaction.options.getUser('opponent');
+    try {
+      const opponent = interaction.options.getUser('opponent');
 
-    if (opponent.bot) {
-      return interaction.reply({ 
-        content: 'You cannot play against a bot!', 
-        flags: MessageFlags.Ephemeral 
+      if (opponent.bot) {
+        return interaction.reply({ 
+          content: 'You cannot play against a bot!', 
+          flags: MessageFlags.Ephemeral 
+        });
+      }
+
+      if (opponent.id === interaction.user.id) {
+        return interaction.reply({ 
+          content: 'You cannot play against yourself!', 
+          flags: MessageFlags.Ephemeral 
+        });
+      }
+
+      const Game = new TicTacToe({
+        message: interaction,
+        isSlashGame: true,
+        opponent: opponent,
+        embed: {
+          title: 'Tic Tac Toe',
+          color: '#5865F2',
+          statusTitle: 'Status',
+          overTitle: 'Game Over'
+        },
+        emojis: {
+          xButton: '❌',
+          oButton: '⭕',
+          blankButton: '➖'
+        },
+        mentionUser: true,
+        timeoutTime: 60000,
+        xButtonStyle: 'DANGER',
+        oButtonStyle: 'PRIMARY',
+        turnMessage: '{emoji} | Its turn of player **{player}**.',
+        winMessage: '{emoji} | **{player}** won the TicTacToe Game.',
+        tieMessage: 'The Game tied! No one won the Game!',
+        timeoutMessage: 'The Game went unfinished! No one won the Game!',
+        playerOnlyMessage: 'Only {player} and {opponent} can use these buttons.'
       });
-    }
 
-    if (opponent.id === interaction.user.id) {
-      return interaction.reply({ 
-        content: 'You cannot play against yourself!', 
-        flags: MessageFlags.Ephemeral 
+      await Game.startGame();
+      Game.on('gameOver', result => {
+        // Game completed
       });
+    } catch (error) {
+      console.error('TicTacToe game error:', error);
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: 'Failed to start TicTacToe game. Please try again.', flags: MessageFlags.Ephemeral });
+      }
     }
-
-    const Game = new TicTacToe({
-      message: interaction,
-      isSlashGame: true,
-      opponent: opponent,
-      embed: {
-        title: 'Tic Tac Toe',
-        color: '#5865F2',
-        statusTitle: 'Status',
-        overTitle: 'Game Over'
-      },
-      emojis: {
-        xButton: '❌',
-        oButton: '⭕',
-        blankButton: '➖'
-      },
-      mentionUser: true,
-      timeoutTime: 60000,
-      xButtonStyle: 'DANGER',
-      oButtonStyle: 'PRIMARY',
-      turnMessage: '{emoji} | Its turn of player **{player}**.',
-      winMessage: '{emoji} | **{player}** won the TicTacToe Game.',
-      tieMessage: 'The Game tied! No one won the Game!',
-      timeoutMessage: 'The Game went unfinished! No one won the Game!',
-      playerOnlyMessage: 'Only {player} and {opponent} can use these buttons.'
-    });
-
-    Game.startGame();
-    Game.on('gameOver', result => {
-      // Game completed
-    });
   }
 };
