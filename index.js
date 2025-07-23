@@ -1828,25 +1828,30 @@ const setupBot = async (client, botToken, botName) => {
           const UserData = require("./models/postgres/UserData");
 
           // Get current user data
+          // Get current user data, or create if it doesn't exist
           let userData = await UserData.findOne({ discord_id: thread.ownerId });
           if (!userData) {
+            const member = thread.guild.members.cache.get(thread.ownerId) || await thread.guild.members.fetch(thread.ownerId).catch(() => null);
             userData = await UserData.create({
               discord_id: thread.ownerId,
-              username:
-                thread.guild.members.cache.get(thread.ownerId)?.user
-                  ?.username || "Unknown",
+              username: member?.user?.username || `User_${thread.ownerId.slice(-4)}`,
               xp: 0,
               level: 0,
-              conversation_history: [],
             });
           }
 
-          // Award 10-15 XP for forum thread creation
-          const threadXP = Math.floor(Math.random() * 6) + 10; // Random between 10-15
-          const newXP = userData.xp + threadXP;
-          const newLevel = Math.floor(newXP / 100) + 1;
-          const previousLevel = userData.level;
+          // If user data is still not available, log error and exit
+          if (!userData) {
+            console.error(`Could not find or create user ${thread.ownerId} for thread XP award.`);
+            return;
+          }
 
+          // Award XP for forum thread creation
+          const threadXP = othersData?.thread_xp || 20;
+          const newXP = (userData.xp || 0) + threadXP;
+          const newLevel = calculateLevel(newXP);
+
+          // Single, atomic update for XP and level
           await UserData.findOneAndUpdate(
             { discord_id: thread.ownerId },
             {
@@ -1854,10 +1859,6 @@ const setupBot = async (client, botToken, botName) => {
               level: newLevel,
             },
             { upsert: true },
-          );
-
-          console.log(
-            `Awarded ${threadXP} XP to ${thread.ownerId} for creating forum thread: ${thread.name}`,
           );
 
           // No level-up announcements for forum threads

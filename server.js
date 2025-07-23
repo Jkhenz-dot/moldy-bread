@@ -326,6 +326,7 @@ app.get("/api/bot-data", async (req, res) => {
                     xpCooldown: others?.xp_cooldown || 60000,
                     levelUpAnnouncement: others?.level_up_announcement || false,
                     announcementChannel: others?.announcement_channel || "",
+                    threadXp: others?.thread_xp || 0,
                 },
                 levelRoles: levelRoles || [],
                 reactionRoles: reactionRoles || [],
@@ -1235,6 +1236,30 @@ app.post("/api/update-announcement-settings", async (req, res) => {
         res.json({
             success: false,
             message: "Failed to update announcement settings",
+        });
+    }
+});
+
+app.post("/api/update-thread-xp", async (req, res) => {
+    try {
+        const { threadXp } = req.body;
+
+        await Others.findOneAndUpdate(
+            {},
+            { thread_xp: threadXp },
+            { upsert: true }
+        );
+        addActivity(`Thread XP updated to: ${threadXp}`);
+
+        res.json({
+            success: true,
+            message: "Thread XP updated successfully",
+        });
+    } catch (error) {
+        console.error("Error updating thread XP:", error);
+        res.json({
+            success: false,
+            message: "Failed to update thread XP",
         });
     }
 });
@@ -2844,6 +2869,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     forum_channels TEXT DEFAULT '[]',
                     forum_emojis TEXT DEFAULT '[]',
                     announcement_channel TEXT DEFAULT '',
+                    thread_xp INTEGER DEFAULT 0,
                     counting_enabled BOOLEAN DEFAULT false,
                     counting_channel VARCHAR(255) DEFAULT NULL,
                     counting_current INTEGER DEFAULT 0,
@@ -2951,8 +2977,8 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                 const othersExists = await database.query('SELECT id FROM others LIMIT 1');
                 if (othersExists.rows.length === 0) {
                     await database.query(`
-                        INSERT INTO others (xp_enabled, min_xp, max_xp, xp_cooldown, level_up_announcement, auto_role_enabled, auto_role_ids, forum_auto_react_enabled, forum_channels, forum_emojis, announcement_channel, counting_enabled, counting_channel, counting_current, counting_last_user)
-                        VALUES (true, 2, 8, 6, true, false, '[]', false, '[]', '[]', '', false, NULL, 0, NULL)
+                        INSERT INTO others (xp_enabled, min_xp, max_xp, xp_cooldown, level_up_announcement, auto_role_enabled, auto_role_ids, forum_auto_react_enabled, forum_channels, forum_emojis, announcement_channel, thread_xp, counting_enabled, counting_channel, counting_current, counting_last_user)
+                        VALUES (true, 2, 8, 6, true, false, '[]', false, '[]', '[]', '', 0, false, NULL, 0, NULL)
                     `);
                 }
             }

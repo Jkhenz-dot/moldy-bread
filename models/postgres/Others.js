@@ -11,6 +11,7 @@ class Others extends BaseModel {
       levelUpAnnouncement: "level_up_announcement",
 
       announcementChannel: "announcement_channel",
+      threadXp: "thread_xp",
       
       autoRoleEnabled: "auto_role_enabled",
       autoRoleIds: "auto_role_ids",
@@ -47,6 +48,7 @@ class Others extends BaseModel {
       level_up_announcement: true,
 
       announcement_channel: '',
+      thread_xp: 0,
       
       auto_role_enabled: false,
       auto_role_ids: "[]",

@@ -3,10 +3,14 @@ const { Pool } = require("pg");
 class DatabaseManager {
     constructor() {
         const connectionConfig = {
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DATABASE_URL
-                ? { rejectUnauthorized: true, sslmode: 'require' }
-                : false,
+            user: process.env.PGUSER,
+            host: process.env.PGHOST,
+            database: process.env.PGDATABASE,
+            password: process.env.PGPASSWORD,
+            port: process.env.PGPORT,
+            ssl: {
+                rejectUnauthorized: false
+            },
             max: 5, // Reduced pool size to prevent connection overload
             min: 1, // Minimum 1 connection
             idleTimeoutMillis: 30000, // 30 seconds idle timeout
@@ -67,10 +71,14 @@ class DatabaseManager {
 
             // Recreate the pool with same configuration
             const connectionConfig = {
-                connectionString: process.env.DATABASE_URL,
-                ssl: process.env.DATABASE_URL
-                    ? { rejectUnauthorized: false }
-                    : false,
+                user: process.env.PGUSER,
+                host: process.env.PGHOST,
+                database: process.env.PGDATABASE,
+                password: process.env.PGPASSWORD,
+                port: process.env.PGPORT,
+                ssl: {
+                    rejectUnauthorized: false
+                },
                 max: 5,
                 min: 1,
                 idleTimeoutMillis: 30000,
@@ -223,16 +231,22 @@ class DatabaseManager {
         return result.rows[0];
     }
 
-    async updateUserXP(discordId, xpToAdd) {
+    async updateUserXP(discordId, xpToAdd, source = null) {
         const query = `
-            UPDATE users 
-            SET xp = xp + $1, 
-                last_message_at = NOW(),
+            UPDATE users
+            SET xp = xp + $1,
+            last_message_at = NOW(),
                 updated_at = NOW()
             WHERE discord_id = $2
             RETURNING *
         `;
         const result = await this.query(query, [xpToAdd, discordId]);
+
+        // Log the XP source if provided
+        if (source) {
+            console.log(`XP added to user ${discordId} from ${source}: ${xpToAdd}`);
+        }
+
         return result.rows[0];
     }
 

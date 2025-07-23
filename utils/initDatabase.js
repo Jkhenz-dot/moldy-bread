@@ -95,9 +95,10 @@ const createTables = async () => {
         counting_last_user VARCHAR(255) DEFAULT NULL,
         
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+        thread_xp INTEGER DEFAULT 12,
+       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     );
+   `);
 
     // Create level_roles table
     await database.query(`
