@@ -26,7 +26,14 @@ class UserData extends BaseModel {
         }
       } catch (e) {
         console.error("Error parsing conversation history:", e);
-        user.conversationHistory = [];
+        try {
+          // Attempt to fix common JSON errors
+          const fixedJson = user.conversation_history.replace(/\\'/g, "'").replace(/u000/g, '');
+          user.conversationHistory = JSON.parse(fixedJson);
+        } catch (e2) {
+          console.error("Error fixing and parsing conversation history:", e2);
+          user.conversationHistory = [];
+        }
       }
     } else if (user) {
       user.conversationHistory = [];
@@ -87,7 +94,14 @@ class UserData extends BaseModel {
             user.conversationHistory = [];
           }
         } catch (e) {
-          user.conversationHistory = [];
+          try {
+            // Attempt to fix common JSON errors
+            const fixedJson = user.conversation_history.replace(/\\'/g, "'").replace(/u000/g, '');
+            user.conversationHistory = JSON.parse(fixedJson);
+          } catch (e2) {
+            console.error("Error fixing and parsing conversation history:", e2);
+            user.conversationHistory = [];
+          }
         }
       }
 

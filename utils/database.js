@@ -5,7 +5,7 @@ class DatabaseManager {
         const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.DATABASE_URL
-                ? { rejectUnauthorized: false }
+                ? { rejectUnauthorized: true, sslmode: 'require' }
                 : false,
             max: 5, // Reduced pool size to prevent connection overload
             min: 1, // Minimum 1 connection
