@@ -106,8 +106,11 @@ const createTables = async () => {
         id SERIAL PRIMARY KEY,
         level INTEGER NOT NULL,
         role_id VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        top1_role VARCHAR(255),
+        top2_role VARCHAR(255),
+        top3_role VARCHAR(255),
+        top4_role VARCHAR(255),
+        top5_role VARCHAR(255)
       );
     `);
 

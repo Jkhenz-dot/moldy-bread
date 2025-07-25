@@ -3,8 +3,13 @@ const BaseModel = require('./BaseModel');
 class LevelRoles extends BaseModel {
   constructor() {
     super('level_roles', {
-      guildId: 'guild_id',
-      roleId: 'role_id'
+      level: 'level',
+      roleId: 'role_id',
+      top1Role: 'top1_role',
+      top2Role: 'top2_role',
+      top3Role: 'top3_role',
+      top4Role: 'top4_role',
+      top5Role: 'top5_role'
     });
   }
 
@@ -26,6 +31,11 @@ class LevelRoles extends BaseModel {
   static async deleteOne(query) {
     const instance = new LevelRoles();
     return await instance.deleteOne(query);
+  }
+
+  static async findOneAndUpdate(query, updateData, options = {}) {
+    const instance = new LevelRoles();
+    return await instance.findOneAndUpdate(query, updateData, options);
   }
 }
 

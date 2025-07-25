@@ -3232,10 +3232,60 @@
                             </div>
                         </form>
                         </div>
+    
+                
+    
                     </div>
-                            
 
+                            <!-- Top 5 Auto Role Configuration Card -->
+                        <div class="card">
+                            <h3 class="card-title">Top 5 Auto Role Configuration</h3>
+                            
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                                <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                    Configure automatic role assignments for the top 5 users on the leaderboard. Select a role for each position.
+                                </p>
+                            </div>
+    
+                            <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                            <form id="top5RolesForm">
+                                 <div class="form-group">
+                                     <label class="form-label">1st Place Role</label>
+                                     <select id="top1Role" class="form-select" >
+                                         <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">2nd Place Role</label>
+                                    <select id="top2Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">3rd Place Role</label>
+                                    <select id="top3Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">4th Place Role</label>
+                                    <select id="top4Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">5th Place Role</label>
+                                    <select id="top5Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary">Save Configuration</button>
+                            </form>
+                            </div>
+                        </div>
                 </div>
+
 
                 <!-- Reaction Tab -->
                 <div id="reactions" class="tab-content">
@@ -4295,7 +4345,14 @@
                 const response = await fetch('/api/bot-data');
                 const data = await response.json();
                 
-                if (data && data.success && data.data) {
+                console.log('Bot data response:', data); // Debug log
+                
+                if (!data || !data.success) {
+                    console.error('Failed to load bot data:', data);
+                    return;
+                }
+                
+                if (data.success && data.data) {
                     // Bot 1 AI Details (with null checks)
                     const bot1Data = data.data.bot1 || {};
                     const bot1DisplayName = bot1Data.displayName || bot1Data.name || 'AI Assistant';
@@ -4505,9 +4562,74 @@
                     window.statsInterval = setInterval(loadDashboardStats, 30000); // Reduced from 5s to 30s
                 }
                 
+                // In loadDashboardData or after it loads, fetch the current Top 5 roles and populate the form
+                const top5RolesData = data?.data?.top5Roles || {
+                    top1Role: '',
+                    top2Role: '',
+                    top3Role: '',
+                    top4Role: '',
+                    top5Role: ''
+                };
+                console.log('Top 5 roles data before populating:', top5RolesData); // Debug log
+                await populateTop5RolesForm(top5RolesData);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
                 console.error('Error details:', error.message, error.stack);
+            }
+        }
+
+        // Populate Top 5 Roles form
+        async function populateTop5RolesForm(top5RolesData) {
+            try {
+                // First, fetch the guild data to get available roles
+                const response = await fetch(`/api/guild-data?serverId=${currentServerId}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    console.error('Failed to fetch guild data');
+                    return;
+                }
+
+                const roles = data.data.roles || [];
+                
+                // Function to populate a select with roles and set its value
+                const populateAndSetValue = (id, value) => {
+                    const select = document.getElementById(id);
+                    if (!select) return;
+
+                    // Clear existing options
+                    select.innerHTML = '<option value="">Select Role</option>';
+
+                    // Add roles as options
+                    roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.id;
+                        option.textContent = role.name;
+                        select.appendChild(option);
+                    });
+
+                    // Set the selected value
+                    if (value) {
+                        select.value = value;
+                        // If setting the value didn't work, try manual selection
+                        if (select.value !== value) {
+                            const option = Array.from(select.options).find(opt => opt.value === value);
+                            if (option) {
+                                option.selected = true;
+                            }
+                        }
+                    }
+                };
+
+                // Populate all role selects with their corresponding values
+                populateAndSetValue('top1Role', top5RolesData.top1Role);
+                populateAndSetValue('top2Role', top5RolesData.top2Role);
+                populateAndSetValue('top3Role', top5RolesData.top3Role);
+                populateAndSetValue('top4Role', top5RolesData.top4Role);
+                populateAndSetValue('top5Role', top5RolesData.top5Role);
+
+            } catch (error) {
+                console.error('Error populating Top 5 Roles form:', error);
             }
         }
 
@@ -4527,6 +4649,40 @@
             } catch (error) {
                 console.error('Error loading guild data:', error);
                 console.error('Guild data error details:', error.message, error.stack);
+            }
+        }
+
+        // Save Top 5 Roles Configuration
+        async function saveTop5Roles() {
+            try {
+                const roles = {
+                    top1Role: document.getElementById('top1Role').value,
+                    top2Role: document.getElementById('top2Role').value,
+                    top3Role: document.getElementById('top3Role').value,
+                    top4Role: document.getElementById('top4Role').value,
+                    top5Role: document.getElementById('top5Role').value
+                };
+
+                console.log('Saving roles:', roles);
+
+                const response = await fetch('/api/update-top5-roles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ roles })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showPopupNotification('Top 5 roles saved successfully', true);
+                } else {
+                    showPopupNotification('Failed to save Top 5 roles', false);
+                }
+            } catch (error) {
+                console.error('Error saving Top 5 roles:', error);
+                showPopupNotification('Error saving Top 5 roles', false);
             }
         }
 
@@ -5699,8 +5855,6 @@
                 });
             }
 
-
-
             // Reaction form
             const reactionsForm = document.getElementById('reactionsForm');
             if (reactionsForm) {
@@ -5739,6 +5893,39 @@
                         showPopupNotification('Error updating reaction roles', false);
                     }
                     hideProcessing();
+                });
+            }
+
+            // Top 5 Auto Role Configuration form
+            const top5RolesForm = document.getElementById('top5RolesForm');
+            if (top5RolesForm) {
+                top5RolesForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showProcessing();
+                    const roles = {
+                        top1Role: document.getElementById('top1Role').value || '',
+                        top2Role: document.getElementById('top2Role').value || '',
+                        top3Role: document.getElementById('top3Role').value || '',
+                        top4Role: document.getElementById('top4Role').value || '',
+                        top5Role: document.getElementById('top5Role').value || ''
+                    };
+                    const formData = {
+                        roles,
+                        serverId: currentServerId
+                    };
+                    try {
+                        const response = await fetch('/api/update-top5-roles', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData)
+                        });
+                        const result = await response.json();
+                        showPopupNotification(result.message, result.success);
+                    } catch (error) {
+                        showPopupNotification('Error updating Top 5 roles configuration', false);
+                    } finally {
+                        hideProcessing();
+                    }
                 });
             }
         }
@@ -5952,13 +6139,9 @@
                     levelAnnouncements: document.getElementById('levelAnnouncements').checked,
                     announcementChannel: document.getElementById('announcementChannel').value,
                     levelRoles: roleRewards,
-                    customRankCard: {
-                        backgroundColor: document.getElementById('rankCardBg').value,
-                        progressBarColor: document.getElementById('rankCardProgress').value,
-                        textColor: document.getElementById('rankCardText').value,
-                        accentColor: document.getElementById('rankCardAccent').value,
-                        cardStyle: document.getElementById('rankCardStyle').value
-                    }
+
+                    
+                  
                 };
                 
                 try {

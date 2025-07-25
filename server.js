@@ -147,6 +147,58 @@ function getSystemStats() {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+app.post('/api/update-top5-roles', async (req, res) => {
+    try {
+        const { roles } = req.body;
+
+        // Validate roles object
+        if (!roles || typeof roles !== 'object') {
+            return res.status(400).json({ success: false, message: 'Invalid roles data' });
+        }
+
+        // Validate each role ID
+        for (const key in roles) {
+            if (roles.hasOwnProperty(key)) {
+                const roleId = roles[key];
+                if (roleId && typeof roleId !== 'string') {
+                    return res.status(400).json({ success: false, message: `Invalid role ID for ${key}` });
+                }
+            }
+        }
+
+        // Store the roles in the database (replace existing roles)
+        // Only one row in the table, so update the first/only row (no guildId)
+        const existing = await LevelRoles.findOne({});
+        
+        const roleData = {
+            top1_role: roles.top1Role || '',
+            top2_role: roles.top2Role || '',
+            top3_role: roles.top3Role || '',
+            top4_role: roles.top4Role || '',
+            top5_role: roles.top5Role || ''
+        };
+
+        console.log('Updating top5Roles with:', roleData); // Debug log
+
+        if (existing) {
+            await LevelRoles.findOneAndUpdate(
+                { _id: existing._id },
+                roleData,
+                { new: true }
+            );
+        } else {
+            await LevelRoles.create(roleData);
+        }
+
+        res.json({ success: true, message: 'Top 5 roles configuration updated successfully' });
+
+        // Update top 5 roles immediately after configuration
+
+    } catch (error) {
+        console.error('Error updating top 5 roles:', error);
+        res.status(500).json({ success: false, message: 'Error updating top 5 roles' });
+    }
+});
 // Static file serving with caching
 app.use(
     express.static(".", {
@@ -231,10 +283,12 @@ app.post("/api/create-backup", async (req, res) => {
 
 // Test endpoint for database operations
 app.get("/api/test-db", async (req, res) => {
+  try {
+    let botAData, botBData, othersData;
     try {
-        const botAData = await BotA.findOne({});
-        const botBData = await BotB.findOne({});
-        const othersData = await Others.findOne({});
+      botAData = await BotA.findOne({});
+      botBData = await BotB.findOne({});
+      othersData = await Others.findOne({});
 
         res.json({
             success: true,
@@ -245,22 +299,32 @@ app.get("/api/test-db", async (req, res) => {
                 othersExists: othersData !== null,
                 postgresConnection: "Connected",
                 timestamp: new Date().toISOString(),
-            },
-        });
-    } catch (error) {
-        console.error("Database test failed:", error);
-        res.json({
-            success: false,
-            message: "Database operations failed",
-            error: error.message,
-        });
+        },
+      });
+    } catch (dbError) {
+      console.error("Database test failed:", dbError);
+      return res.status(500).json({
+        success: false,
+        message: "Database operations failed",
+        error: dbError.message,
+      });
     }
+  } catch (error) {
+    console.error("API test-db endpoint failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "API test-db endpoint failed",
+      error: error.message,
+    });
+  }
 });
 
 app.get("/api/bot-data", async (req, res) => {
     try {
         const levelRoles = await LevelRoles.find();
         const reactionRoles = await ReactionRole.find();
+        let top5Roles = await LevelRoles.findOne({});
+        
 
         const botA = await BotA.findOne();
         const botB = await BotB.findOne();
@@ -382,14 +446,7 @@ app.get("/api/bot-data", async (req, res) => {
                         botId: others?.message_react_bot_id || "bot1",
                     },
                 },
-                customRankCard: {
-                    backgroundColor: others?.rank_card_bg_color || "#23272a",
-                    progressBarColor:
-                        others?.rank_card_progress_color || "#7289da",
-                    textColor: others?.rank_card_text_color || "#ffffff",
-                    accentColor: others?.rank_card_accent_color || "#99aab5",
-                    cardStyle: others?.rank_card_style || "default",
-                },
+             
                 autoRoleSettings: {
                     enabled: others?.auto_role_enabled || false,
                     roleIds: (() => {
@@ -411,6 +468,13 @@ app.get("/api/bot-data", async (req, res) => {
                     })(),
                 },
                 others: others || {}, // Add raw others data for dashboard compatibility
+                top5Roles: {
+                    top1Role: top5Roles?.top1_role || null,
+                    top2Role: top5Roles?.top2_role || null,
+                    top3Role: top5Roles?.top3_role || null,
+                    top4Role: top5Roles?.top4_role || null,
+                    top5Role: top5Roles?.top5_role || null
+                }
             },
         });
     } catch (error) {
@@ -1295,59 +1359,6 @@ app.post("/api/update-role-rewards", async (req, res) => {
     }
 });
 
-app.post("/api/update-rank-card", async (req, res) => {
-    try {
-        const {
-            backgroundColor,
-            progressBarColor,
-            textColor,
-            accentColor,
-            cardStyle,
-            serverId,
-        } = req.body;
-
-        // Get others data
-        const othersData = await Others.findOne({});
-
-        if (!othersData?.customRankCard) {
-            if (othersData) {
-                await Others.findOneAndUpdate({}, { customRankCard: {} });
-            } else {
-                await Others.create({ customRankCard: {} });
-            }
-        }
-
-        // Get current BotA data
-        const currentBotAData = (await BotA.findOne()) || {};
-
-        const updatedBot1RankCardConfig = {
-            ...currentBotAData,
-            customRankCard: {
-                ...currentBotAData.customRankCard,
-                backgroundColor: backgroundColor || "#23272a",
-                progressBarColor: progressBarColor || "#7289da",
-                textColor: textColor || "#ffffff",
-                accentColor: accentColor || "#99aab5",
-                cardStyle: cardStyle || "default",
-            },
-        };
-
-        // TODO: Fix this update call
-        addActivity("Custom rank card settings updated");
-
-        res.json({
-            success: true,
-            message: "Rank card settings updated successfully",
-        });
-    } catch (error) {
-        console.error("Error updating rank card settings:", error);
-        res.json({
-            success: false,
-            message: "Failed to update rank card settings",
-        });
-    }
-});
-
 app.post("/api/update-levels", async (req, res) => {
     try {
         const {
@@ -1936,7 +1947,7 @@ app.post("/api/update-bot1-general", uploadAvatar, async (req, res) => {
                     console.log("Discord Bot 1 avatar updated successfully");
                 } catch (error) {
                     console.log(
-                        "Note: Discord Bot 1 avatar update failed:",
+                        "Note: Discord avatar update failed:",
                         error.message,
                     );
                 }
@@ -4049,4 +4060,36 @@ app.listen(PORT, "0.0.0.0", () => {
     addActivity("Dashboard server initialized");
 });
 
-module.exports = app;
+
+
+app.get('/api/top5-roles', async (req, res) => {
+    try {
+        const levelRoles = await LevelRoles.findOne({});
+        // Get all roles for the current guild (assume single-guild dashboard)
+        let allRoles = [];
+        if (global.discordClient && global.discordClient.guilds && global.discordClient.guilds.cache.size > 0) {
+            const guild = global.discordClient.guilds.cache.first();
+            if (guild && guild.roles && guild.roles.cache) {
+                allRoles = guild.roles.cache
+                    .filter(role => role.id !== guild.id) // Exclude @everyone
+                    .map(role => ({ id: role.id, name: role.name, color: role.hexColor }));
+            }
+        }
+        if (!levelRoles) {
+            return res.json({ success: true, roles: {}, allRoles });
+        }
+        res.json({
+            success: true,
+            roles: {
+                top1Role: levelRoles.top1Role || levelRoles.top1_role || '',
+                top2Role: levelRoles.top2Role || levelRoles.top2_role || '',
+                top3Role: levelRoles.top3Role || levelRoles.top3_role || '',
+                top4Role: levelRoles.top4Role || levelRoles.top4_role || '',
+                top5Role: levelRoles.top5Role || levelRoles.top5_role || ''
+            },
+            allRoles
+        });
+    } catch (error) {
+        res.json({ success: false, message: 'Failed to fetch Top 5 roles' });
+    }
+});

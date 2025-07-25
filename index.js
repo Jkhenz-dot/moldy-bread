@@ -95,6 +95,7 @@ const processedMessages = new Map(); // Store with timestamp for cleanup
 const recentXPUsers = new Set(); // Track users who recently gained XP
 const levelUpAnnouncements = new Set(); // Prevent duplicate level-up announcements
 const processingUsers = new Set(); // Prevent concurrent XP processing for same user
+const userLockTimes = new Map(); // Track when locks were created
 const botConfigCache = new Map(); // Cache bot configurations
 const userDataCache = new Map(); // Cache user data for faster access
 const guildPermissionCache = new Map(); // Cache permission checks
@@ -115,11 +116,16 @@ setInterval(
     // Level-up announcements are auto-cleaned by individual timeouts
     // No manual cleanup needed as each entry removes itself after 120 seconds
 
-    // Safety log to monitor processing locks (should normally be 0)
+    // Force clear locks that are over 30 seconds old
     if (processingUsers.size > 0) {
-      console.warn(
-        `${processingUsers.size} users still processing XP - possible stuck locks`,
-      );
+      const now = Date.now();
+      for (const userId of processingUsers) {
+        const lockTime = userLockTimes.get(userId);
+        if (lockTime && now - lockTime > 30000) {
+          processingUsers.delete(userId);
+          userLockTimes.delete(userId);
+        }
+      }
     }
 
     // Clean old user data cache
@@ -430,26 +436,27 @@ const xpForLevel = (level) => {
 };
 
 // XP is only handled by Bot 1
-const addXP = async (userId, guildId, message = null) => {
+const addXP = async (userId, message = null, xp = 1, source = "default") => {
   let lockTimeout = null; // Declare outside try block for finally access
   try {
     // Check if user recently gained XP to avoid spam
-    const userCooldownKey = `${userId}-${guildId}`;
+    const userCooldownKey = `${userId}`;
     if (recentXPUsers.has(userCooldownKey)) return;
 
     // Prevent concurrent processing for the same user with stronger locking
-    const processingKey = `${userId}-${guildId}`;
+    const processingKey = `${userId}`;
     if (processingUsers.has(processingKey)) {
       return; // Exit immediately if already processing
     }
 
     // Lock this user for processing
     processingUsers.add(processingKey);
+    userLockTimes.set(processingKey, Date.now());
 
     // Auto-release lock after 10 seconds to prevent permanent locks
     lockTimeout = setTimeout(() => {
       processingUsers.delete(processingKey);
-      console.warn(`Auto-released stuck XP lock for ${processingKey}`);
+      userLockTimes.delete(processingKey);
     }, 10000);
 
     // Cache others data to avoid repeated database calls
@@ -468,7 +475,8 @@ const addXP = async (userId, guildId, message = null) => {
     const userCacheKey = `user-${userId}`;
     let user = await UserData.findOne({ discord_id: userId });
     if (!user) {
-      const guild = client1.guilds.cache.get(guildId);
+      const guildId = message?.guildId;
+      const guild = guildId ? client1.guilds.cache.get(guildId) : null;
       let member = guild?.members.cache.get(userId);
 
       // If member not in cache, try to fetch from Discord API
@@ -509,7 +517,8 @@ const addXP = async (userId, guildId, message = null) => {
 
     // Fix missing usernames for existing users
     if (!user.username || user.username === "" || user.username === "Unknown") {
-      const guild = client1.guilds.cache.get(guildId);
+      const guildId = message?.guildId;
+      const guild = guildId ? client1.guilds.cache.get(guildId) : null;
       let member = guild?.members.cache.get(userId);
 
       if (!member && guild) {
@@ -637,7 +646,8 @@ const addXP = async (userId, guildId, message = null) => {
           // Level-up announcement lock removed
         }, 120000);
       }
-      const guild = client1.guilds.cache.get(guildId);
+      const guildId = message?.guildId;
+      const guild = guildId ? client1.guilds.cache.get(guildId) : null;
       if (guild) {
         const member = guild.members.cache.get(userId);
         if (member) {
@@ -751,11 +761,16 @@ const addXP = async (userId, guildId, message = null) => {
       }
       return { levelUp: true, newLevel: user.level };
     }
+
+    // Always update top 5 roles after XP gain
+    if (message?.guildId) {
+      await updateTop5Roles(message.guildId);
+    }
   } catch (e) {
     console.error("XP error:", e);
   } finally {
     // Always unlock the user after processing
-    const processingKey = `${userId}-${guildId}`;
+    const processingKey = `${userId}`;  // Simplified key without guildId
     processingUsers.delete(processingKey);
     // Clear the timeout to prevent memory leak
     if (lockTimeout) {
@@ -912,6 +927,11 @@ const setupBot = async (client, botToken, botName) => {
         allowedChannels: "",
       };
     }
+
+    for (const guild of client1.guilds.cache.values()) {
+      await updateTop5Roles(guild.id);
+    }
+    console.log('Top 5 XP roles assigned on startup');
   });
 
   // Guild Member Add handler (Welcomer and Auto Role)
@@ -1314,7 +1334,7 @@ const setupBot = async (client, botToken, botName) => {
 
     // Only bot1 handles XP
     if (client.botId === "bot1") {
-      await addXP(message.author.id, message.guildId, message);
+      await addXP(message.author.id, message);
     }
 
     // Forum auto-react is now handled in threadCreate event, not in messageCreate
@@ -2568,5 +2588,101 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
   gracefulShutdown("unhandledRejection");
 });
+
+// --- Top 5 XP Role Assignment ---
+async function updateTop5Roles(guildId) {
+  try {
+    const LevelRoles = require('./models/postgres/LevelRoles');
+    const UserData = require('./models/postgres/UserData');
+    const allLevelRoles = await LevelRoles.find({});
+    let levelRoles = allLevelRoles.find(lr =>
+      lr.top1Role || lr.top2Role || lr.top3Role || lr.top4Role || lr.top5Role ||
+      lr.top1_role || lr.top2_role || lr.top3_role || lr.top4_role || lr.top5_role
+    );
+    if (!levelRoles) return;
+    const topRoles = [
+      levelRoles.top1Role || levelRoles.top1_role || '',
+      levelRoles.top2Role || levelRoles.top2_role || '',
+      levelRoles.top3Role || levelRoles.top3_role || '',
+      levelRoles.top4Role || levelRoles.top4_role || '',
+      levelRoles.top5Role || levelRoles.top5_role || '',
+    ];
+    const guild = client1.guilds.cache.get(guildId);
+    if (!guild) return;
+    await guild.members.fetch();
+    const topUsers = (await UserData.find({})).sort((a, b) => b.xp - a.xp).slice(0, 5);
+    const topUserIds = topUsers.map(u => u.discord_id);
+    for (let i = 0; i < 5; i++) {
+      const userId = topUserIds[i];
+      const roleId = topRoles[i];
+      if (!userId || !roleId) continue;
+      try {
+        const member = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+        const role = guild.roles.cache.get(roleId);
+
+        if (member && role) {
+          // Remove any other top roles the user might have before adding the new one
+          for (const otherRoleId of topRoles) {
+            if (otherRoleId && otherRoleId !== roleId) {
+              const otherRole = guild.roles.cache.get(otherRoleId);
+              if (otherRole && member.roles.cache.has(otherRole.id)) {
+                await member.roles.remove(otherRole);
+              }
+            }
+          }
+          // Add the new top role if the user doesn't have it
+          if (!member.roles.cache.has(role.id)) {
+            await member.roles.add(role);
+          }
+        }
+      } catch (err) {
+        console.log(`[Top5Roles] Error assigning Top ${i+1} role:`, err.message);
+      }
+    }
+    for (let i = 0; i < 5; i++) {
+      const roleId = topRoles[i];
+      if (!roleId) continue;
+      const role = guild.roles.cache.get(roleId);
+      if (!role) continue;
+      for (const member of role.members.values()) {
+        if (!topUserIds.includes(member.id)) {
+          try {
+            await member.roles.remove(role);
+          } catch (err) {
+            console.log(`[Top5Roles] Error removing Top role:`, err.message);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[Top5Roles] Error in updateTop5Roles:', err.message);
+  }
+}
+
+// --- Streaming XP Reward ---
+setInterval(async () => {
+  try {
+    if (!client1 || !client1.readyAt) return;
+    for (const guild of client1.guilds.cache.values()) {
+      await guild.members.fetch(); // Ensure member cache is populated
+      for (const channel of guild.channels.cache.values()) {
+        if (channel.type !== 2) continue; // Only voice channels
+        for (const member of channel.members.values()) {
+          if (member.user.bot) continue;
+          if (member.voice && member.voice.streaming) {
+            try {
+              await addXP(member.id, null, 3, 'streaming');
+              
+            } catch (err) {
+              console.log(`[StreamingXP] Error giving XP to ${member.user.username}:`, err.message);
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[StreamingXP] Error in streaming XP interval:', err.message);
+  }
+}, 15 * 60 * 1000); // Every 15 minutes
 
 module.exports = { client1, client2, getRandomPastelColor };

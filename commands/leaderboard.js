@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const UserData = require('../models/postgres/UserData');
+const LevelRoles = require('../models/postgres/LevelRoles');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -120,3 +121,5 @@ module.exports = {
     }
   }
 };
+
+

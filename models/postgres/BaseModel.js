@@ -139,7 +139,10 @@ class BaseModel {
         paramIndex++;
       });
 
-      setClause.push(`updated_at = NOW()`);
+      // Only add updated_at if the model maps it
+      if (this.fieldMappings.updated_at || this.fieldMappings.updatedAt) {
+        setClause.push(`updated_at = NOW()`);
+      }
       
       const { whereClause } = this.buildWhereClause(query);
       Object.values(query).forEach(value => {
