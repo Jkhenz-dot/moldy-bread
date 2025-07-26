@@ -7,6 +7,7 @@ module.exports = {
   BotA: require('./BotA'),
   BotB: require('./BotB'),
   Others: require('./Others'),
+  Experience: require('./Experience'),
   WelcomeMessage: require('./WelcomeMessage'),
   TopRoles: require('./TopRoles')
 };

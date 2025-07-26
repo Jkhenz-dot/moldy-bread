@@ -17,12 +17,13 @@ const {
 } = require("discord.js");
 
 // Database models - lazy loaded to improve startup time
-let BotA, BotB, Others, UserData, LevelRoles, Birthday, ReactionRole, Reminder;
+let BotA, BotB, Others, Experience, UserData, LevelRoles, Birthday, ReactionRole, Reminder;
 const loadDatabaseModels = () => {
   if (!BotA) {
     BotA = require("./models/postgres/BotA");
     BotB = require("./models/postgres/BotB");
     Others = require("./models/postgres/Others");
+    Experience = require("./models/postgres/Experience");
     UserData = require("./models/postgres/UserData");
     LevelRoles = require("./models/postgres/LevelRoles");
     Birthday = require("./models/postgres/Birthday");
@@ -33,6 +34,7 @@ const loadDatabaseModels = () => {
     BotA,
     BotB,
     Others,
+    Experience,
     UserData,
     LevelRoles,
     Birthday,
@@ -69,13 +71,13 @@ const ALLOWED_GUILDS = process.env.ALLOWED_GUILD_IDS?.split(",") || [];
 
 // Optimized constants - cached at startup
 const PASTEL_COLORS = Object.freeze([
-  "#FFB3BA",
+  "#ffbec4ff",
   "#FFDFBA",
   "#FFFFBA",
   "#BAFFC9",
   "#BAE1FF",
   "#E1BAFF",
-  "#FFB3E6",
+  "#ffbfeaff",
   "#B3E5D1",
   "#FFE5B3",
   "#E5B3FF",
@@ -333,12 +335,17 @@ const initializeDashboardData = async () => {
       console.log("Creating initial Others configuration...");
       othersData = await Others.create({});
     }
+    let experienceData = await Experience.findOne();
+    if (!experienceData) {
+      console.log("Creating initial Experience configuration...");
+      experienceData = await Experience.create({});
+    }
 
     // Sync dashboard data on startup
     global.dashboardData = {
       bot1Config: BotA || {},
       bot2Config: BotB || {},
-      xpSettings: othersData || {},
+      xpSettings: experienceData || {},
       forumAutoReact: { enabled: false },
       counting: { enabled: false },
       stats: { interactions: 0, commands: 0 },
@@ -369,9 +376,9 @@ const syncDashboardToDatabase = async (updatedData) => {
       await BotB.findOneAndUpdate({}, updatedData.bot2Config, { upsert: true });
     }
 
-    // Update Others data
+    // Update Experience data
     if (updatedData.xpSettings) {
-      await Others.findOneAndUpdate({}, updatedData.xpSettings, {
+      await Experience.findOneAndUpdate({}, updatedData.xpSettings, {
         upsert: true,
       });
     }
@@ -417,23 +424,6 @@ const calculateLevel = (xp) => {
   return level;
 };
 
-const xpForLevel = (level) => {
-  if (level <= 0) return 0;
-
-  let totalXP = 0;
-
-  for (let i = 0; i < level; i++) {
-    const tierMultiplier = 1 + Math.floor(i / 5) * 0.21;
-
-    if (i === 0) {
-      totalXP += 1; // Level 1 requires just 1 XP
-    } else {
-      totalXP += Math.pow(i, 2) * 100 * tierMultiplier;
-    }
-  }
-
-  return Math.floor(totalXP);
-};
 
 // XP is only handled by Bot 1
 const addXP = async (userId, message = null, xp = 1, source = "default") => {
@@ -459,20 +449,20 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
       userLockTimes.delete(processingKey);
     }, 10000);
 
-    // Cache others data to avoid repeated database calls
-    const cacheKey = "othersData";
-    let othersData;
+    // Cache experience data to avoid repeated database calls
+    const cacheKey = "experienceData";
+    let experienceData;
     if (botConfigCache.has(cacheKey)) {
-      othersData = botConfigCache.get(cacheKey);
+      experienceData = botConfigCache.get(cacheKey);
     } else {
-      othersData = await Others.findOne();
-      if (!othersData) return;
-      botConfigCache.set(cacheKey, othersData);
+      experienceData = await Experience.findOne();
+      if (!experienceData) return;
+      botConfigCache.set(cacheKey, experienceData);
       setTimeout(() => botConfigCache.delete(cacheKey), 60000); // Cache for 1 minute
     }
 
     // Always fetch fresh user data from database to prevent cache conflicts
-    const userCacheKey = `user-${userId}`;
+
     let user = await UserData.findOne({ discord_id: userId });
     if (!user) {
       const guildId = message?.guildId;
@@ -493,7 +483,6 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
         member?.displayName ||
         `User_${userId.oesslice(-4)}`;
 
-      console.log(`Creating new user: ${userId} with username: ${username}`);
 
       // Use upsert to handle duplicate key errors gracefully
       user = await UserData.findOneAndUpdate(
@@ -547,20 +536,20 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
     if (
       user.last_xp_gain &&
       Date.now() - new Date(user.last_xp_gain) <
-        (othersData.xp_cooldown || 70000)
+        (experienceData.xp_cooldown || 70000)
     ) {
       // Add to cooldown set to prevent repeated checks
       recentXPUsers.add(userCooldownKey);
       setTimeout(
         () => recentXPUsers.delete(userCooldownKey),
-        othersData.xp_cooldown || 70000,
+        experienceData.xp_cooldown || 70000,
       );
       return;
     }
 
     const oldLevel = user.level;
-    const minXp = othersData.min_xp || 1;
-    const maxXp = othersData.max_xp || 15;
+    const minXp = experienceData.min_xp || 1;
+    const maxXp = experienceData.max_xp || 15;
     let randomXp = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
 
     // Apply XP modifiers based on message content
@@ -569,10 +558,8 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
         message.attachments && message.attachments.size > 0;
       const content = message.content.trim();
 
-      // Check if message mentions any bot (client1 or client2)
-      const mentionsBot =
-        message.mentions.has(client1.user) ||
-        (client2 && message.mentions.has(client2.user));
+      // Check for URLs in the message
+      const hasUrl = /https?:\/\/[^\s]+/.test(content);
 
       // Check if message is emoji-only (including Unicode emojis and Discord custom emojis)
       const isEmojiOnly =
@@ -587,23 +574,21 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
               content,
             )));
 
-      if (mentionsBot) {
-        // +2 XP bonus for mentioning bots
-        randomXp = randomXp + 2;
-        // XP bonus applied for bot mention
-      } else if (hasAttachments) {
-        // 1.5x XP for messages with attachments
-        randomXp = Math.floor(randomXp * 1.5);
-        // XP multiplier applied for attachment
-      } else if (isEmojiOnly) {
-        // -1 XP for emoji-only messages (minimum 1 XP)
-        randomXp = Math.max(1, randomXp - 1);
+      if (isEmojiOnly) {
+        // -1 XP for emoji-only messages
+        randomXp = randomXp - 1;
         // XP penalty applied for emoji-only message
       } else if (content.length === 1) {
-        // Single character messages get -1 XP (minimum 1 XP)
-        randomXp = Math.max(1, randomXp - 1);
+        // -1 XP for single character messages
+        randomXp = randomXp - 1;
         // XP penalty applied for single character message
+      } else if (hasUrl && content.split(' ').length === 1) {
+        // -1 XP for messages that are just a link
+        randomXp = randomXp - 1;
+        // XP penalty applied for link-only message
       }
+      
+     randomXp = randomXp - 1;
     }
 
     const newXp = user.xp + randomXp;
@@ -690,7 +675,7 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
                 model: "gemini-2.5-flash",
               });
 
-              const prompt = `Generate a short celebratory congratulation message for someone leveling up in a Discord server. Keep it under 40 characters, make it fun and encouraging. Just return the message, nothing else.Emojis not allowed`;
+              const prompt = `Generate a short celebratory congratulation message for someone leveling up in a Discord server. Keep it under 40 characters, make it encouraging. Just return the message, nothing else.Emojis not allowed`;
 
               const result = await model.generateContent(prompt);
               const response = await result.response;
@@ -1047,7 +1032,7 @@ const setupBot = async (client, botToken, botName) => {
           });
         } else {
           const embed = new EmbedBuilder()
-            .setTitle("❌ Access Denied")
+            .setTitle("Access Denied")
             .setDescription("Only the original user can delete this message")
             .setColor(0xff0000);
           await interaction.reply({
@@ -1115,7 +1100,7 @@ const setupBot = async (client, botToken, botName) => {
         othersData.counting_channel === interaction.channelId
       ) {
         const embed = new EmbedBuilder()
-          .setTitle("❌ Counting Channel")
+          .setTitle("Counting Channel")
           .setDescription(
             `No commands are allowed in the counting channel. This channel is for counting only.`,
           )
@@ -1137,7 +1122,7 @@ const setupBot = async (client, botToken, botName) => {
         // Check if user is in voice channel
         if (!interaction.member?.voice?.channel) {
           const embed = new EmbedBuilder()
-            .setTitle("❌ Voice Channel Required")
+            .setTitle("Voice Channel Required")
             .setDescription(
               `You must be in a voice channel to use this command.`,
             )
@@ -1171,7 +1156,7 @@ const setupBot = async (client, botToken, botName) => {
         if (allowedChannels.length > 0) {
           if (!allowedChannels.includes(interaction.channelId)) {
             const embed = new EmbedBuilder()
-              .setTitle("❌ Channel Restricted")
+              .setTitle("Channel Restricted")
               .setDescription(
                 `Voice commands can only be used in allowed channels. Contact an administrator to configure channel permissions.`,
               )
@@ -1206,7 +1191,7 @@ const setupBot = async (client, botToken, botName) => {
         if (allowedChannels.length > 0) {
           if (!allowedChannels.includes(interaction.channelId)) {
             const embed = new EmbedBuilder()
-              .setTitle("❌ Channel Restricted")
+              .setTitle("Channel Restricted")
               .setDescription(
                 `This command can only be used in allowed channels. Contact an administrator to configure channel permissions.`,
               )
@@ -1224,6 +1209,39 @@ const setupBot = async (client, botToken, botName) => {
     }
 
     try {
+      // Award XP for using slash commands from either bot (but only processed by bot1)
+      if (client.botId === "bot1") {
+        try {
+          const Experience = require("./models/postgres/Experience");
+          const UserData = require("./models/postgres/UserData");
+          const experienceData = await Experience.findOne();
+          const slashXp = experienceData?.slash_xp || 0;
+          
+          if (slashXp > 0) {
+            let userData = await UserData.findOne({ discord_id: interaction.user.id });
+            if (!userData) {
+              userData = await UserData.create({
+                discord_id: interaction.user.id,
+                username: interaction.user.username,
+                xp: 0,
+                level: 0
+              });
+            }
+            
+            const newXP = (userData.xp || 0) + slashXp;
+            const newLevel = calculateLevel(newXP);
+            
+            await UserData.findOneAndUpdate(
+              { discord_id: interaction.user.id },
+              { xp: newXP, level: newLevel },
+              { upsert: true }
+            );
+          }
+        } catch (error) {
+          console.error("Error awarding slash command XP:", error);
+        }
+      }
+
       await command.execute(interaction, client);
     } catch (error) {
       console.error(`Discord client error: ${error}`);
@@ -1433,7 +1451,7 @@ const setupBot = async (client, botToken, botName) => {
             }
 
             await message.reply(
-              `❌ Wrong number! Expected **${expectedNumber}** but got **${number}**. Counting reset to **1**.`,
+              `Wrong number! Expected **${expectedNumber}** but got **${number}**. Counting reset to **1**.`,
             );
 
             try {
@@ -1490,6 +1508,39 @@ const setupBot = async (client, botToken, botName) => {
     }
 
     if (message.mentions.has(client.user)) {
+      // Award XP for bot mention (works for either bot, but processed by bot1)
+      if (client.botId === "bot1") {
+        try {
+          const Experience = require("./models/postgres/Experience");
+          const UserData = require("./models/postgres/UserData");
+          const experienceData = await Experience.findOne();
+          const mentionXp = experienceData?.mention_xp || 0;
+          
+          if (mentionXp > 0) {
+            let userData = await UserData.findOne({ discord_id: message.author.id });
+            if (!userData) {
+              userData = await UserData.create({
+                discord_id: message.author.id,
+                username: message.author.username,
+                xp: 0,
+                level: 0
+              });
+            }
+            
+            const newXP = (userData.xp || 0) + mentionXp;
+            const newLevel = calculateLevel(newXP);
+            
+            await UserData.findOneAndUpdate(
+              { discord_id: message.author.id },
+              { xp: newXP, level: newLevel },
+              { upsert: true }
+            );
+          }
+        } catch (error) {
+          console.error("Error awarding mention XP:", error);
+        }
+      }
+
       // Direct mention - check if allowed in this channel
       const allowedChannels = botConfig?.allowed_channels || [];
       if (allowedChannels.length > 0) {
@@ -1567,11 +1618,9 @@ const setupBot = async (client, botToken, botName) => {
     }
 
     if (shouldThisBotRespond) {
-      if (
-        botConfig?.blacklistedUsers &&
-        botConfig.blacklistedUsers.includes(message.author.id)
-      )
-        return;
+      // Check blacklist from Others table
+      const blacklistedUsers = JSON.parse(othersData?.blacklisted_users || '[]');
+      if (blacklistedUsers.includes(message.author.id)) return;
 
       // Mark this specific message as processed by this bot
       processedMessages.set(messageKey, Date.now());
@@ -1846,8 +1895,7 @@ const setupBot = async (client, botToken, botName) => {
       if (client.botId === "bot1" && thread.ownerId) {
         try {
           const UserData = require("./models/postgres/UserData");
-
-          // Get current user data
+          const Experience = require("./models/postgres/Experience");
           // Get current user data, or create if it doesn't exist
           let userData = await UserData.findOne({ discord_id: thread.ownerId });
           if (!userData) {
@@ -1859,18 +1907,16 @@ const setupBot = async (client, botToken, botName) => {
               level: 0,
             });
           }
-
           // If user data is still not available, log error and exit
           if (!userData) {
             console.error(`Could not find or create user ${thread.ownerId} for thread XP award.`);
             return;
           }
-
-          // Award XP for forum thread creation
-          const threadXP = othersData?.thread_xp || 20;
+          // Use Experience model for thread XP config
+          const experienceData = await Experience.findOne();
+          const threadXP = experienceData?.thread_xp || 20;
           const newXP = (userData.xp || 0) + threadXP;
           const newLevel = calculateLevel(newXP);
-
           // Single, atomic update for XP and level
           await UserData.findOneAndUpdate(
             { discord_id: thread.ownerId },
@@ -1880,7 +1926,6 @@ const setupBot = async (client, botToken, botName) => {
             },
             { upsert: true },
           );
-
           // No level-up announcements for forum threads
         } catch (error) {
           console.error("Error awarding XP for thread creation:", error);
@@ -2670,29 +2715,53 @@ async function updateTop5Roles(guildId) {
 }
 
 // --- Streaming XP Reward ---
-setInterval(async () => {
+let streamingInterval;
+
+async function updateStreamingXPInterval() {
   try {
-    if (!client1 || !client1.readyAt) return;
-    for (const guild of client1.guilds.cache.values()) {
-      await guild.members.fetch(); // Ensure member cache is populated
-      for (const channel of guild.channels.cache.values()) {
-        if (channel.type !== 2) continue; // Only voice channels
-        for (const member of channel.members.values()) {
-          if (member.user.bot) continue;
-          if (member.voice && member.voice.streaming) {
-            try {
-              await addXP(member.id, null, 3, 'streaming');
-              
-            } catch (err) {
-              console.log(`[StreamingXP] Error giving XP to ${member.user.username}:`, err.message);
+    const Experience = require('./models/postgres/Experience');
+    const experienceData = await Experience.findOne({});
+    const streamerXp = experienceData?.streamer_xp || 3; // Default 3 XP
+    const minuteCheck = experienceData?.minute_check || 15; // Default 15 minutes
+
+    // Clear existing interval if it exists
+    if (streamingInterval) {
+      clearInterval(streamingInterval);
+    }
+
+    // Set new interval with values from database
+    streamingInterval = setInterval(async () => {
+      try {
+        if (!client1 || !client1.readyAt) return;
+        for (const guild of client1.guilds.cache.values()) {
+          await guild.members.fetch(); // Ensure member cache is populated
+          for (const channel of guild.channels.cache.values()) {
+            if (channel.type !== 2) continue; // Only voice channels
+            for (const member of channel.members.values()) {
+              if (member.user.bot) continue;
+              if (member.voice && member.voice.streaming) {
+                try {
+                  await addXP(member.id, null, streamerXp, 'streaming');
+                } catch (err) {
+                  console.log(`[StreamingXP] Error giving XP to ${member.user.username}:`, err.message);
+                }
+              }
             }
           }
         }
+      } catch (err) {
+        console.log('[StreamingXP] Error in streaming XP interval:', err.message);
       }
-    }
+    }, minuteCheck * 60 * 1000); // Convert minutes to milliseconds
   } catch (err) {
-    console.log('[StreamingXP] Error in streaming XP interval:', err.message);
+    console.error('[StreamingXP] Error updating interval:', err.message);
   }
-}, 15 * 60 * 1000); // Every 15 minutes
+}
+
+// Initialize streaming XP interval
+updateStreamingXPInterval();
+
+// Update interval when database values change
+global.updateStreamingXPInterval = updateStreamingXPInterval;
 
 module.exports = { client1, client2, getRandomPastelColor };

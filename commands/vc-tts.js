@@ -36,7 +36,7 @@ module.exports = {
             const member = interaction.member;
             if (!member || !member.voice.channel) {
                 await interaction.reply({
-                    content: "❌ You need to be in a voice channel to use TTS!",
+                    content: "You need to be in a voice channel to use TTS!",
                     flags: [MessageFlags.Ephemeral],
                 });
                 return;
@@ -53,7 +53,7 @@ module.exports = {
             if (activeTTSSessions.has(sessionKey)) {
                 const botName = interaction.client.user.username;
                 await interaction.reply({
-                    content: `❌ ${botName} is already speaking in this voice channel. Please wait for me to finish.`,
+                    content: `${botName} is already speaking in this voice channel. Please wait for me to finish.`,
                     flags: [MessageFlags.Ephemeral],
                 });
                 return;

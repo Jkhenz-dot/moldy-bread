@@ -520,6 +520,40 @@
                             <button type="submit" class="trendy-btn trendy-btn-primary">Apply Thread XP</button>
                         </form>
                         </div>
+
+                        <!-- Streaming Settings -->
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="streamingSettingsForm">
+                            <div class="form-group">
+                                <label class="form-label">Streamer XP</label>
+                                <input type="number" id="streamerXp" class="form-input" placeholder="XP for streaming" min="1" max="50">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">XP awarded for streaming in voice channels</small>
+                            </div>
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label">Check Interval (minutes)</label>
+                                <input type="number" id="minuteCheck" class="form-input" placeholder="Check interval in minutes" min="1" max="60">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">How often to check for streaming users</small>
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Apply Streaming Settings</button>
+                        </form>
+                        </div>
+
+                        <!-- Bot Interaction Settings -->
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="botInteractionForm">
+                            <div class="form-group">
+                                <label class="form-label">Slash Command XP</label>
+                                <input type="number" id="slashXp" class="form-input" placeholder="XP for using slash commands" min="1" max="50">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">XP awarded for using bot slash commands</small>
+                            </div>
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label class="form-label">Bot Mention XP</label>
+                                <input type="number" id="mentionXp" class="form-input" placeholder="XP for mentioning bots" min="1" max="50">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">XP awarded for mentioning or replying to bots</small>
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Apply Bot XP Settings</button>
+                        </form>
+                        </div>
                     </div>
 
                     <!-- Level Up Announcements Card -->
@@ -649,7 +683,7 @@
                         <form id="autoReactForm">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="forumAutoReact" class="checkbox">
-                                <label for="forumAutoReact" class="form-label">Enable Auto React in All Forums</label>
+                                <label for="forumAutoReact" class="form-label">Enable Auto React in a Forum</label>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Auto React in Specific Forum</label>
@@ -1082,7 +1116,7 @@
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
                                     <h5 style="margin-bottom: 10px;">Others</h5>
-                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">System settings, XP, counting</p>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">System settings, blacklist, XP, counting</p>
                                     <button onclick="viewTable('others')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
                                 <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
@@ -1109,6 +1143,16 @@
                                     <h5 style="margin-bottom: 10px;">Reminders</h5>
                                     <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">User reminder data</p>
                                     <button onclick="viewTable('reminders')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Experience</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Global XP settings and rewards</p>
+                                    <button onclick="viewTable('experience')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Top Roles</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Top role configuration for each guild</p>
+                                    <button onclick="viewTable('top_roles')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
                                 </div>
 
                             </div>

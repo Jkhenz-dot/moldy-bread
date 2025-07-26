@@ -496,6 +496,38 @@
                     console.error('Failed to load bot data:', data);
                     return;
                 }
+
+                // Load experience data to populate XP-related fields
+                const experienceResponse = await fetch('/api/experience-data');
+                const experienceData = await experienceResponse.json();
+                
+                if (experienceData.success) {
+                    // Populate streaming XP fields
+                    const streamerXpInput = document.getElementById('streamerXp');
+                    const minuteCheckInput = document.getElementById('minuteCheck');
+                    
+                    if (streamerXpInput) {
+                        streamerXpInput.value = experienceData.data.streamer_xp || 3;
+                    }
+                    if (minuteCheckInput) {
+                        minuteCheckInput.value = experienceData.data.minute_check || 15;
+                    }
+
+                    // Populate other XP fields if they exist
+                    const slashXpInput = document.getElementById('slashXp');
+                    const mentionXpInput = document.getElementById('mentionXp');
+                    const threadXpInput = document.getElementById('threadXp');
+                    
+                    if (slashXpInput) {
+                        slashXpInput.value = experienceData.data.slash_xp || 0;
+                    }
+                    if (mentionXpInput) {
+                        mentionXpInput.value = experienceData.data.mention_xp || 0;
+                    }
+                    if (threadXpInput) {
+                        threadXpInput.value = experienceData.data.thread_xp || 0;
+                    }
+                }
                 
                 if (data.success && data.data) {
                     // Bot 1 AI Details (with null checks)
@@ -624,7 +656,9 @@
                         { id: 'maxXp', value: xpSettings.maxXp || 15 },
                         { id: 'xpCooldown', value: Math.floor((xpSettings.xpCooldown || 60000) / 1000) },
                         { id: 'announcementChannel', value: xpSettings.announcementChannel || '' },
-                        { id: 'threadXp', value: xpSettings.threadXp || 0 }
+                        { id: 'threadXp', value: xpSettings.threadXp || 20 },
+                        { id: 'streamerXp', value: xpSettings.streamerXp || 3 },
+                        { id: 'minuteCheck', value: xpSettings.minuteCheck || 15 }
                     ];
                     
                     xpElements.forEach(elem => {
@@ -1224,7 +1258,7 @@
                 if (!result.success) {
                     resultDiv.innerHTML = `
                         <div style="padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 6px; color: #ef4444; font-size: 14px;">
-                            ❌ ${result.message || 'Message not found'}
+                            ${result.message || 'Message not found'}
                         </div>
                     `;
                     resultDiv.style.display = 'block';
@@ -1285,7 +1319,7 @@
                 
                 resultDiv.innerHTML = `
                     <div style="padding: 8px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 6px; color: #ef4444; font-size: 14px;">
-                        ❌ Error checking message: ${errorMessage}
+                        Error checking message: ${errorMessage}
                     </div>
                 `;
                 resultDiv.style.display = 'block';
@@ -1959,6 +1993,100 @@
                         showPopupNotification(result.message, result.success);
                     } catch (error) {
                         showPopupNotification('Error updating thread XP settings', false);
+                    }
+                    hideProcessing();
+                });
+            }
+
+            // Streaming Settings form
+            const streamingSettingsForm = document.getElementById('streamingSettingsForm');
+            if (streamingSettingsForm) {
+                streamingSettingsForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showProcessing();
+                    
+                    const streamerXp = parseInt(document.getElementById('streamerXp').value);
+                    const minuteCheck = parseInt(document.getElementById('minuteCheck').value);
+                    
+                    try {
+                        // Update both settings in parallel
+                        const [streamerResponse, minuteResponse] = await Promise.all([
+                            fetch('/api/update-streamer-xp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    streamerXp,
+                                    serverId: currentServerId
+                                })
+                            }),
+                            fetch('/api/update-minute-check', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    minuteCheck,
+                                    serverId: currentServerId
+                                })
+                            })
+                        ]);
+                        
+                        const [streamerResult, minuteResult] = await Promise.all([
+                            streamerResponse.json(),
+                            minuteResponse.json()
+                        ]);
+                        
+                        if (streamerResult.success && minuteResult.success) {
+                            showPopupNotification('Streaming settings updated successfully', true);
+                            // Update bot's streaming check interval
+                            if (typeof global !== 'undefined' && global.updateStreamingXPInterval) {
+                                global.updateStreamingXPInterval();
+                            }
+                        } else {
+                            showPopupNotification('Error updating some streaming settings', false);
+                        }
+                    } catch (error) {
+                        showPopupNotification('Error updating streaming settings', false);
+                    }
+                    hideProcessing();
+                });
+            }
+
+            // Bot Interaction XP form
+            const botInteractionForm = document.getElementById('botInteractionForm');
+            if (botInteractionForm) {
+                botInteractionForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showProcessing();
+                    
+                    const slashXp = parseInt(document.getElementById('slashXp').value);
+                    const mentionXp = parseInt(document.getElementById('mentionXp').value);
+                    
+                    try {
+                        // Update both settings in parallel
+                        const [slashResponse, mentionResponse] = await Promise.all([
+                            fetch('/api/update-slash-xp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ slashXp })
+                            }),
+                            fetch('/api/update-mention-xp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ mentionXp })
+                            })
+                        ]);
+                        
+                        const [slashResult, mentionResult] = await Promise.all([
+                            slashResponse.json(),
+                            mentionResponse.json()
+                        ]);
+                        
+                        if (slashResult.success && mentionResult.success) {
+                            showPopupNotification('Bot interaction XP settings updated successfully', true);
+                        } else {
+                            showPopupNotification('Error updating some bot interaction XP settings', false);
+                        }
+                    } catch (error) {
+                        showPopupNotification('Error updating bot interaction XP settings', false);
                     }
                     hideProcessing();
                 });

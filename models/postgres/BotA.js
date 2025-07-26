@@ -6,8 +6,7 @@ class BotA extends BaseModel {
     super('bota', {
       allowedChannels: 'allowed_channels',
       activityText: 'activity_text',
-      activityType: 'activity_type',
-      blacklistedUsers: 'blacklisted_users'
+      activityType: 'activity_type'
     });
   }
 

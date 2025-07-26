@@ -4,26 +4,19 @@ const database = require("../../utils/database");
 class Others extends BaseModel {
   constructor() {
     super("others", {
-      xpEnabled: "xp_enabled",
-      minXp: "min_xp",
-      maxXp: "max_xp",
-      xpCooldown: "xp_cooldown",
-      levelUpAnnouncement: "level_up_announcement",
-
-      announcementChannel: "announcement_channel",
-      threadXp: "thread_xp",
       
+      levelUpAnnouncement: "level_up_announcement",
+      announcementChannel: "announcement_channel",
       autoRoleEnabled: "auto_role_enabled",
       autoRoleIds: "auto_role_ids",
-      
       forumAutoReactEnabled: "forum_auto_react_enabled",
       forumChannels: "forum_channels",
       forumEmojis: "forum_emojis",
-      
+     
       countingEnabled: "counting_enabled",
       countingChannel: "counting_channel",
       countingCurrent: "counting_current",
-      countingLastUser: "counting_last_user",
+      countingLastUser: "counting_last_user"
     });
   }
 
@@ -38,32 +31,9 @@ class Others extends BaseModel {
     }
   }
 
-  static async create(data = {}) {
-    const instance = new Others();
-    const defaultData = {
-      xp_enabled: true,
-      min_xp: 2,
-      max_xp: 8,
-      xp_cooldown: 6,
-      level_up_announcement: true,
-
-      announcement_channel: '',
-      thread_xp: 0,
-      
-      auto_role_enabled: false,
-      auto_role_ids: "[]",
-      
-      forum_auto_react_enabled: false,
-      forum_channels: "[]",
-      forum_emojis: "[]",
-      
-      counting_enabled: false,
-      counting_channel: null,
-      counting_current: 0,
-      counting_last_user: null,
-      ...data,
-    };
-    return await instance.create(defaultData);
+   static async create(data) {
+    const instance = new LevelRoles();
+    return await instance.create(data);
   }
 
   static async findOneAndUpdate(query, updateData, options = {}) {

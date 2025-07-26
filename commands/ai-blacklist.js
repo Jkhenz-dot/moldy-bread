@@ -14,9 +14,24 @@ module.exports = {
   async execute(interaction) {
     try {
       const user = interaction.options.getUser('user');
-      const othersData = await Others.findOne();
+      let othersData = await Others.findOne();
       
-      // Note: Blacklist functionality needs to be implemented in Others model
+      // Create others record if it doesn't exist
+      if (!othersData) {
+        othersData = await Others.create({});
+      }
+
+      // Get current blacklist
+      const blacklistedUsers = JSON.parse(othersData.blacklisted_users || '[]');
+      
+      // Add user if not already blacklisted
+      if (!blacklistedUsers.includes(user.id)) {
+        blacklistedUsers.push(user.id);
+        await Others.findOneAndUpdate({}, {
+          blacklisted_users: JSON.stringify(blacklistedUsers)
+        });
+      }
+      
       const embed = new EmbedBuilder()
         .setTitle('User Blacklisted')
         .setDescription(`${user} has been blacklisted from AI responses`)

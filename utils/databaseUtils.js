@@ -1,5 +1,4 @@
 const database = require('./database');
-const { checkDatabaseHealth } = require('./checkDatabase');
 
 class DatabaseUtils {
   constructor() {
@@ -7,7 +6,12 @@ class DatabaseUtils {
   }
 
   async healthCheck() {
-    return await checkDatabaseHealth();
+    try {
+      await this.database.query('SELECT 1');
+      return { success: true, message: 'Database connection is healthy' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   }
 
   async getAllTables() {

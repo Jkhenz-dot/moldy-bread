@@ -3,8 +3,8 @@ const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
 const os = require("os");
-// Use existing database patterns since otherData has been migrated
 const Others = require("./models/postgres/Others");
+const Experience = require("./models/postgres/Experience");
 const BotA = require("./models/postgres/BotA");
 const BotB = require("./models/postgres/BotB");
 const LevelRoles = require("./models/postgres/LevelRoles");
@@ -225,11 +225,8 @@ app.get("/health", (req, res) => {
 // Database backup management endpoints
 app.get("/api/database-backups", async (req, res) => {
     try {
-        const { DatabaseProtection } = require("./utils/databaseProtection");
-        const dbProtection = new DatabaseProtection();
-
-        const backups = await dbProtection.getRecentBackups();
-        const healthStatus = dbProtection.getHealthStatus();
+        const databaseUtils = require("./utils/databaseUtils");
+        const healthStatus = await databaseUtils.healthCheck();
 
         res.json({
             success: true,
@@ -247,20 +244,8 @@ app.get("/api/database-backups", async (req, res) => {
 
 app.post("/api/create-backup", async (req, res) => {
     try {
-        const { reason } = req.body;
-        const { DatabaseProtection } = require("./utils/databaseProtection");
-        const dbProtection = new DatabaseProtection();
-
-        const success = await dbProtection.createManualBackup(
-            reason || "manual_dashboard_backup",
-        );
-
-        res.json({
-            success: success,
-            message: success
-                ? "Backup created successfully"
-                : "Failed to create backup",
-        });
+        // Using export functionality instead of separate backup system
+        res.redirect("/api/database/export");
     } catch (error) {
         console.error("Error creating backup:", error);
         res.json({
@@ -316,6 +301,7 @@ app.get("/api/bot-data", async (req, res) => {
         const botA = await BotA.findOne();
         const botB = await BotB.findOne();
         const others = await Others.findOne();
+        const experience = await Experience.findOne()
         const welcomeMessage = await WelcomeMessage.findOne();
 
         // Create default data structure, filling with actual database values where available
@@ -337,9 +323,7 @@ app.get("/api/bot-data", async (req, res) => {
                 : botA?.allowed_channels
                   ? [botA.allowed_channels]
                   : [],
-            blacklistedUsers: Array.isArray(botA?.blacklisted_users)
-                ? botA.blacklisted_users
-                : [],
+           
         };
 
         const defaultBotB = {
@@ -360,9 +344,7 @@ app.get("/api/bot-data", async (req, res) => {
                 : botB?.allowed_channels
                   ? [botB.allowed_channels]
                   : [],
-            blacklistedUsers: Array.isArray(botB?.blacklisted_users)
-                ? botB.blacklisted_users
-                : [],
+           
         };
 
         return res.json({
@@ -371,13 +353,17 @@ app.get("/api/bot-data", async (req, res) => {
                 bot1: defaultBotA,
                 bot2: defaultBotB,
                 xpSettings: {
-                    enabled: others?.xp_enabled || false,
-                    minXp: others?.min_xp || 1,
-                    maxXp: others?.max_xp || 15,
-                    xpCooldown: others?.xp_cooldown || 60000,
+                    enabled: experience?.xp_enabled || false,
+                    minXp: experience?.min_xp || 1,
+                    streamerXp: experience?.streamer_xp || 3,
+                    minuteCheck: experience?.minute_check || 15,
+                    maxXp: experience?.max_xp || 15,
+                    xpCooldown: experience?.xp_cooldown || 60000,
                     levelUpAnnouncement: others?.level_up_announcement || false,
                     announcementChannel: others?.announcement_channel || "",
-                    threadXp: others?.thread_xp || 0,
+                    threadXp: experience?.thread_xp || 0,
+                    slashXp: experience?.slash_xp || 0,
+                    mentionXp: experience?.mention_xp || 0,
                 },
                 levelRoles: levelRoles || [],
                 reactionRoles: reactionRoles || [],
@@ -1184,30 +1170,10 @@ app.post("/api/update-xp-settings", async (req, res) => {
     try {
         const { minXp, maxXp, xpCooldown, serverId } = req.body;
 
-        // Get others data
-        const othersData = await Others.findOne({});
+        // Get experience data
+        const experienceData = await Experience.findOne({});
 
-        // Parse existing XP settings
-        const parseJsonField = (field, defaultValue = {}) => {
-            try {
-                return typeof field === "string"
-                    ? JSON.parse(field)
-                    : field || defaultValue;
-            } catch (error) {
-                return defaultValue;
-            }
-        };
-
-        const existingXpSettings = parseJsonField(othersData?.xp_settings, {
-            enabled: true,
-            minXp: 1,
-            maxXp: 15,
-            xpCooldown: 60000,
-            levelUpAnnouncement: true,
-            announcementChannel: "",
-        });
-
-        await Others.findOneAndUpdate(
+        await Experience.findOneAndUpdate(
             {},
             {
                 min_xp: minXp || 1,
@@ -1295,7 +1261,7 @@ app.post("/api/update-thread-xp", async (req, res) => {
     try {
         const { threadXp } = req.body;
 
-        await Others.findOneAndUpdate(
+        await Experience.findOneAndUpdate(
             {},
             { thread_xp: threadXp },
             { upsert: true }
@@ -1314,6 +1280,161 @@ app.post("/api/update-thread-xp", async (req, res) => {
         });
     }
 });
+
+app.post("/api/update-streamer-xp", async (req, res) => {
+    try {
+        const { streamerXp } = req.body;
+
+        await Experience.findOneAndUpdate(
+            {},
+            { streamer_xp: streamerXp },
+            { upsert: true }
+        );
+        addActivity(`Streamer XP updated to: ${streamerXp}`);
+
+        const updatedExperience = await Experience.findOne();
+        res.json({
+            success: true,
+            message: "Streamer XP updated successfully",
+            data: {
+                streamerXp: updatedExperience.streamer_xp,
+                minuteCheck: updatedExperience.minute_check
+            }
+        });
+    } catch (error) {
+        console.error("Error updating streamer XP:", error);
+        res.json({
+            success: false,
+            message: "Failed to update streamer XP"
+        });
+    }
+});
+
+app.post("/api/update-minute-check", async (req, res) => {
+    try {
+        const { minuteCheck } = req.body;
+
+        await Experience.findOneAndUpdate(
+            {},
+            { minute_check: minuteCheck },
+            { upsert: true }
+        );
+        addActivity(`Check interval updated to: ${minuteCheck} minutes`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error updating minute check:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+// Get all experience data
+app.get("/api/experience-data", async (req, res) => {
+    try {
+        const experienceData = await Experience.findOne();
+        if (!experienceData) {
+            // Return default values if no data exists
+            return res.json({
+                success: true,
+                data: {
+                    streamer_xp: 3,
+                    minute_check: 15,
+                    slash_xp: 0,
+                    mention_xp: 0,
+                    thread_xp: 0,
+                    min_xp: 1,
+                    max_xp: 15,
+                    xp_cooldown: 60000,
+                    xp_enabled: true
+                }
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: experienceData
+        });
+    } catch (error) {
+        console.error("Error fetching experience data:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: "Failed to fetch experience data" 
+        });
+    }
+});
+
+// Update slash command XP reward
+app.post("/api/update-slash-xp", async (req, res) => {
+    try {
+        // Check if at least one bot is active
+        const bot1Active = global.discordClient?.isReady();
+        const bot2Active = global.discordClient2?.isReady();
+        
+        if (!bot1Active && !bot2Active) {
+            return res.status(400).json({
+                success: false,
+                error: "No active bots available to process slash commands"
+            });
+        }
+
+        const { slashXp } = req.body;
+        await Experience.findOneAndUpdate(
+            {},
+            { slash_xp: slashXp },
+            { upsert: true }
+        );
+        
+        const updatedExperience = await Experience.findOne();
+        addActivity(`Slash command XP updated to: ${slashXp}`);
+        
+        res.json({
+            success: true,
+            data: {
+                slashXp: updatedExperience.slash_xp
+            }
+        });
+    } catch (error) {
+        console.error("Error updating slash XP:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+// Update bot mention XP reward
+app.post("/api/update-mention-xp", async (req, res) => {
+    try {
+        // Check if at least one bot is active
+        const bot1Active = global.discordClient?.isReady();
+        const bot2Active = global.discordClient2?.isReady();
+        
+        if (!bot1Active && !bot2Active) {
+            return res.status(400).json({
+                success: false,
+                error: "No active bots available to process mentions"
+            });
+        }
+
+        const { mentionXp } = req.body;
+        await Experience.findOneAndUpdate(
+            {},
+            { mention_xp: mentionXp },
+            { upsert: true }
+        );
+        
+        const updatedExperience = await Experience.findOne();
+        addActivity(`Bot mention XP updated to: ${mentionXp}`);
+        
+        res.json({
+            success: true,
+            data: {
+                mentionXp: updatedExperience.mention_xp
+            }
+        });
+    } catch (error) {
+        console.error("Error updating mention XP:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
+
 
 // Utility function to update roles for all members
 global.updateAllMemberRoles = async function(guild) {
@@ -1816,6 +1937,7 @@ app.get("/api/bot-config", async (req, res) => {
     try {
         const botA = await BotA.findOne();
         const botB = await BotB.findOne();
+        const others = await Others.findOne();
 
         res.json({
             success: true,
@@ -1850,6 +1972,9 @@ app.get("/api/bot-config", async (req, res) => {
                     others: botB?.others || "",
                     age: botB?.age || "",
                 },
+                system: {
+                    blacklistedUsers: JSON.parse(others?.blacklisted_users || '[]')
+                }
             },
         });
     } catch (error) {
@@ -2689,6 +2814,8 @@ app.get("/api/database/table/:tableName", async (req, res) => {
             "reaction_roles",
             "welcome_messages",
             "reminders",
+            "top_roles",
+            "experience"
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2730,6 +2857,8 @@ app.post("/api/database/view-table", async (req, res) => {
             "reaction_roles",
             "welcome_messages",
             "reminders",
+            "top_roles",
+            "experience"
         ];
         if (!allowedTables.includes(tableName)) {
             return res.json({
@@ -2761,7 +2890,19 @@ app.get("/api/database/export", async (req, res) => {
         const database = require("./utils/database");
         
         // Export all tables
-        const tables = ['users', 'bota', 'botb', 'others', 'birthdays', 'level_roles', 'reaction_roles', 'welcome_messages'];
+        const tables = [
+            'users',
+            'bota', 
+            'botb',
+            'others',
+            'birthdays',
+            'level_roles',
+            'reaction_roles',
+            'welcome_messages',
+            'reminders',
+            'top_roles',
+            'experience'
+        ];
         const exportData = {
             timestamp: new Date().toISOString(),
             tables: {},
@@ -2817,6 +2958,13 @@ app.post("/api/database/import", async (req, res) => {
                     
                     // Insert new data
                     for (const row of rows) {
+                        // Handle JSONB fields
+                        if (tableName === 'others' && row.blacklisted_users) {
+                            row.blacklisted_users = JSON.stringify(row.blacklisted_users);
+                        }
+                        if (row.conversation_history) {
+                            row.conversation_history = JSON.stringify(row.conversation_history);
+                        }
                         const columns = Object.keys(row).join(', ');
                         const values = Object.values(row);
                         const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
@@ -2887,8 +3035,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     activity_text VARCHAR(255) DEFAULT 'Nothing',
                     activity_type VARCHAR(255) DEFAULT 'streaming',
                     allowed_channels TEXT DEFAULT '1',
-                    avatar_path TEXT DEFAULT '',
-                    blacklisted_users TEXT DEFAULT '[]'
+                    avatar_path TEXT DEFAULT ''
                 )
             `,
             botb: `
@@ -2907,29 +3054,24 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     activity_text VARCHAR(255) DEFAULT 'Nothing',
                     activity_type VARCHAR(255) DEFAULT 'streaming',
                     allowed_channels TEXT DEFAULT '1',
-                    avatar_path TEXT DEFAULT '',
-                    blacklisted_users TEXT DEFAULT '[]'
+                    avatar_path TEXT DEFAULT ''
                 )
             `,
             others: `
                 CREATE TABLE IF NOT EXISTS others (
                     id SERIAL PRIMARY KEY,
-                    xp_enabled BOOLEAN DEFAULT true,
-                    min_xp INTEGER DEFAULT 2,
-                    max_xp INTEGER DEFAULT 8,
-                    xp_cooldown INTEGER DEFAULT 6,
                     level_up_announcement BOOLEAN DEFAULT true,
+                    announcement_channel VARCHAR(255) DEFAULT '',
                     auto_role_enabled BOOLEAN DEFAULT false,
                     auto_role_ids TEXT DEFAULT '[]',
                     forum_auto_react_enabled BOOLEAN DEFAULT false,
                     forum_channels TEXT DEFAULT '[]',
                     forum_emojis TEXT DEFAULT '[]',
-                    announcement_channel TEXT DEFAULT '',
-                    thread_xp INTEGER DEFAULT 0,
                     counting_enabled BOOLEAN DEFAULT false,
                     counting_channel VARCHAR(255) DEFAULT NULL,
                     counting_current INTEGER DEFAULT 0,
-                    counting_last_user VARCHAR(255) DEFAULT NULL
+                    counting_last_user VARCHAR(255) DEFAULT NULL,
+                    blacklisted_users JSONB DEFAULT '[]'::jsonb
                 )
             `,
             birthdays: `
@@ -2980,6 +3122,28 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     message TEXT NOT NULL,
                     remind_at TIMESTAMP NOT NULL,
                     completed BOOLEAN DEFAULT FALSE
+                )
+            `,
+            top_roles: `
+                CREATE TABLE IF NOT EXISTS top_roles (
+                    id SERIAL PRIMARY KEY,
+                    top1_role VARCHAR(255) DEFAULT '',
+                    top2_role VARCHAR(255) DEFAULT '',
+                    top3_role VARCHAR(255) DEFAULT '',
+                    top4_role VARCHAR(255) DEFAULT '',
+                    top5_role VARCHAR(255) DEFAULT ''
+                )
+            `,
+            experience: `
+                CREATE TABLE IF NOT EXISTS experience (
+                    id SERIAL PRIMARY KEY,
+                    min_xp INTEGER DEFAULT 1,
+                    max_xp INTEGER DEFAULT 15,
+                    xp_cooldown INTEGER DEFAULT 70000,
+                    slash_xp INTEGER DEFAULT 1,
+                    mention_xp INTEGER DEFAULT 1,
+                    streamer_xp INTEGER DEFAULT 1,
+                    minute_check INTEGER DEFAULT 5
                 )
             `
         };
@@ -3383,7 +3547,19 @@ app.post("/api/database/clear-all", async (req, res) => {
         const database = require("./utils/database");
 
         // Clear all tables using direct SQL
-        const tables = ["users", "birthdays", "level_roles", "reaction_roles"];
+        const tables = [
+            'users',
+            'bota', 
+            'botb',
+            'others',
+            'birthdays',
+            'level_roles',
+            'reaction_roles',
+            'welcome_messages',
+            'reminders',
+            'top_roles',
+            'experience'
+        ];
 
         for (const table of tables) {
             await database.query(`DELETE FROM ${table}`);
