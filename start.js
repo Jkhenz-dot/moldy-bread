@@ -142,11 +142,56 @@ const logMemoryUsage = () => {
 // Start memory monitoring
 setInterval(logMemoryUsage, 5 * 60 * 1000); // Every 5 minutes
 
-// Load main application
-try {
-  require('./index.js');
-  
-} catch (error) {
-  console.error('Failed to start main application:', error);
-  process.exit(1);
+// Initialize application components sequentially
+async function initializeApp() {
+  try {
+    console.log('Starting initialization sequence...');
+    
+    // 1. Start Express server first
+    await new Promise((resolve) => {
+      server.once('listening', () => {
+        console.log('Express server initialized successfully');
+        resolve();
+      });
+    });
+
+    // 2. Initialize database models
+    console.log('Loading database models...');
+    const { default: db } = await import('./models/postgres/index.js');
+    await db.authenticate();
+    console.log('Database models loaded and authenticated');
+
+    // 3. Initialize Discord bot with retry mechanism
+    console.log('Initializing Discord bot...');
+    let retries = 0;
+    const maxRetries = 3;
+    
+    while (retries < maxRetries) {
+      try {
+        const app = require('./index.js');
+        console.log('Discord bot initialized successfully');
+        break;
+      } catch (error) {
+        retries++;
+        console.error(`Bot initialization attempt ${retries}/${maxRetries} failed:`, error);
+        if (retries === maxRetries) {
+          throw new Error('Failed to initialize Discord bot after maximum retries');
+        }
+        // Wait 5 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+
+    console.log('Application initialization completed successfully');
+    
+  } catch (error) {
+    console.error('Critical initialization error:', error);
+    process.exit(1);
+  }
 }
+
+// Start the application
+initializeApp().catch(error => {
+  console.error('Failed to initialize application:', error);
+  process.exit(1);
+});
