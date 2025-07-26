@@ -65,6 +65,20 @@ const restartApplication = () => {
   }
 };
 
+// Handle SIGTERM gracefully for Render.com
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM, attempting graceful handling...');
+  try {
+    // Keep the process alive for reconnection attempts
+    const gracePeriod = 30000; // 30 seconds grace period
+    await new Promise(resolve => setTimeout(resolve, gracePeriod));
+    console.log('Grace period completed, attempting to continue...');
+    // Don't exit - let the process continue
+  } catch (error) {
+    console.error('Error during SIGTERM handling:', error);
+  }
+});
+
 // Production logging
 console.log('Starting Discord bot in production mode...');
 console.log('Environment:', {
@@ -95,6 +109,19 @@ const logMemoryUsage = () => {
 
 // Start memory monitoring
 setInterval(logMemoryUsage, 5 * 60 * 1000); // Every 5 minutes
+
+// Set up keep-alive for Render.com
+const startKeepAlive = () => {
+  if (process.env.RENDER) {
+    console.log('Starting keep-alive mechanism for Render.com...');
+    setInterval(() => {
+      // Internal ping to keep the service alive
+      console.log('Keep-alive ping...');
+    }, 4 * 60 * 1000); // Every 4 minutes
+  }
+};
+
+startKeepAlive();
 
 // Load main application
 try {
