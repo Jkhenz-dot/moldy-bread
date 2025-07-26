@@ -16,16 +16,10 @@ const {
   MessageFlags,
 } = require("discord.js");
 
-// Database initialization
-const database = require("./models/postgres/database");
+// Database models - lazy loaded to improve startup time
 let BotA, BotB, Others, Experience, UserData, LevelRoles, Birthday, ReactionRole, Reminder;
-
-const loadDatabaseModels = async () => {
-  try {
-    // Initialize database connection with retries
-    await database.initialize();
-    
-    // Load models after successful connection
+const loadDatabaseModels = () => {
+  if (!BotA) {
     BotA = require("./models/postgres/BotA");
     BotB = require("./models/postgres/BotB");
     Others = require("./models/postgres/Others");
@@ -34,7 +28,6 @@ const loadDatabaseModels = async () => {
     LevelRoles = require("./models/postgres/LevelRoles");
     Birthday = require("./models/postgres/Birthday");
     ReactionRole = require("./models/postgres/ReactionRole");
-    Reminder = require("./models/postgres/Reminder");
     Reminder = require("./models/postgres/Reminder");
   }
   return {
