@@ -6,6 +6,19 @@
 
 // Production environment setup
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+const PORT = process.env.PORT || 5000;
+
+// Import required dependencies
+const express = require('express');
+const compression = require('compression');
+const helmet = require('helmet');
+
+// Initialize Express
+const app = express();
+
+// Security and optimization middleware
+app.use(helmet());
+app.use(compression());
 
 // Enhanced error handling for production
 process.on('uncaughtException', (error) => {
@@ -65,20 +78,6 @@ const restartApplication = () => {
   }
 };
 
-// Handle SIGTERM gracefully for Render.com
-process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM, attempting graceful handling...');
-  try {
-    // Keep the process alive for reconnection attempts
-    const gracePeriod = 30000; // 30 seconds grace period
-    await new Promise(resolve => setTimeout(resolve, gracePeriod));
-    console.log('Grace period completed, attempting to continue...');
-    // Don't exit - let the process continue
-  } catch (error) {
-    console.error('Error during SIGTERM handling:', error);
-  }
-});
-
 // Production logging
 console.log('Starting Discord bot in production mode...');
 console.log('Environment:', {
@@ -87,6 +86,39 @@ console.log('Environment:', {
   hasDatabase: !!process.env.DATABASE_URL,
   hasDiscordTokens: !!(process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN_2)
 });
+
+// Setup keep-alive mechanism
+const setupKeepAlive = require('./utils/keepalive');
+
+// Start Express server
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  
+  // Start keep-alive after server is running
+  if (process.env.RENDER) {
+    const appUrl = process.env.RENDER_EXTERNAL_URL;
+    setupKeepAlive(appUrl);
+  }
+});
+
+// Graceful shutdown handler
+const shutdown = () => {
+  console.log('Received shutdown signal...');
+  server.close(() => {
+    console.log('Express server closed.');
+    process.exit(0);
+  });
+  
+  // Force shutdown after 10s if graceful shutdown fails
+  setTimeout(() => {
+    console.log('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 // Memory monitoring for production
 const logMemoryUsage = () => {
@@ -109,19 +141,6 @@ const logMemoryUsage = () => {
 
 // Start memory monitoring
 setInterval(logMemoryUsage, 5 * 60 * 1000); // Every 5 minutes
-
-// Set up keep-alive for Render.com
-const startKeepAlive = () => {
-  if (process.env.RENDER) {
-    console.log('Starting keep-alive mechanism for Render.com...');
-    setInterval(() => {
-      // Internal ping to keep the service alive
-      console.log('Keep-alive ping...');
-    }, 4 * 60 * 1000); // Every 4 minutes
-  }
-};
-
-startKeepAlive();
 
 // Load main application
 try {
