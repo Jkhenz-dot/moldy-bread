@@ -356,7 +356,7 @@ class DatabaseManager {
         const query = `
             SELECT * FROM bot_messages
             WHERE discord_id = $1
-            ORDER BY created_at DESC
+            ORDER BY id DESC
             LIMIT $2
         `;
         const result = await this.query(query, [userId, limit]);

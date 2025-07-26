@@ -67,7 +67,7 @@ class BotA extends BaseModel {
         paramIndex++;
       });
 
-      setClause.push(`updated_at = NOW()`);
+      // Timestamp update removed
       
       const sqlQuery = `
         UPDATE bota 

@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>:v Faces Mascots Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  
+    <!-- Enhanced Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">:v Faces Mascots</div>
+            <div class="loading-title">Initializing Dashboard</div>
+            <div class="loading-subtitle">Setting up your Discord bot control panel...</div>
+            
+            <div class="loading-progress">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="loading-steps">
+                <div class="loading-step" id="step1">
+                    <div class="step-icon"><i class="fas fa-lock"></i></div>
+                    <div class="step-text">Connecting</div>
+                    <div class="step-status">Waiting...</div>
+                </div>
+                <div class="loading-step" id="step2">
+                    <div class="step-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="step-text">Loading Data</div>
+                    <div class="step-status">Waiting...</div>
+                </div>
+                <div class="loading-step" id="step3">
+                    <div class="step-icon"><i class="fas fa-magic"></i></div>
+                    <div class="step-text">Preparing Interface</div>
+                    <div class="step-status">Waiting...</div>
+                </div>
+            </div>
+            
+            <div class="loading-details" id="loadingDetails">
+                Preparing your dashboard experience...
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard">
+        <div class="header">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+            <h1>:v Faces Mascots Dashboard</h1>
+            <div class="header-controls">
+                <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+            </div>
+        </div>
+
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
+        <div class="container">
+            <div class="sidebar" id="sidebar">
+                <button class="mobile-nav-arrow" id="mobileNavLeft" onclick="navigateMobileNav(-1)"><i class="fas fa-chevron-left"></i></button>
+                <div class="mobile-nav-container">
+                    <div class="mobile-nav-slider" id="mobileNavSlider">
+                        <div class="nav-item active" onclick="showTab('home')">
+                            <span class="nav-icon"><i class="fas fa-home"></i></span>
+                            <span class="nav-text">Home</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('general')">
+                            <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                            <span class="nav-text">General</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('personality')">
+                            <span class="nav-icon"><i class="fas fa-robot"></i></span>
+                            <span class="nav-text">AI Details</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('levels')">
+                            <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
+                            <span class="nav-text">Experience</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('reactions')">
+                            <span class="nav-icon"><i class="fas fa-bolt"></i></span>
+                            <span class="nav-text">Reaction</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('messages')">
+                            <span class="nav-icon"><i class="fas fa-comments"></i></span>
+                            <span class="nav-text">Messages</span>
+                        </div>
+                        <div class="nav-item" onclick="showTab('welcomer')">
+                            <span class="nav-icon"><i class="fas fa-user-plus"></i></span>
+                            <span class="nav-text">Welcomer</span>
+                        </div>
+                        <div class="nav-item" id="databaseTab" onclick="showTab('database')" style="display: none;">
+                            <span class="nav-icon"><i class="fas fa-database"></i></span>
+                            <span class="nav-text">Database</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="mobile-nav-arrow" id="mobileNavRight" onclick="navigateMobileNav(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div class="content">
+                <!-- Home Tab -->
+                <div id="home" class="tab-content active">
+                    <!-- Bot Status Overview -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3 class="card-title">:v Faces Mascots Status</h3>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="bot1StatusDisplay">--</div>
+                                <div class="stat-label">Bot 1 Status</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="bot2StatusDisplay">--</div>
+                                <div class="stat-label">Bot 2 Status</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildCount">--</div>
+                                <div class="stat-label">Connected Servers</div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- System Performance -->
+                    <div class="card">
+                        <h3 class="card-title">System Performance</h3>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="cpuUsage">--</div>
+                                <div class="stat-label">CPU Usage</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="ramUsage">-- MB</div>
+                                <div class="stat-label">RAM Usage</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="uptime">--</div>
+                                <div class="stat-label">System Uptime</div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Guild Data Details -->
+                    <div class="card">
+                        <h3 class="card-title">Guild Data Details</h3>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildName">--</div>
+                                <div class="stat-label">Guild Name</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildHumanMembers">--</div>
+                                <div class="stat-label">Human Members</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildBotMembers">--</div>
+                                <div class="stat-label">Bot Members</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildTotalMembers">--</div>
+                                <div class="stat-label">Total Members</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildPublicChannels">--</div>
+                                <div class="stat-label">Public Channels</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildPrivateChannels">--</div>
+                                <div class="stat-label">Private Channels</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildTotalChannels">--</div>
+                                <div class="stat-label">Total Channels</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildRoleCount">--</div>
+                                <div class="stat-label">Total Roles</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildCreatedAt">--</div>
+                                <div class="stat-label">Created Date</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildVerificationLevel">--</div>
+                                <div class="stat-label">Verification Level</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildBoostLevel">--</div>
+                                <div class="stat-label">Boost Level</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildBoostCount">--</div>
+                                <div class="stat-label">Boost Count</div>
+                            </div>
+
+
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildEmojis">--</div>
+                                <div class="stat-label">Custom Emojis</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildStickers">--</div>
+                                <div class="stat-label">Custom Stickers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="guildMfaLevel">--</div>
+                                <div class="stat-label">MFA Requirement</div>
+                            </div>
+
+                        </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="card">
+                        <h3 class="card-title">Recent Activity</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Monitor your bot's recent activities and command executions. Track system events and user interactions in real-time.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div id="activityLog" class="activity-log"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Details Tab -->
+                <div id="personality" class="tab-content">
+                    <div class="card">
+                        <h3 class="card-title">AI Details</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Configure your bot's personality traits, appearance, and behavior. This information helps the AI respond in character during conversations.
+                            </p>
+                        </div>
+                        
+                        <!-- Bot Selection Tabs -->
+                        <div class="bot-tabs">
+                            <button type="button" class="bot-tab active" data-bot="bot1" onclick="showBotPersonalityTab('bot1')" id="bot1PersonalityTab">Bot 1</button>
+                            <button type="button" class="bot-tab" data-bot="bot2" onclick="showBotPersonalityTab('bot2')" id="bot2PersonalityTab">Bot 2</button>
+                        </div>
+                        
+                        <div id="personalityMessage"></div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <!-- Bot 1 AI Details -->
+                        <div id="bot1PersonalitySection" class="bot-section active">
+                            <form id="bot1PersonalityForm">
+                                <div class="form-group">
+                                    <label class="form-label">Age</label>
+                                    <input type="text" id="bot1Age" class="form-input" placeholder="Bot's age">
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Appearance</label>
+                                    <textarea id="bot1Appearance" class="form-textarea" placeholder="Describe bot's physical appearance..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Personality</label>
+                                    <textarea id="bot1Personality" class="form-textarea" placeholder="Describe bot's overall personality..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Likes</label>
+                                        <textarea id="bot1Likes" class="form-textarea" placeholder="What does bot like?"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Dislikes</label>
+                                        <textarea id="bot1Dislikes" class="form-textarea" placeholder="What does bot dislike?"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Backstory</label>
+                                    <textarea id="bot1Backstory" class="form-textarea" placeholder="Bot's background story..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">To Do</label>
+                                    <textarea id="bot1Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot1PersonalityBtn">Save Bot 1 AI Details</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Bot 2 AI Details -->
+                        <div id="bot2PersonalitySection" class="bot-section">
+                            <form id="bot2PersonalityForm">
+                                <div class="form-group">
+                                    <label class="form-label">Age</label>
+                                    <input type="text" id="bot2Age" class="form-input" placeholder="Bot's age">
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Appearance</label>
+                                    <textarea id="bot2Appearance" class="form-textarea" placeholder="Describe bot's physical appearance..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Personality</label>
+                                    <textarea id="bot2Personality" class="form-textarea" placeholder="Describe bot's overall personality..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Likes</label>
+                                        <textarea id="bot2Likes" class="form-textarea" placeholder="What does bot like?"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Dislikes</label>
+                                        <textarea id="bot2Dislikes" class="form-textarea" placeholder="What does bot dislike?"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">Backstory</label>
+                                    <textarea id="bot2Backstory" class="form-textarea" placeholder="Bot's background story..."></textarea>
+                                </div>
+                                <div class="form-separator"></div>
+                                <div class="form-group">
+                                    <label class="form-label">To Do</label>
+                                    <textarea id="bot2Others" class="form-textarea" placeholder="Additional tasks or information..." style="height: 120px;"></textarea>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot2PersonalityBtn">Save Bot 2 AI Details</button>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- General Tab -->
+                <div id="general" class="tab-content">
+                    <div class="card">
+                        <h3 class="card-title">General Settings</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Manage your bot's basic configuration including username, status, activity, and channel permissions. Upload custom avatars and set activity text.
+                            </p>
+                        </div>
+                        
+                        <!-- Bot Selection Tabs -->
+                        <div class="bot-tabs">
+                            <button type="button" class="bot-tab active" data-bot="bot1" onclick="showBotGeneralTab('bot1')" id="bot1GeneralTab">Bot 1</button>
+                            <button type="button" class="bot-tab" data-bot="bot2" onclick="showBotGeneralTab('bot2')" id="bot2GeneralTab">Bot 2</button>
+                        </div>
+                        
+                        <div id="generalMessage"></div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <!-- Bot 1 General Settings -->
+                        <div id="bot1GeneralSection" class="bot-section active">
+                            <form id="bot1GeneralForm">
+                                <div class="avatar-container">
+                                    <div class="avatar-preview clickable-avatar" id="bot1AvatarPreview" onclick="document.getElementById('bot1Avatar').click()">
+                                        <div class="avatar-placeholder"><i class="fas fa-robot"></i></div>
+                                    </div>
+                                    <input type="file" id="bot1Avatar" name="avatar" accept="image/*" onchange="previewAvatar('bot1')" style="display: none;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" id="bot1Name" class="form-input" placeholder="Enter Discord username (e.g., Heilos)">
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">This is the bot's Discord username</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Bot Description</label>
+                                    <textarea id="bot1Description" class="form-textarea" placeholder="Enter bot profile description..."></textarea>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">This will be shown in the bot's Discord profile</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Status</label>
+                                    <select id="bot1Status" class="form-select">
+                                        <option value="online">Online</option>
+                                        <option value="idle">Idle</option>
+                                        <option value="dnd">Do Not Disturb</option>
+                                        <option value="invisible">Invisible</option>
+                                        <option value="mobile">Mobile</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Activity Type</label>
+                                    <select id="bot1ActivityType" class="form-select">
+                                        <option value="playing">Playing</option>
+                                        <option value="streaming">Streaming</option>
+                                        <option value="listening">Listening to</option>
+                                        <option value="watching">Watching</option>
+                                        <option value="competing">Competing in</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Activity Text</label>
+                                    <input type="text" id="bot1ActivityText" class="form-input" placeholder="What is the bot doing?">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Allowed Channel for Chatting & Commands</label>
+                                    <select id="bot1AllowedChannels" class="form-select">
+                                        <option value="">All Channels (Default)</option>
+                                        <!-- Channels will be populated by JavaScript -->
+                                    </select>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Select a specific channel or leave as default to allow all channels</small>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot1GeneralBtn">Save General Settings</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Bot 2 General Settings -->
+                        <div id="bot2GeneralSection" class="bot-section">
+                            <form id="bot2GeneralForm">
+                                <div class="avatar-container">
+                                    <div class="avatar-preview clickable-avatar" id="bot2AvatarPreview" onclick="document.getElementById('bot2Avatar').click()">
+                                        <div class="avatar-placeholder"><i class="fas fa-robot"></i></div>
+                                    </div>
+                                    <input type="file" id="bot2Avatar" name="avatar" accept="image/*" onchange="previewAvatar('bot2')" style="display: none;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" id="bot2Name" class="form-input" placeholder="Enter Discord username (e.g., Wisteria)">
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">This is the bot's Discord username</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Bot Description</label>
+                                    <textarea id="bot2Description" class="form-textarea" placeholder="Enter bot profile description..."></textarea>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">This will be shown in the bot's Discord profile</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Status</label>
+                                    <select id="bot2Status" class="form-select">
+                                        <option value="online">Online</option>
+                                        <option value="idle">Idle</option>
+                                        <option value="dnd">Do Not Disturb</option>
+                                        <option value="invisible">Invisible</option>
+                                        <option value="mobile">Mobile</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Activity Type</label>
+                                    <select id="bot2ActivityType" class="form-select">
+                                        <option value="playing">Playing</option>
+                                        <option value="streaming">Streaming</option>
+                                        <option value="listening">Listening to</option>
+                                        <option value="watching">Watching</option>
+                                        <option value="competing">Competing in</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Activity Text</label>
+                                    <input type="text" id="bot2ActivityText" class="form-input" placeholder="What is Bot 2 doing?">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Allowed Channel for Chatting & Commands</label>
+                                    <select id="bot2AllowedChannels" class="form-select">
+                                        <option value="">All Channels (Default)</option>
+                                        <!-- Channels will be populated by JavaScript -->
+                                    </select>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Select a specific channel or leave as default to allow all channels</small>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="bot2GeneralBtn">Save Bot 2 General Settings</button>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Level System Tab -->
+                <div id="levels" class="tab-content">
+                    <!-- XP Settings Card -->
+                    <div class="card">
+                        <h3 class="card-title">XP Settings</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Configure how much XP users earn per message and the cooldown between XP gains. Balance progression to keep members engaged without spam.
+                            </p>
+                        </div>
+                        
+                        <div id="xpMessage"></div>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="xpForm">
+                            <div class="form-group">
+                                <label class="form-label">XP Range Per Message</label>
+                                <div class="range-input">
+                                    <input type="number" id="minXp" class="form-input" placeholder="Min XP" min="1" max="50">
+                                    <span>to</span>
+                                    <input type="number" id="maxXp" class="form-input" placeholder="Max XP" min="1" max="100">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">XP Cooldown (seconds)</label>
+                                <input type="number" id="xpCooldown" class="form-input" placeholder="Cooldown in seconds" min="0">
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Apply XP Settings</button>
+                        </form>
+                        </div>
+
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="threadXpForm">
+                            <div class="form-group">
+                                <label class="form-label">Thread XP</label>
+                                <input type="number" id="threadXp" class="form-input" placeholder="Thread XP" min="1" max="50">
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Apply Thread XP</button>
+                        </form>
+                        </div>
+                    </div>
+
+                    <!-- Level Up Announcements Card -->
+                    <div class="card">
+                        <h3 class="card-title">Level Up Announcements</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Enable or disable level up announcements and choose which channel they appear in. Auto-detect uses the channel where the user leveled up.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div id="announcementMessage"></div>
+                        <form id="announcementForm">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="levelAnnouncements" class="checkbox">
+                                <label for="levelAnnouncements" class="form-label">Enable Level Up Announcements</label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Level Announcement Channel</label>
+                                <select id="announcementChannel" class="form-select">
+                                    <option value="">Auto-detect (Default)</option>
+                                    <!-- Channels will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Apply Announcement Settings</button>
+                        </form>
+                        </div>
+                    </div>
+                            
+                    <!-- Level Role Rewards Card -->
+                    <div class="card">
+                        <h3 class="card-title">Level Role Rewards</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Set up role rewards that members receive when they reach specific levels. Configure what level unlocks which roles.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div id="roleRewardsMessage"></div>
+                        <form id="roleRewardsForm">
+                            <div class="level-roles">
+                                <div id="roleRewards"></div>
+                                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                    <button type="button" onclick="addRoleReward()" class="trendy-btn trendy-btn-primary">Add Role Reward</button>
+                                    <button type="submit" class="trendy-btn trendy-btn-primary">Apply Role Rewards</button>
+                                </div>
+                            </div>
+                        </form>
+                        </div>
+    
+                
+    
+                    </div>
+
+                            <!-- Top 5 Auto Role Configuration Card -->
+                        <div class="card">
+                            <h3 class="card-title">Top 5 Auto Role Configuration</h3>
+                            
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                                <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                                <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                    Configure automatic role assignments for the top 5 users on the leaderboard. Select a role for each position.
+                                </p>
+                            </div>
+    
+                            <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                            <form id="top5RolesForm">
+                                 <div class="form-group">
+                                     <label class="form-label">1st Place Role</label>
+                                     <select id="top1Role" class="form-select" >
+                                         <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">2nd Place Role</label>
+                                    <select id="top2Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">3rd Place Role</label>
+                                    <select id="top3Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">4th Place Role</label>
+                                    <select id="top4Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">5th Place Role</label>
+                                    <select id="top5Role" class="form-select">
+                                        <option value="">Select a role...</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary">Save Configuration</button>
+                            </form>
+                            </div>
+                        </div>
+                </div>
+
+
+                <!-- Reaction Tab -->
+                <div id="reactions" class="tab-content">
+                    <div id="reactionsMessage"></div>
+                    
+                    <!-- Auto React Section -->
+                    <div class="card" style="margin-bottom: 30px;">
+                        <h3 class="card-title">Forum Auto React</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Automatically add emoji reactions to new posts in specific forum channels. Configure which emojis each bot should add.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="autoReactForm">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="forumAutoReact" class="checkbox">
+                                <label for="forumAutoReact" class="form-label">Enable Auto React in All Forums</label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Auto React in Specific Forum</label>
+                                <select id="forumChannelSelect" class="form-select">
+                                    <option value="">Select a forum channel</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Bot 1 Emoji List for Auto React</label>
+                                <input type="text" id="bot1EmojiList" class="form-input" placeholder="Enter emojis separated by commas">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Leave empty if not needed</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Bot 2 Emoji List for Auto React</label>
+                                <input type="text" id="bot2EmojiList" class="form-input" placeholder="Enter emojis separated by commas">
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Leave empty if not needed</small>
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary" id="autoReactBtn">Apply Auto React Settings</button>
+                        </form>
+                        </div>
+                    </div>
+
+                    <!-- React to Message Section -->
+                    <div class="card" style="margin-bottom: 30px;">
+                        <h3 class="card-title">React to Specific Message</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Add specific emoji reactions to any message by providing the message ID. Useful for quickly reacting to important messages.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div id="messageReactSection">
+                            <form id="messageReactForm">
+                                <div class="form-group">
+                                    <label class="form-label">Bot Selection</label>
+                                    <select id="messageReactBot" class="form-select">
+                                        <option value="bot1" id="messageReactBotOption1">Bot 1</option>
+                                        <option value="bot2" id="messageReactBotOption2">Bot 2</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Message ID to React to Specific Message</label>
+                                    <input type="text" id="messageReactId" class="form-input" placeholder="Enter message ID to react to (not saved)">
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">This is temporary and will not be saved to database</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Emoji List</label>
+                                    <input type="text" id="messageEmojiList" class="form-input" placeholder="Enter emojis separated by commas">
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Leave empty if not needed</small>
+                                </div>
+                                <button type="submit" class="trendy-btn trendy-btn-primary" id="addReactionsBtn">Add Reactions</button>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Reaction Roles Section -->
+                    <div class="card">
+                        <h3 class="card-title">Advanced Reaction Roles</h3>
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Create reaction role sets with single or multiple selection modes. Configure message reactions with advanced controls.
+                            </p>
+                        </div>
+
+        
+
+                        <!-- Step 1: Create New Set -->
+                        <div id="newSetCreation" class="card" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: #a855f7;">Create New Reaction Role Set</h4>
+                            <div id="createSetForm">
+                                <div class="form-group">
+                                    <label class="form-label">Set Name</label>
+                                    <input type="text" id="newSetName" class="form-input" placeholder="Enter a name for this reaction role set" required>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Custom name to identify this set (e.g., "Color Roles", "Game Roles")</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Message ID</label>
+                                    <input type="text" id="newSetMessageId" class="form-input" placeholder="Enter the message ID to add reactions to" required>
+                                    <small style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Get this by right-clicking a message and copying the ID</small>
+                                    <div id="messageValidationResult" style="margin-top: 8px; display: none;"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Selection Mode</label>
+                                    <select id="newSetMode" class="form-select" required>
+                                        <option value="multiple">Multiple Selection - Users can pick multiple roles</option>
+                                        <option value="single">Single Selection - Users can only pick one role (others removed)</option>
+                                    </select>
+                                </div>
+                                <button type="button" onclick="createNewReactionSet()" class="trendy-btn trendy-btn-primary" id="createSetBtn">Create Set & Continue</button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Add Emoji/Role Pairs (Hidden initially) -->
+                        <div id="emojiRoleBuilder" class="card" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 20px; display: none;">
+                            <h4 style="margin-bottom: 15px; color: #a855f7;">Add Emoji & Role Pairs</h4>
+                            <div id="currentSetInfo" style="background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px;">
+                                <!-- Set info will be populated here -->
+                            </div>
+                            <div id="addEmojiRoleForm">
+                                <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: end;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label class="form-label">Emoji</label>
+                                        <input type="text" id="newEmojiInput" class="form-input" placeholder="😀 or :custom_emoji:" required>
+                                    </div>
+                                    <div class="form-group" style="flex: 2;">
+                                        <label class="form-label">Role</label>
+                                        <select id="newRoleSelect" class="form-select" required>
+                                            <option value="">Select a role...</option>
+                                            <!-- Roles will be populated by JavaScript -->
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom: 20px;">
+                                        <button type="button" onclick="addEmojiRolePair()" class="trendy-btn trendy-btn-success">Add Pair</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Added Pairs Display -->
+                            <div id="addedPairs" style="margin-bottom: 15px;">
+                                <h5 style="color: #a855f7; margin-bottom: 10px;">Added Emoji/Role Pairs:</h5>
+                                <div id="pairsList" style="background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 6px; min-height: 60px;">
+                                    <p style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin: 0;">No pairs added yet</p>
+                                </div>
+                            </div>
+
+                            <!-- Final Actions -->
+                            <div style="display: flex; gap: 10px; justify-content: space-between;">
+                                <button type="button" onclick="cancelSetCreation()" class="trendy-btn trendy-btn-danger">Cancel</button>
+                                <button type="button" onclick="event.preventDefault(); applyReactionRoleSet(); return false;" class="trendy-btn trendy-btn-primary" id="applySetBtn" disabled>Apply Reaction Role Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Existing Sets Management -->
+                        <div class="card" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <h4 style="margin-bottom: 15px; color: #3b82f6;">Existing Reaction Role Sets</h4>
+                            <div id="existingSets">
+                                <p style="color: rgba(255, 255, 255, 0.6); font-style: italic; margin: 0;">Loading existing reaction role sets...</p>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button type="button" onclick="refreshReactionSets()" class="trendy-btn trendy-btn-success">Refresh Sets</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Tab -->
+                <div id="messages" class="tab-content">
+                    <!-- Send Message Section -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3 class="card-title">Send Message</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Send plain text messages as your bot to any channel. You can include files and attachments for media sharing.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <div id="messagesMessage"></div>
+                        <form id="sendMessageForm">
+                            <div class="form-group">
+                                <label class="form-label">Bot Selection</label>
+                                <select id="messageBotSelection" class="form-select">
+                                    <option value="bot1" id="messageBotOption1">Bot 1</option>
+                                    <option value="bot2" id="messageBotOption2">Bot 2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Channel</label>
+                                <select id="messageChannel" class="form-select">
+                                    <option value="">Select a channel...</option>
+                                    <!-- Channels will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Message</label>
+                                <textarea id="messageText" class="form-textarea" placeholder="Enter your message here..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Files (Optional)</label>
+                                <input type="file" id="messageFiles" class="form-input" multiple accept="image/*,video/*,audio/*,text/*">
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary" id="sendMessageBtn">Send Message</button>
+                        </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Send Embed Section -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3 class="card-title">Send Embed</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Send rich embed messages with custom colors, titles, descriptions, and formatting. Perfect for announcements and formatted content.
+                            </p>
+                        </div>
+                        
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="sendEmbedForm">
+                            <div class="form-group">
+                                <label class="form-label">Bot Selection</label>
+                                <select id="embedBotSelection" class="form-select">
+                                    <option value="bot1" id="embedBotOption1">Bot 1</option>
+                                    <option value="bot2" id="embedBotOption2">Bot 2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Channel</label>
+                                <select id="embedChannel" class="form-select">
+                                    <option value="">Select a channel...</option>
+                                    <!-- Channels will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embed Title</label>
+                                <input type="text" id="embedMessageTitle" class="form-input" placeholder="Embed title (optional)">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embed Description</label>
+                                <textarea id="embedMessageDescription" class="form-textarea" placeholder="Embed description (optional)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embed Color</label>
+                                <input type="color" id="embedMessageColor" class="form-input" value="#0099ff" style="width: 120px; height: 50px; padding: 5px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Image URL</label>
+                                <input type="url" id="embedImageUrl" class="form-input" placeholder="https://example.com/image.png (optional)">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Thumbnail URL</label>
+                                <input type="url" id="embedThumbnailUrl" class="form-input" placeholder="https://example.com/thumbnail.png (optional)">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Footer Text</label>
+                                <input type="text" id="embedFooterText" class="form-input" placeholder="Footer text (optional)">
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="embedTimestamp" class="checkbox">
+                                <label for="embedTimestamp" class="form-label">Enable Timestamp</label>
+                            </div>
+                            <button type="submit" class="trendy-btn trendy-btn-primary" id="sendEmbedBtn">Send Embed</button>
+                        </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Welcomer Tab -->
+                <div id="welcomer" class="tab-content">
+                    <!-- Welcome Messages -->
+                    <div class="card">
+                        <h3 class="card-title">Welcome Messages</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Set up automatic welcome messages for new server members. Choose between plain text or rich embed formats with customizable content.
+                            </p>
+                        </div>
+                        
+                        <div id="welcomerMessage"></div>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="welcomerForm">
+                            <!-- Hidden field for embed toggle state -->
+                            <input type="hidden" id="useEmbed" value="false">
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="welcomerEnabled" class="checkbox">
+                                <label for="welcomerEnabled" class="form-label">Enable Welcome Messages</label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Welcome Channel</label>
+                                <select id="welcomeChannel" class="form-select">
+                                    <option value="">Select a channel...</option>
+                                    <!-- Channels will be populated by JavaScript -->
+                                </select>
+                                <small class="form-help">Channel where welcome messages will be sent</small>
+                            </div>
+
+                            <!-- Welcome Message Format Toggle -->
+                            <div class="form-group">
+                                <label class="form-label">Message Format</label>
+                                <div class="toggle-buttons">
+                                    <button type="button" class="toggle-btn active" id="textToggle">Plain Text</button>
+                                    <button type="button" class="toggle-btn" id="embedToggle">Rich Embed</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Text Message Section -->
+                            <div id="textMessageSection">
+                                <div class="form-group">
+                                    <label class="form-label">Welcome Message</label>
+                                    <textarea id="welcomeMessage" class="form-textarea" placeholder="Welcome {user} to the server! Use {user} as placeholder for user mention.">Welcome to the server, {user}!</textarea>
+                                    <small class="form-help">Use {user} as placeholder for user mention</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Embed Section -->
+                            <div id="embedSection" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label">Embed Title</label>
+                                    <input type="text" id="embedTitle" class="form-input" placeholder="Welcome!" value="Welcome!">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Embed Description</label>
+                                    <textarea id="embedDescription" class="form-textarea" placeholder="Welcome {user} to our awesome community!">Welcome to our server, {user}! We're glad you're here.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Embed Color</label>
+                                    <input type="color" id="embedColor" class="form-input" value="#7c3aed" style="width: 120px; height: 50px; padding: 5px;">
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="embedThumbnail" class="checkbox" checked>
+                                    <label for="embedThumbnail" class="form-label">Show User Avatar as Thumbnail</label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Embed Footer</label>
+                                    <input type="text" id="welcomeEmbedFooter" class="form-input" placeholder="Have a great time!" value="Have a great time!">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Save Welcome Settings</button>
+                            <div class="loading-bar" id="welcomerLoading">
+                                <div class="loading-bar-fill"></div>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+
+                    <!-- Auto Role Assignment -->
+                    <div class="card">
+                        <h3 class="card-title">Auto Role Assignment</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Automatically assign roles to new members when they join your server. Add multiple roles that will be given immediately upon joining.
+                            </p>
+                        </div>
+                        
+                        <div id="autoRoleMessage"></div>
+                        <div style="background: rgba(124, 58, 237, 0.1); padding: 20px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3); margin-bottom: 15px;">
+                        <form id="autoRoleForm">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="autoRoleEnabled" class="checkbox">
+                                <label for="autoRoleEnabled" class="form-label">Enable Auto Role Assignment</label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Auto Roles</label>
+                                <div style="background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <h4 style="margin: 0; color: #ffffff;">Role Management</h4>
+                                        <div style="display: flex; gap: 10px;">
+                                            <button type="button" onclick="addAutoRole()" class="trendy-btn trendy-btn-primary" style="padding: 10px 20px; font-size: 14px;">Add Role</button>
+                                            <button type="button" onclick="clearAllAutoRoles()" class="trendy-btn trendy-btn-danger" style="padding: 10px 20px; font-size: 14px;">Clear All</button>
+                                        </div>
+                                    </div>
+                                    <div id="autoRolesList">
+                                        <!-- Auto roles will be populated here -->
+                                    </div>
+                                </div>
+                                <small class="form-help">Roles that will be automatically assigned to new members when they join the server</small>
+                            </div>
+                            
+                            <button type="submit" class="trendy-btn trendy-btn-primary">Save Auto Role Settings</button>
+                            <div class="loading-bar" id="autoRoleLoading">
+                                <div class="loading-bar-fill"></div>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Tab -->
+                <div id="database" class="tab-content">
+                    <div class="card">
+                        <h3 class="card-title">Database Management</h3>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 20px;">
+                            <h4 style="color: #3b82f6; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Guide</h4>
+                            <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+                                Manage your bot's database tables and data. Export backups, import configurations, and view table contents for troubleshooting.
+                            </p>
+                        </div>
+                        
+                        <div id="databaseMessage"></div>
+                        
+                        <!-- Database Controls -->
+                        <div style="margin-bottom: 30px; padding: 20px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                            <h4 style="color: #7c3aed; margin-bottom: 15px;">Database Controls</h4>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <button onclick="autoCreateTables()" class="trendy-btn trendy-btn-success" title="Auto-Create All Database Tables">Auto-Create Tables</button>
+                                <button onclick="exportDatabase()" class="trendy-btn trendy-btn-info" title="Export Database">Export Database</button>
+                                <button onclick="importDatabase()" class="trendy-btn trendy-btn-info" title="Import Database">Import Database</button>
+                                <button onclick="clearAllDatabase()" class="trendy-btn trendy-btn-danger" title="Clear All Database Tables">Clear All Database</button>
+                            </div>
+                            <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 10px;">
+                                Use these controls to manage your database: refresh to reload data, export to create backups, or import to restore from backup files.
+                            </p>
+                        </div>
+                        
+                        <!-- Database Overview -->
+                        <div style="margin-bottom: 30px;">
+                            <h4 style="color: #7c3aed; margin-bottom: 15px;">Database Tables</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Users</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Discord user data, XP, levels</p>
+                                    <button onclick="viewTable('users')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Bot A (Heilos)</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Bot A configurations</p>
+                                    <button onclick="viewTable('bota')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Bot B (Wisteria)</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Bot B configurations</p>
+                                    <button onclick="viewTable('botb')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Others</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">System settings, XP, counting</p>
+                                    <button onclick="viewTable('others')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Birthdays</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">User birthday information</p>
+                                    <button onclick="viewTable('birthdays')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Level Roles</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Level-based role rewards</p>
+                                    <button onclick="viewTable('level_roles')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Reaction Roles</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Emoji reaction role assignments</p>
+                                    <button onclick="viewTable('reaction_roles')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Welcome Messages</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Welcome message configurations</p>
+                                    <button onclick="viewTable('welcome_messages')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+                                <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                    <h5 style="margin-bottom: 10px;">Reminders</h5>
+                                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">User reminder data</p>
+                                    <button onclick="viewTable('reminders')" class="trendy-btn-sm trendy-btn-primary" style="margin-top: 10px;">View Data</button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Table Data Display -->
+                        <div id="tableDataContainer" style="display: none; margin-top: 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4 id="tableTitle" style="color: #7c3aed;">Table Data</h4>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button onclick="refreshTableData()" class="trendy-btn trendy-btn-success">Refresh</button>
+                                    <button onclick="exportTableData()" class="trendy-btn trendy-btn-info">Export</button>
+                                    <button onclick="hideTableData()" class="trendy-btn trendy-btn-danger">Close</button>
+                                </div>
+                            </div>
+                            <div style="background: rgba(124, 58, 237, 0.1); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(124, 58, 237, 0.3);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <span style="color: #7c3aed; font-weight: 600; font-size: 14px;">Table Actions:</span>
+                                        <button onclick="addTableRecord()" class="trendy-btn-sm trendy-btn-success">Add Record</button>
+                                        <button onclick="bulkDeleteRecords()" class="trendy-btn-sm trendy-btn-warning">Bulk Delete</button>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="color: rgba(255,255,255,0.7); font-size: 12px;">Search:</span>
+                                        <input type="text" id="tableSearchInput" placeholder="Search records..." style="padding: 4px 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; font-size: 12px; width: 150px;" onkeyup="filterTableData()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="tableDataContent" style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; overflow-x: auto;">
+                                <!-- Table data will be displayed here -->
+                            </div>
+                        </div>
+
+
+
+                        <!-- Edit Modal -->
+                        <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a2e; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; max-height: 80%; overflow-y: auto;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3 id="editModalTitle" style="color: #7c3aed; margin: 0;">Edit Record</h3>
+                                    <button onclick="closeEditModal()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">✕</button>
+                                </div>
+                                <div id="editModalContent">
+                                    <!-- Edit form will be generated here -->
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: end;">
+                                    <button onclick="closeEditModal()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Cancel</button>
+                                    <button onclick="saveEdit()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="processing-spinner"></div>
+    </div>
+
+    <!-- Popup Notification -->
+    <div id="popupNotification" class="popup-notification"></div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

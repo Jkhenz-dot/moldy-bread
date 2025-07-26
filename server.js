@@ -13,6 +13,7 @@ const UserData = require("./models/postgres/UserData");
 const Birthday = require("./models/postgres/Birthday");
 const WelcomeMessage = require("./models/postgres/WelcomeMessage");
 const Reminder = require("./models/postgres/Reminder");
+const TopRoles = require("./models/postgres/TopRoles");
 // Use existing database utilities
 const database = require("./utils/database");
 require("dotenv").config();
@@ -166,29 +167,17 @@ app.post('/api/update-top5-roles', async (req, res) => {
             }
         }
 
-        // Store the roles in the database (replace existing roles)
-        // Only one row in the table, so update the first/only row (no guildId)
-        const existing = await LevelRoles.findOne({});
-        
-        const roleData = {
-            top1_role: roles.top1Role || '',
-            top2_role: roles.top2Role || '',
-            top3_role: roles.top3Role || '',
-            top4_role: roles.top4Role || '',
-            top5_role: roles.top5Role || ''
+        // Transform roles object to match the expected format if needed
+        const formattedRoles = {
+            top1Role: roles.top1Role || roles.top1_role || '',
+            top2Role: roles.top2Role || roles.top2_role || '',
+            top3Role: roles.top3Role || roles.top3_role || '',
+            top4Role: roles.top4Role || roles.top4_role || '',
+            top5Role: roles.top5Role || roles.top5_role || ''
         };
 
-        console.log('Updating top5Roles with:', roleData); // Debug log
-
-        if (existing) {
-            await LevelRoles.findOneAndUpdate(
-                { _id: existing._id },
-                roleData,
-                { new: true }
-            );
-        } else {
-            await LevelRoles.create(roleData);
-        }
+        // Update roles using the TopRoles model
+        await TopRoles.updateTop5Roles(formattedRoles);
 
         res.json({ success: true, message: 'Top 5 roles configuration updated successfully' });
 
@@ -201,7 +190,7 @@ app.post('/api/update-top5-roles', async (req, res) => {
 });
 // Static file serving with caching
 app.use(
-    express.static(".", {
+    express.static("public", {
         maxAge: "1h",
         etag: true,
     }),
@@ -217,7 +206,7 @@ app.use(
 addActivity("Dashboard server started");
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "dashboard.html"));
+    res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 // Health check endpoint for keep-alive mechanism
@@ -323,9 +312,7 @@ app.get("/api/bot-data", async (req, res) => {
     try {
         const levelRoles = await LevelRoles.find();
         const reactionRoles = await ReactionRole.find();
-        let top5Roles = await LevelRoles.findOne({});
-        
-
+        const top5Roles = await TopRoles.findOne({});
         const botA = await BotA.findOne();
         const botB = await BotB.findOne();
         const others = await Others.findOne();
@@ -469,11 +456,11 @@ app.get("/api/bot-data", async (req, res) => {
                 },
                 others: others || {}, // Add raw others data for dashboard compatibility
                 top5Roles: {
-                    top1Role: top5Roles?.top1_role || null,
-                    top2Role: top5Roles?.top2_role || null,
-                    top3Role: top5Roles?.top3_role || null,
-                    top4Role: top5Roles?.top4_role || null,
-                    top5Role: top5Roles?.top5_role || null
+                    top1Role: top5Roles?.top1_role || '',
+                    top2Role: top5Roles?.top2_role || '',
+                    top3Role: top5Roles?.top3_role || '',
+                    top4Role: top5Roles?.top4_role || '',
+                    top5Role: top5Roles?.top5_role || ''
                 }
             },
         });
@@ -1328,6 +1315,63 @@ app.post("/api/update-thread-xp", async (req, res) => {
     }
 });
 
+// Utility function to update roles for all members
+global.updateAllMemberRoles = async function(guild) {
+    try {
+        // Get all level roles
+        const allLevelRoles = await LevelRoles.find();
+        if (!allLevelRoles || allLevelRoles.length === 0) return;
+
+        // Get all users from the database
+        const allUsers = await UserData.find();
+        if (!allUsers || allUsers.length === 0) return;
+
+        // Get the guild members
+        await guild.members.fetch();
+
+        // Update roles for each user
+        for (const userData of allUsers) {
+            const member = guild.members.cache.get(userData.discord_id);
+            if (!member || member.user.bot) continue;
+
+            // Sort level roles by level requirement (ascending)
+            const sortedLevelRoles = [...allLevelRoles].sort((a, b) => b.level - a.level);
+
+            // Find the highest level role the user qualifies for
+            const highestQualifiedRole = sortedLevelRoles.find(lr => userData.xp >= lr.level);
+            const targetRoleId = highestQualifiedRole ? highestQualifiedRole.roleId : null;
+
+            // Remove all level roles from user
+            for (const levelRole of allLevelRoles) {
+                const role = guild.roles.cache.get(levelRole.roleId);
+                if (role && member.roles.cache.has(levelRole.roleId) && levelRole.roleId !== targetRoleId) {
+                    try {
+                        await member.roles.remove(role);
+                        console.log(`Removed role ${role.name} from ${member.user.username}`);
+                    } catch (error) {
+                        console.error(`Failed to remove role ${levelRole.roleId} from ${member.user.username}:`, error);
+                    }
+                }
+            }
+
+            // Add the highest qualified role if user doesn't have it
+            if (targetRoleId) {
+                const role = guild.roles.cache.get(targetRoleId);
+                if (role && !member.roles.cache.has(targetRoleId)) {
+                    try {
+                        await member.roles.add(role);
+                        console.log(`Added role ${role.name} to ${member.user.username}`);
+                    } catch (error) {
+                        console.error(`Failed to add role ${targetRoleId} to ${member.user.username}:`, error);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error updating member roles:', error);
+    }
+}
+
 app.post("/api/update-role-rewards", async (req, res) => {
     try {
         const { roleRewards, serverId } = req.body;
@@ -1337,10 +1381,17 @@ app.post("/api/update-role-rewards", async (req, res) => {
 
             for (const role of roleRewards) {
                 await LevelRoles.create({
-                    guildId: "global", // Using global since data is shared
                     level: role.level,
-                    roleId: role.roleId,
+                    roleId: role.roleId
                 });
+            }
+
+            // Update roles for all members after saving new role rewards
+            const client = global.discordClient;
+            if (client && client.guilds) {
+                for (const guild of client.guilds.cache.values()) {
+                    await updateAllMemberRoles(guild);
+                }
             }
         }
 
@@ -2817,9 +2868,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     xp INTEGER DEFAULT 0,
                     level INTEGER DEFAULT 0,
                     last_xp_gain TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    conversation_history JSONB DEFAULT '{}',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    conversation_history JSONB DEFAULT '{}'
                 )
             `,
             bota: `
@@ -2839,9 +2888,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     activity_type VARCHAR(255) DEFAULT 'streaming',
                     allowed_channels TEXT DEFAULT '1',
                     avatar_path TEXT DEFAULT '',
-                    blacklisted_users TEXT DEFAULT '[]',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    blacklisted_users TEXT DEFAULT '[]'
                 )
             `,
             botb: `
@@ -2861,9 +2908,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     activity_type VARCHAR(255) DEFAULT 'streaming',
                     allowed_channels TEXT DEFAULT '1',
                     avatar_path TEXT DEFAULT '',
-                    blacklisted_users TEXT DEFAULT '[]',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    blacklisted_users TEXT DEFAULT '[]'
                 )
             `,
             others: `
@@ -2884,9 +2929,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     counting_enabled BOOLEAN DEFAULT false,
                     counting_channel VARCHAR(255) DEFAULT NULL,
                     counting_current INTEGER DEFAULT 0,
-                    counting_last_user VARCHAR(255) DEFAULT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    counting_last_user VARCHAR(255) DEFAULT NULL
                 )
             `,
             birthdays: `
@@ -2894,18 +2937,14 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     id SERIAL PRIMARY KEY,
                     discord_id VARCHAR(255) NOT NULL,
                     username VARCHAR(255) NOT NULL,
-                    birth_date DATE NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    birth_date DATE NOT NULL
                 )
             `,
             level_roles: `
                 CREATE TABLE IF NOT EXISTS level_roles (
                     id SERIAL PRIMARY KEY,
                     level INTEGER NOT NULL,
-                    role_id VARCHAR(255) NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    role_id VARCHAR(255) NOT NULL
                 )
             `,
             reaction_roles: `
@@ -2918,9 +2957,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     set_name VARCHAR(255) DEFAULT '',
                     set_mode VARCHAR(255) DEFAULT 'toggle',
                     guild_id VARCHAR(255) DEFAULT '',
-                    emoji_id VARCHAR(255) DEFAULT '',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    emoji_id VARCHAR(255) DEFAULT ''
                 )
             `,
             welcome_messages: `
@@ -2932,9 +2969,7 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     embed_enabled BOOLEAN DEFAULT false,
                     embed_title TEXT DEFAULT 'Welcome!',
                     embed_description TEXT DEFAULT 'Welcome to the server!',
-                    embed_color VARCHAR(255) DEFAULT '#0099ff',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    embed_color VARCHAR(255) DEFAULT '#0099ff'
                 )
             `,
             reminders: `
@@ -2944,7 +2979,6 @@ app.post("/api/database/auto-create-tables", async (req, res) => {
                     channel_id VARCHAR(25) NOT NULL,
                     message TEXT NOT NULL,
                     remind_at TIMESTAMP NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     completed BOOLEAN DEFAULT FALSE
                 )
             `
@@ -4062,34 +4096,4 @@ app.listen(PORT, "0.0.0.0", () => {
 
 
 
-app.get('/api/top5-roles', async (req, res) => {
-    try {
-        const levelRoles = await LevelRoles.findOne({});
-        // Get all roles for the current guild (assume single-guild dashboard)
-        let allRoles = [];
-        if (global.discordClient && global.discordClient.guilds && global.discordClient.guilds.cache.size > 0) {
-            const guild = global.discordClient.guilds.cache.first();
-            if (guild && guild.roles && guild.roles.cache) {
-                allRoles = guild.roles.cache
-                    .filter(role => role.id !== guild.id) // Exclude @everyone
-                    .map(role => ({ id: role.id, name: role.name, color: role.hexColor }));
-            }
-        }
-        if (!levelRoles) {
-            return res.json({ success: true, roles: {}, allRoles });
-        }
-        res.json({
-            success: true,
-            roles: {
-                top1Role: levelRoles.top1Role || levelRoles.top1_role || '',
-                top2Role: levelRoles.top2Role || levelRoles.top2_role || '',
-                top3Role: levelRoles.top3Role || levelRoles.top3_role || '',
-                top4Role: levelRoles.top4Role || levelRoles.top4_role || '',
-                top5Role: levelRoles.top5Role || levelRoles.top5_role || ''
-            },
-            allRoles
-        });
-    } catch (error) {
-        res.json({ success: false, message: 'Failed to fetch Top 5 roles' });
-    }
-});
+

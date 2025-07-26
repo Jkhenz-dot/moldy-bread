@@ -6,9 +6,7 @@ class Reminder extends BaseModel {
       user_id: 'user_id',
       channel_id: 'channel_id', 
       message: 'message',
-      remind_at: 'remind_at',
-      created_at: 'created_at',
-      updated_at: 'updated_at'
+      remind_at: 'remind_at'
     });
   }
   
@@ -20,9 +18,7 @@ class Reminder extends BaseModel {
         user_id VARCHAR(25) NOT NULL,
         channel_id VARCHAR(25) NOT NULL,
         message TEXT NOT NULL,
-        remind_at TIMESTAMP NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        remind_at TIMESTAMP NOT NULL
       )
     `;
     

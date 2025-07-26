@@ -491,7 +491,7 @@ const addXP = async (userId, message = null, xp = 1, source = "default") => {
       const username =
         member?.user?.username ||
         member?.displayName ||
-        `User_${userId.slice(-4)}`;
+        `User_${userId.oesslice(-4)}`;
 
       console.log(`Creating new user: ${userId} with username: ${username}`);
 
@@ -2315,6 +2315,19 @@ const setupBot = async (client, botToken, botName) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         console.log(`${botName} login attempt ${attempt}/${retries}`);
+        client.once('ready', async () => {
+            console.log('Bot is ready! Updating member roles...');
+            for (const guild of client.guilds.cache.values()) {
+                try {
+                    await global.updateAllMemberRoles(guild);
+                    console.log(`Updated roles for guild: ${guild.name}`);
+                } catch (error) {
+                    console.error(`Failed to update roles for guild ${guild.name}:`, error);
+                }
+            }
+            console.log('Member roles update complete!');
+        });
+
         await client.login(botToken);
         console.log(`${botName} successfully logged in`);
         return;
@@ -2592,20 +2605,17 @@ process.on("unhandledRejection", (reason, promise) => {
 // --- Top 5 XP Role Assignment ---
 async function updateTop5Roles(guildId) {
   try {
-    const LevelRoles = require('./models/postgres/LevelRoles');
+    const TopRoles = require('./models/postgres/TopRoles');
     const UserData = require('./models/postgres/UserData');
-    const allLevelRoles = await LevelRoles.find({});
-    let levelRoles = allLevelRoles.find(lr =>
-      lr.top1Role || lr.top2Role || lr.top3Role || lr.top4Role || lr.top5Role ||
-      lr.top1_role || lr.top2_role || lr.top3_role || lr.top4_role || lr.top5_role
-    );
-    if (!levelRoles) return;
+    
+    const topRolesData = await TopRoles.findOne({});
+    if (!topRolesData) return;
     const topRoles = [
-      levelRoles.top1Role || levelRoles.top1_role || '',
-      levelRoles.top2Role || levelRoles.top2_role || '',
-      levelRoles.top3Role || levelRoles.top3_role || '',
-      levelRoles.top4Role || levelRoles.top4_role || '',
-      levelRoles.top5Role || levelRoles.top5_role || '',
+      topRolesData.top1_role || '',
+      topRolesData.top2_role || '',
+      topRolesData.top3_role || '',
+      topRolesData.top4_role || '',
+      topRolesData.top5_role || '',
     ];
     const guild = client1.guilds.cache.get(guildId);
     if (!guild) return;

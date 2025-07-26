@@ -202,7 +202,7 @@ module.exports = {
               style: {
                 height: "40px",
                 bottom: "20px",
-                position: "absolute",
+               
               },
             },
           },

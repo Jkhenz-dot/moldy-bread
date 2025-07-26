@@ -41,6 +41,25 @@ class BaseModel {
     }
   }
 
+  async deleteMany(query = {}) {
+    try {
+      let sqlQuery = `DELETE FROM ${this.tableName}`;
+      let values = [];
+
+      if (Object.keys(query).length > 0) {
+        const { whereClause, values: whereValues } = this.buildWhereClause(query);
+        sqlQuery += ` WHERE ${whereClause.join(' AND ')}`;
+        values = whereValues;
+      }
+
+      const result = await database.query(sqlQuery, values);
+      return result.rowCount;
+    } catch (error) {
+      console.error(`Error deleting from ${this.tableName}:`, error);
+      throw error;
+    }
+  }
+
   async find(query = {}, orderBy = '') {
     try {
       let sqlQuery = `SELECT * FROM ${this.tableName}`;
@@ -139,10 +158,7 @@ class BaseModel {
         paramIndex++;
       });
 
-      // Only add updated_at if the model maps it
-      if (this.fieldMappings.updated_at || this.fieldMappings.updatedAt) {
-        setClause.push(`updated_at = NOW()`);
-      }
+      // Timestamp handling removed
       
       const { whereClause } = this.buildWhereClause(query);
       Object.values(query).forEach(value => {

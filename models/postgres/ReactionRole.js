@@ -108,9 +108,9 @@ class ReactionRole extends BaseModel {
           message_id,
           emoji_id,
           role_id,
-          created_at
+          id
         FROM reaction_roles 
-        ORDER BY created_at DESC
+        ORDER BY id DESC
       `);
       return result.rows;
     } catch (error) {

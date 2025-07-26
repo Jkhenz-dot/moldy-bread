@@ -4,12 +4,7 @@ class LevelRoles extends BaseModel {
   constructor() {
     super('level_roles', {
       level: 'level',
-      roleId: 'role_id',
-      top1Role: 'top1_role',
-      top2Role: 'top2_role',
-      top3Role: 'top3_role',
-      top4Role: 'top4_role',
-      top5Role: 'top5_role'
+      roleId: 'role_id'
     });
   }
 
@@ -31,6 +26,11 @@ class LevelRoles extends BaseModel {
   static async deleteOne(query) {
     const instance = new LevelRoles();
     return await instance.deleteOne(query);
+  }
+
+  static async deleteMany(query = {}) {
+    const instance = new LevelRoles();
+    return await instance.deleteMany(query);
   }
 
   static async findOneAndUpdate(query, updateData, options = {}) {
