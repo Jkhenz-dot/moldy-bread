@@ -4,10 +4,9 @@ class DatabaseManager {
     constructor() {
         const connectionConfig = {
             connectionString: process.env.DATABASE_URL,
-            ssl: {
-                rejectUnauthorized: false,
-                sslmode: 'require'
-            },
+            ssl: process.env.DATABASE_URL
+                ? { rejectUnauthorized: false }
+                : false,
             max: 5, // Reduced pool size to prevent connection overload
             min: 1, // Minimum 1 connection
             idleTimeoutMillis: 30000, // 30 seconds idle timeout
@@ -69,10 +68,9 @@ class DatabaseManager {
             // Recreate the pool with same configuration
             const connectionConfig = {
                 connectionString: process.env.DATABASE_URL,
-                ssl: {
-                    rejectUnauthorized: false,
-                    sslmode: 'require'
-                },
+                ssl: process.env.DATABASE_URL
+                    ? { rejectUnauthorized: false }
+                    : false,
                 max: 5,
                 min: 1,
                 idleTimeoutMillis: 30000,

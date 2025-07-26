@@ -96,18 +96,10 @@ const logMemoryUsage = () => {
 // Start memory monitoring
 setInterval(logMemoryUsage, 5 * 60 * 1000); // Every 5 minutes
 
-// Initialize database protection
-const { DatabaseProtection } = require('./utils/databaseProtection');
-const dbProtection = new DatabaseProtection();
 
 // Load main application
 try {
   require('./index.js');
-  
-  // Start database protection after main app loads
-  setTimeout(() => {
-    dbProtection.startProtection();
-  }, 5000); // Start after 5 seconds to allow main app to fully initialize
   
 } catch (error) {
   console.error('Failed to start main application:', error);
